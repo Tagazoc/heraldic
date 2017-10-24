@@ -28,11 +28,13 @@ class DocumentModel(object):
         self.category = ''
         self.title = ''
         self.description = ''
-        self.quotes = []
-        self.href_sources = []
         self.doc_publication_time = datetime.now()
         self.doc_update_time = datetime.now()
+
+        self.href_sources = []
         self.explicit_sources = []
+        self.quoted_entities = []
+        self.contains_private_sources = False
 
     @property
     def domain(self) -> str:
@@ -59,7 +61,6 @@ class DocumentModel(object):
         self.content = model.content
         self.category = model.category
         self.body = model.body
-        self.quotes = model.quotes
         self.href_sources = model.href_sources
         self.doc_publication_time = model.doc_publication_time
         self.doc_update_time = model.doc_update_time

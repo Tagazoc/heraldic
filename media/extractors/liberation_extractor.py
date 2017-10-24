@@ -18,11 +18,6 @@ class LiberationExtractor(GenericMediaExtractor):
     def _extract_document_body(self):
         return self.html_soup.find('div', attrs={'class': 'article-body'}).text
 
-    def _extract_quotes(self):
-        quotes = [quote.text for quote in self.html_soup.find('div', attrs={'class': 'article-body'}).find_all('em')]
-
-        return self._aggregate_filter_quotes(quotes)
-
     def _extract_href_sources(self):
         html_as = self.html_soup.find('div', attrs={'class': 'article-body'}).find_all('a')
         html_as = self._exclude_hrefs(html_as, 'class', 'author', parent=True)

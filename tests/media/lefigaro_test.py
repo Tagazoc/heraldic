@@ -30,15 +30,4 @@ href_sources = [
                          '-onze-reperages?page_article=1'
 ]
 
-quotes = [
-    "Alors que notre ville est toujours en deuil et qu'une enquête est en cours, Mediapart aurait-il eu accès à "
-    "des images qui sont normalement protégées par le secret de l'enquête ?",
-    'article à charge',
-    "une synthèse d'approximations",
-    "Nous portons plainte sur ces propos scandaleux allant jusqu'à faire croire que Christian Estrosi aurait fait "
-    "volontairement une photo avec le terroriste",
-    'Christian Estrosi ne laissera pas remettre en cause la compétence de ses agents de police municipale',
-    'La ville de Nice et Christian Estrosi portent plainte en diffamation',
-    'reçu aucune plainte à ce jour']
-
 explicit_sources = ['AFP']

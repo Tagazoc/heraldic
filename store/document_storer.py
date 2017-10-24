@@ -30,7 +30,6 @@ class DocumentStorer(object):
             "doc_publication_timestamp": round(dm.doc_publication_time.timestamp()),
             "doc_update_timestamp": round(dm.doc_update_time.timestamp()),
             "category": dm.category,
-            "quotes": dm.quotes,
             "href_sources": dm.href_sources,
             "explicit_sources": dm.explicit_sources
         }
@@ -54,7 +53,6 @@ class DocumentStorer(object):
         dm.doc_publication_time = datetime.fromtimestamp(res['publication_timestamp'])
         dm.doc_update_time = datetime.fromtimestamp(res['update_timestamp'])
         dm.category = res['category']
-        dm.quotes = res['quotes']
         dm.href_sources = res['href_sources']
         dm.explicit_sources = res['explicit_sources']
         dm.id = doc_id

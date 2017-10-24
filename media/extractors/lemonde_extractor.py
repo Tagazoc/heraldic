@@ -27,10 +27,6 @@ class LeMondeExtractor(GenericMediaExtractor):
         time_text = self.html_soup.find('time', attrs={'itemprop': 'dateModified'}).text
         return datetime.strptime(time_text, '%d.%m.%Y &agrave; %Hh%M')
 
-    def _extract_quotes(self):
-        quotes = [quote.text for quote in self.html_soup.article.find_all('em')]
-        return self._aggregate_filter_quotes(quotes)
-
     def _extract_href_sources(self):
         html_as = self.html_soup.article.find_all('a')
         html_as = self._exclude_hrefs(html_as, 'class', 'lien_interne')

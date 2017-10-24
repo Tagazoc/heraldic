@@ -8,6 +8,11 @@
 # envisager les personnalités/organisations citées pour recoupement
 # et si ou non l'article inclut des sources non publiques
 
+# on a donc : href_sources
+# explicit sources
+# quoted entities
+# private sources
+
 # TODO Résoudre la question de la catégorisation
 # Faire un mapping de catégories génériques pour chaque média
 

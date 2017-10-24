@@ -29,7 +29,6 @@ def test_document_extract():
     print('title = "' + d.model.title.replace('"', '\\"') + '"')
     print('description = "' + d.model.description.replace('"', '\\"') + '"')
     print('category = "' + d.model.category.replace('"', '\\"') + '"')
-    print('quotes = ' + d.model.quotes.__str__())
     print('body = "' + d.model.body.replace('"', '\\"') + '"')
     print('href_sources = ' + d.model.href_sources.__str__())
     print('explicit_sources = ' + d.model.explicit_sources.__str__())
@@ -37,7 +36,6 @@ def test_document_extract():
     assert (d.model.title == title)
     assert (d.model.description == description)
     assert (d.model.category == category)
-    assert (d.model.quotes == quotes)
     assert (d.model.href_sources == href_sources)
     assert (d.model.explicit_sources == explicit_sources)
 
@@ -56,7 +54,6 @@ def test_document_store():
     assert (res['_source']['title'] == title)
     assert (res['_source']['description'] == description)
     assert (res['_source']['category'] == category)
-    assert (res['_source']['quotes'] == quotes)
     assert (res['_source']['href_sources'] == href_sources)
     assert (res['_source']['explicit_sources'] == explicit_sources)
 
@@ -72,7 +69,6 @@ def test_document_retrieve():
     assert (d.model.title == title)
     assert (d.model.description == description)
     assert (d.model.category == category)
-    assert (d.model.quotes == quotes)
     assert (d.model.href_sources == href_sources)
     assert (d.model.explicit_sources == explicit_sources)
 

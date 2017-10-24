@@ -24,18 +24,6 @@ description = '«\xa0Le divorce était devenu inéluctable\xa0», a déclaré le
 
 category = 'politique'
 
-quotes = [
-    '«\xa0#liberté #freedom Haters gonna hate  tant mieux et à bientôt\xa0»',
-    '«\xa0Ayant été la cheville ouvrière du parti et de la fondation au niveau ' \
-    'européen puis du groupe ENL, il était clair que je refuserais de ' \
-    'démissionner. Mais le divorce était devenu inéluctable tant avec certains ' \
-    'dans mon ex-parti que mon ex-groupe\xa0»',
-    '«\xa0problématique\xa0»',
-    '«\xa0Ça tangue un peu avec des eurodéputés des autres pays\xa0»',
-    '«\xa0clarifications\xa0»',
-    '«\xa0C’est à 90\xa0% grâce à M.\xa0de Danne que le groupe Europe des Nations '
-    'et des libertés a pu être constitué.\xa0»'
-]
 href_sources = [
     'https://www.mediapart.fr/journal/france/080917/fn-sophie-montel-iconoclaste-mise-au-ban',
     '//twitter.com/olivierfaye/status/906057841563369472',

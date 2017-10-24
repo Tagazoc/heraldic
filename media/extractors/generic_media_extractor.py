@@ -80,13 +80,6 @@ class GenericMediaExtractor(object):
         """
         return datetime.now()
 
-    def _extract_quotes(self) -> List[str]:
-        """
-        Extract quotes from document, if there is an easy way to locate them (e.g. an HTML tag).
-        :return: list of quotes contained in the document
-        """
-        return []
-
     def _extract_href_sources(self) -> List[str]:
         """
         Extract sources displayed as links from the document.
@@ -107,24 +100,6 @@ class GenericMediaExtractor(object):
         :return: list of the explicit sources
         """
         return []
-
-    @staticmethod
-    def _aggregate_filter_quotes(quotes: List[str]) -> List[str]:
-        real_quotes = []
-        idx = 0
-        while idx < len(quotes):
-            # There is a beginning quote, should be a closing one
-            if quotes[idx].startswith('«'):
-                if quotes[idx].endswith('»'):
-                    real_quotes.append(quotes[idx])
-                    idx += 1
-                # If no closing quote, we concatenate the next string
-                else:
-                    quotes[idx] += " " + quotes[idx + 1]
-            # no beginning quote, ignore the string
-            else:
-                idx += 1
-        return real_quotes
 
     @staticmethod
     def _exclude_hrefs(html_as: List, attribute: str, value: str, parent=False):
