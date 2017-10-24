@@ -1,0 +1,47 @@
+# TODO Déployer le serveur elastic quelque part -> OVH SSD 2 ou vaio
+
+# TODO Terminer la liste des données extraites (sauf mots ofc)
+# Les sources : on met quoi ?
+# Le plus simple sont les liens (cf. mapping)
+# mais on a aussi le nommage de média sans lien (renseignement manuel)
+# le contenu des citations c'est nul
+# envisager les personnalités/organisations citées pour recoupement
+# et si ou non l'article inclut des sources non publiques
+
+# TODO Résoudre la question de la catégorisation
+# Faire un mapping de catégories génériques pour chaque média
+
+# TODO Refaire la soumission de document par interface Web
+
+# TODO Résoudre la question des versions des documents
+# Index supplémentaire sur elastic
+
+# TODO Mettre en place la correction de document par interface Web
+
+# TODO Faire la liste des médias à faire en priorité
+
+# TODO Git sous github
+
+# TODO Implémenter les médias mainstream
+
+# TODO Faire le logo
+
+# TODO Récupérer les news de Google news API pour simplifier le choix d'articles sources
+
+# TODO Faire les médias de la fachosphère & de gauche
+
+# TODO Faire des premières analyses rapides
+
+# TODO Faire un site Web avec accès à la base
+
+# TODO Faire un système d'auth pour soumettre & corriger des documents
+
+# TODO Faire un blog pour les résultats
+
+# TODO Faire des analyses plus poussées et graphiques
+
+# TODO Mettre à disposition quotidiennement un dump de la base
+
+# TODO Faire un compte twitter
+
+# TODO Faire le parsing et la lemmatisation des mots (https://github.com/ClaudeCoulombe/FrenchLefffLemmatizer ?)
