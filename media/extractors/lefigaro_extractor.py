@@ -29,7 +29,7 @@ class LeFigaroExtractor(GenericMediaExtractor):
         return datetime.strptime(time_text, 'le %d/%m/%Y à %H:%M')
 
     def _extract_update_timestamp(self):
-        time_text = self.html_soup.find('time', attrs={'class': 'fig-content-metas__maj-date'}).time.text
+        time_text = self.html_soup.find('li', attrs={'class': 'fig-content-metas__maj-date'}).time.text
         return datetime.strptime(time_text, 'le %d/%m/%Y à %H:%M')
 
     def _extract_category(self):

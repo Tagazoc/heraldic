@@ -23,6 +23,9 @@ description = "Dans une interview accordée au site internet du journal Le Point
 
 category = 'Flash Actu'
 
+doc_publication_time_str = '23/12/2016 20:45'
+doc_update_time_str = '23/12/2016 21:08'
+
 href_sources = [
     'http://www.lepoint.fr/politique/attentat-de-nice-mediapart-accable-christian-estrosi-23-12-2016-2092619_20.php'
     '?campaign_id=A100',

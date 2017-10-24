@@ -24,6 +24,9 @@ description = '«\xa0Le divorce était devenu inéluctable\xa0», a déclaré le
 
 category = 'politique'
 
+doc_publication_time_str = '08/09/2017 15:34'
+doc_update_time_str = '08/09/2017 21:01'
+
 href_sources = [
     'https://www.mediapart.fr/journal/france/080917/fn-sophie-montel-iconoclaste-mise-au-ban',
     '//twitter.com/olivierfaye/status/906057841563369472',

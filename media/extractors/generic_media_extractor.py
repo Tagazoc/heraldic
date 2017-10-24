@@ -39,10 +39,11 @@ class GenericMediaExtractor(object):
         self.dm.title = self._extract_html_title()
         self.dm.description = self._extract_html_description()
         self.dm.body = self._extract_document_body()
-        self.dm.quotes = self._extract_quotes()
         self.dm.href_sources = self._extract_href_sources()
         self.dm.explicit_sources = self._extract_explicit_sources()
         self.dm.category = self._extract_category()
+        self.dm.doc_publication_time = self._extract_publication_timestamp()
+        self.dm.doc_update_time = self._extract_update_timestamp()
 
     def _extract_html_title(self) -> str:
         """

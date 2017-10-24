@@ -21,11 +21,11 @@ class LeMondeExtractor(GenericMediaExtractor):
 
     def _extract_publication_timestamp(self):
         time_text = self.html_soup.find('time', attrs={'itemprop': 'datePublished'}).text
-        return datetime.strptime(time_text, '%d.%m.%Y &agrave; %Hh%M')
+        return datetime.strptime(time_text, '%d.%m.%Y à %Hh%M')
 
     def _extract_update_timestamp(self):
         time_text = self.html_soup.find('time', attrs={'itemprop': 'dateModified'}).text
-        return datetime.strptime(time_text, '%d.%m.%Y &agrave; %Hh%M')
+        return datetime.strptime(time_text, '%d.%m.%Y à %Hh%M')
 
     def _extract_href_sources(self):
         html_as = self.html_soup.article.find_all('a')

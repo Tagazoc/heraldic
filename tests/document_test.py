@@ -4,8 +4,9 @@
 Document test module.
 """
 
-from src.tests.media.lemonde_test import *
+from src.tests.media.lefigaro_test import *
 
+from datetime import datetime
 from elasticsearch import Elasticsearch
 from src.models.document import DocumentModel, Document
 import pytest
@@ -15,6 +16,7 @@ doc_id = 'UWiHsnxpzZry7bc'
 host = '192.168.1.31:9200'
 gather_date = None
 update_date = None
+fmt = "%d/%m/%Y %H:%M"
 
 
 def test_document_gathering():
@@ -30,12 +32,16 @@ def test_document_extract():
     print('description = "' + d.model.description.replace('"', '\\"') + '"')
     print('category = "' + d.model.category.replace('"', '\\"') + '"')
     print('body = "' + d.model.body.replace('"', '\\"') + '"')
+    print('doc_publication_time = "' + d.model.doc_publication_time.strftime(fmt) + '"')
+    print('doc_update_time = "' + d.model.doc_update_time.strftime(fmt) + '"')
     print('href_sources = ' + d.model.href_sources.__str__())
     print('explicit_sources = ' + d.model.explicit_sources.__str__())
 
     assert (d.model.title == title)
     assert (d.model.description == description)
     assert (d.model.category == category)
+    assert (d.model.doc_publication_time == datetime.strptime(doc_publication_time_str, fmt))
+    assert (d.model.doc_update_time == datetime.strptime(doc_update_time_str, fmt))
     assert (d.model.href_sources == href_sources)
     assert (d.model.explicit_sources == explicit_sources)
 
@@ -72,4 +78,3 @@ def test_document_retrieve():
     assert (d.model.href_sources == href_sources)
     assert (d.model.explicit_sources == explicit_sources)
 
-    assert ()

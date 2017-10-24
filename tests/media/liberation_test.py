@@ -27,6 +27,9 @@ description = "Le premier secrétaire de la fédération PS des Français de l'�
               "intensifs» après l’agression commise mercredi par un député REM, M’jid El Guerrab. "
 category = "Politique"
 
+doc_publication_time_str = '31/08/2017 13:03'
+doc_update_time_str = '31/08/2017 14:20'
+
 href_sources = ['https://www.marianne.net/politique/le-responsable-ps-agresse-par-un-depute-lrem-est-en-soins-intensifs']
 
 explicit_sources = ['AFP']
