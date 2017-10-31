@@ -38,12 +38,14 @@ class GenericMediaExtractor(object):
         self.dm.media = self.media_name
         self.dm.title = self._extract_html_title()
         self.dm.description = self._extract_html_description()
+        self.dm.doc_publication_time = self._extract_publication_timestamp()
+        self.dm.doc_update_time = self._extract_update_timestamp()
         self.dm.body = self._extract_document_body()
         self.dm.href_sources = self._extract_href_sources()
         self.dm.explicit_sources = self._extract_explicit_sources()
+        self.dm.quoted_entities = self._extract_quoted_entities()
+        self.dm.contains_private_sources = self._check_private_sources()
         self.dm.category = self._extract_category()
-        self.dm.doc_publication_time = self._extract_publication_timestamp()
-        self.dm.doc_update_time = self._extract_update_timestamp()
 
     def _extract_html_title(self) -> str:
         """
@@ -101,6 +103,20 @@ class GenericMediaExtractor(object):
         :return: list of the explicit sources
         """
         return []
+
+    def _extract_quoted_entities(self) -> List[str]:
+        """
+        Extract sources explicitly given in the document
+        :return: list of the explicit sources
+        """
+        return []
+
+    def _check_private_sources(self) -> bool:
+        """
+        Extract sources explicitly given in the document
+        :return: list of the explicit sources
+        """
+        return False
 
     @staticmethod
     def _exclude_hrefs(html_as: List, attribute: str, value: str, parent=False):
