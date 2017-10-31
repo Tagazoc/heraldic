@@ -4,7 +4,7 @@
 Document test module.
 """
 
-from src.tests.media.lefigaro_test import *
+from src.tests.media.liberation_test import *
 
 from datetime import datetime
 from elasticsearch import Elasticsearch
