@@ -28,4 +28,5 @@ def register_blueprints(app):
             app.register_blueprint(mod.bp)
     return None
 
+
 app = create_app()

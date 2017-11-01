@@ -14,9 +14,12 @@
 # private sources
 
 # TODO Résoudre la question de la catégorisation
-# Faire un mapping de catégories génériques pour chaque média
+# Faire un mapping de catégories génériques pour chaque média -> Ouch
 
 # TODO Refaire la soumission de document par interface Web
+# Page de soumission de lien
+# Puis traitement et proposition d'extraction
+# Puis validation et affichage du document
 
 # TODO Résoudre la question des versions des documents
 # Index supplémentaire sur elastic

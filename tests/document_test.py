@@ -10,6 +10,8 @@ from datetime import datetime
 from elasticsearch import Elasticsearch
 from src.models.document import DocumentModel, Document
 import pytest
+import pickle
+import sys
 
 d = Document()
 doc_id = 'UWiHsnxpzZry7bc'
@@ -44,6 +46,9 @@ def test_document_extract():
     assert (d.model.doc_update_time == datetime.strptime(doc_update_time_str, fmt))
     assert (d.model.href_sources == href_sources)
     assert (d.model.explicit_sources == explicit_sources)
+
+    p = pickle.dumps(d.model)
+    print('size : ' + str(sys.getsizeof(p)))
 
 
 @pytest.mark.skip(reason="No Elastic yet")

@@ -2,12 +2,34 @@
 {% block body %}
       <dl>
         <dt>URL:
-        <dd>{{url}}
-        <dt>Domain:
-        <dd>{{domain}}
-        <dt>Media:
-        <dd>{{media_name}}
-        <dt>Body:
-        <dd>{{document_body}}
+        <dd>{{model.url}}
+        <dt>Domaine :
+        <dd>{{model.domain}}
+        <dt>Média :
+        <dd>{{model.media}}
+        <dt>Catégorie :
+        <dd>{{model.category}}
+        <dt>Titre :
+        <dd>{{model.title}}
+        <dt>Description :
+        <dd>{{model.description}}
+        <dt>Date de publication :
+        <dd>{{model.doc_publication_time.strftime("%d/%m/%Y à %Hh%M")}}
+        <dt>Date de mise à jour :
+        <dd>{{model.doc_update_time.strftime("%d/%m/%Y à %Hh%M")}}
+        <dt>Sources hypertexte :
+        {% for source in model.href_sources %}
+        <dd>{{source}}</dd>
+        {% endfor %}
+        <dt>Sources explicites :
+        {% for source in model.explicit_sources %}
+        <dd>{{source}}</dd>
+        {% endfor %}
+        <dt>Entités citées :
+        {% for source in model.quoted_entities %}
+        <dd>{{source}}</dd>
+        {% endfor %}
+        <dt>Sources privées ?</dt>
+        <dd>{{"Oui" if model.contains_private_sources else "Non"}}</dd>
       </dl>
 {% endblock %}

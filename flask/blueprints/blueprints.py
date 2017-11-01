@@ -3,9 +3,10 @@
 
 """
 
-from flask import Blueprint, request, render_template
+from flask import Blueprint, request, render_template, session
 
-from src.gathering.document_gatherer import DocumentGatherer
+from src.models.document import Document
+import pickle
 
 # create our blueprint :)
 bp = Blueprint('heraldic', __name__)
@@ -19,10 +20,10 @@ def hello():
 
 @bp.route("/gather_document", methods=['POST'])
 def gather_document():
-    dg = DocumentGatherer(request.form['url'])
-    extractor_name = globals()[dg.media_name + 'Extractor']
-    extractor = extractor_name(dg.html_content, dg.url)
+    d = Document()
+    d.gather(request.form['url'])
+    d.extract_fields()
+    session['model'] = pickle.dumps(d.model)
 
-    return render_template('url_downloaded.html', url=dg.url, domain=dg.domain, media_name=dg.media_name,
-                           document_body=extractor.document_body)
+    return render_template('url_downloaded.html', model=d.model)
 
