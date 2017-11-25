@@ -29,7 +29,6 @@ class HTMLDocumentGatherer(object):
         try:
             self._check_url()
             r = requests.get(self.url)
-            self.dm.gather_time = datetime.now()
             self.dm.url = r.url
             self.dm.content = r.text
         except (ValueError, ConnectionError):

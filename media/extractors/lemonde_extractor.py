@@ -4,26 +4,26 @@
 Le Monde website extractor implementation.
 """
 
-from src.media.extractors.generic_media_extractor import GenericMediaExtractor
+from src.media.extractors.document_extractor import DocumentExtractor
 import re
 from datetime import datetime
 
 
-class LeMondeExtractor(GenericMediaExtractor):
+class LeMondeExtractor(DocumentExtractor):
     """
     Class used for extracting items from french media "Le Monde".
     """
     domains = ['www.lemonde.fr']
     media_name = 'le_monde'
 
-    def _extract_document_body(self):
+    def _extract_body(self):
         return self.html_soup.article.find('div', attrs={'id': 'articleBody'}).text
 
-    def _extract_publication_timestamp(self):
+    def _extract_doc_publication_time(self):
         time_text = self.html_soup.find('time', attrs={'itemprop': 'datePublished'}).text
         return datetime.strptime(time_text, '%d.%m.%Y à %Hh%M')
 
-    def _extract_update_timestamp(self):
+    def _extract_doc_update_time(self):
         time_text = self.html_soup.find('time', attrs={'itemprop': 'dateModified'}).text
         return datetime.strptime(time_text, '%d.%m.%Y à %Hh%M')
 

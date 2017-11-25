@@ -4,19 +4,19 @@
 Le Monde website extractor implementation.
 """
 
-from src.media.extractors.generic_media_extractor import GenericMediaExtractor
+from src.media.extractors.document_extractor import DocumentExtractor
 import re
 from datetime import datetime
 
 
-class LeFigaroExtractor(GenericMediaExtractor):
+class LeFigaroExtractor(DocumentExtractor):
     """
     Class used for extracting items from french media "Le Figaro".
     """
     domains = ['www.lefigaro.fr']
     media_name = 'le_figaro'
 
-    def _extract_document_body(self):
+    def _extract_body(self):
         return self.html_soup.find('div', attrs={'class': 'fig-content__body'}).text
 
     def _extract_href_sources(self):
@@ -24,11 +24,11 @@ class LeFigaroExtractor(GenericMediaExtractor):
 
         return [a['href'] for a in html_as]
 
-    def _extract_publication_timestamp(self):
+    def _extract_doc_publication_time(self):
         time_text = self.html_soup.find('li', attrs={'class': 'fig-content-metas__pub-date'}).time.text
         return datetime.strptime(time_text, 'le %d/%m/%Y à %H:%M')
 
-    def _extract_update_timestamp(self):
+    def _extract_doc_update_time(self):
         time_text = self.html_soup.find('li', attrs={'class': 'fig-content-metas__maj-date'}).time.text
         return datetime.strptime(time_text, 'le %d/%m/%Y à %H:%M')
 

@@ -4,8 +4,10 @@
 Class used as a model for documents.
 """
 
-from datetime import datetime
 import re
+from src.models.attribute import IntegerAttribute, StringListAttribute, StringAttribute,\
+    DateAttribute, BooleanAttribute
+from collections import OrderedDict
 
 
 class DocumentModel(object):
@@ -14,27 +16,42 @@ class DocumentModel(object):
     """
     def __init__(self):
         # Structural data
-        self.id = None
-        self.media = ''
-        self.gather_time = datetime.now()
-        self.update_time = datetime.now()
-        self.url = ''
+        self.attributes = OrderedDict({
+            'id': IntegerAttribute(desc="Identifiant", displayable=False, revisable=False, extractible=False),
+            'media': StringAttribute(desc="Média", revisable=False),
+            'gather_time': DateAttribute(desc="Date de collecte du document", revisable=False, extractible=False),
+            'update_time': DateAttribute(desc="Date de révision", revisable=False, extractible=False),
+            'url': StringAttribute(desc="URL de l'article", extractible=False),
 
-        # Buffer data
-        self.content = ''
-        self.body = ''
+            # Buffer data
+            'content': StringAttribute(desc="Contenu", displayable=False, revisable=False, extractible=False),
+            'body': StringAttribute(desc="Body", displayable=False, revisable=False),
 
-        # Extracted data
-        self.category = ''
-        self.title = ''
-        self.description = ''
-        self.doc_publication_time = datetime.now()
-        self.doc_update_time = datetime.now()
+            # Extracted data
+            'category': StringAttribute(desc="Catégorie"),
+            'title': StringAttribute(desc="Titre"),
+            'description': StringAttribute(desc="Description"),
+            'doc_publication_time': DateAttribute(desc="Date de publication de l'artice"),
+            'doc_update_time': DateAttribute(desc="Date de mise à jour de l'article"),
 
-        self.href_sources = []
-        self.explicit_sources = []
-        self.quoted_entities = []
-        self.contains_private_sources = False
+            'href_sources': StringListAttribute(desc="Sources en lien hypertexte"),
+            'explicit_sources': StringListAttribute(desc="Sources explicites"),
+            'quoted_entities': StringListAttribute(desc="Entités citées"),
+            'contains_private_sources': BooleanAttribute(desc="Sources privées"),
+        })
+
+    def __getattr__(self, item):
+        try:
+            attributes = self.__getattribute__('attributes')
+            return attributes[item]
+        except AttributeError:
+            return None
+
+    def __setattr__(self, key, value):
+        if self.attributes and key in self.attributes.keys():
+            self.attributes[key].value = value
+        else:
+            super(DocumentModel, self).__setattr__(key, value)
 
     @property
     def domain(self) -> str:
@@ -44,24 +61,7 @@ class DocumentModel(object):
         """
         domain_regex = re.compile(r'https?://(.*?)/')
         try:
-            match = domain_regex.match(self.url)
+            match = domain_regex.match(str(self.url))
             return match.group(1)
         except AttributeError:
             raise ValueError
-
-    def update(self, model: 'DocumentModel'):
-        """
-        Update model with another. Some attributes will not be updated : id, gather_date.
-        :param model: Update source model
-        """
-        self.title = model.title
-        self.description = model.description
-        self.url = model.url
-        self.media = model.media
-        self.content = model.content
-        self.category = model.category
-        self.body = model.body
-        self.href_sources = model.href_sources
-        self.doc_publication_time = model.doc_publication_time
-        self.doc_update_time = model.doc_update_time
-        self.explicit_sources = model.explicit_sources
