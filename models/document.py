@@ -6,17 +6,22 @@ Class used as a model for documents.
 
 from src.media.known_media import KnownMedia
 from src.store.document_storer import DocumentStorer
-from src.rendering.document_renderer import DocumentRenderer
 from src.gathering.html_document_gatherer import HTMLDocumentGatherer
 from src.models.document_model import DocumentModel
 
 
 class Document(object):
-    def __init__(self):
+    DEFAULT_ES_HOSTS = '127.0.0.1:1080'
+
+    def __init__(self, store_hosts=None, **kwargs):
         self.model = DocumentModel()
 
         self.extractor = None
+
         self.storer = None
+        self.store_hosts = store_hosts if store_hosts else self.DEFAULT_ES_HOSTS
+        self.store_kwargs = kwargs
+
         self.gatherer = None
         self.renderer = None
 
@@ -31,22 +36,17 @@ class Document(object):
             self.extractor = extractor(self.model)
         self.extractor.extract_fields()
 
-    def store(self, doc_id: str=None, hosts=None, **kwargs):
+    def store(self, doc_id: str=None):
         if not self.storer:
-            self.storer = DocumentStorer(hosts, **kwargs)
+            self.storer = DocumentStorer(self.store_hosts, **self.store_kwargs)
         return self.storer.store(self.model, doc_id)
 
-    def retrieve(self, doc_id: str, hosts=None, **kwargs):
+    def retrieve(self, doc_id: str):
         if not self.storer:
-            storer = DocumentStorer(hosts, **kwargs)
+            self.storer = DocumentStorer(self.store_hosts, **self.store_kwargs)
         self.model = self.storer.retrieve(doc_id)
 
-    def render_attribute(self, attribute: str) -> str:
-        if not self.renderer:
-            self.renderer = DocumentRenderer(self.model)
-        return self.renderer.render_attribute(attribute)
-
-    def update_attrbute(self, attribute: str, value: str):
-        if not self.renderer:
-            self.renderer = DocumentRenderer(self.model)
-        self.renderer.update_attribute(attribute, value)
+    def update(self):
+        if not self.storer:
+            self.storer = DocumentStorer(self.store_hosts, **self.store_kwargs)
+        self.storer.update(self.model)

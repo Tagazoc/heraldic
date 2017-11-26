@@ -25,11 +25,10 @@ class DocumentExtractor(object):
 
         :param dm: Document model which will contain all extracted items.
         """
-        self.html_soup = BeautifulSoup(dm.content.render(), "html.parser")
+        self.html_soup = BeautifulSoup(dm.content.render_for_display(), "html.parser")
         self.dm = dm
 
     def extract_fields(self):
-        # TODO Faire une boucle pour les attributs du document
         """
         This function calls every extraction supported by the media.
         """

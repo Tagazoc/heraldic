@@ -16,7 +16,7 @@
 # TODO Résoudre la question de la catégorisation
 # Faire un mapping de catégories génériques pour chaque média -> Ouch on verra plus tard avec un peu de pratique
 
-# TODO Refaire la soumission de document par interface Web
+# TODO Refaire la soumission de document par interface Web -> OK
 # Page de soumission de lien
 # Puis traitement et proposition d'extraction
 # Puis validation et affichage du document

@@ -24,14 +24,16 @@ class ReviewForm(FlaskForm):
                 continue
             field_class = Attribute
             kwargs = {'label': v.desc}
-            if isinstance(v, StringAttribute) or isinstance(v, DateAttribute):
+            if k == 'id':
+                field_class = HiddenField
+            elif isinstance(v, StringAttribute) or isinstance(v, DateAttribute):
                 field_class = StringField
             elif isinstance(v, StringListAttribute):
                 field_class = TextAreaField
             elif isinstance(v, BooleanAttribute):
                 field_class = SelectField
                 kwargs['choices'] = [('yes', 'Oui'), ('no', 'Non')]
-            kwargs['default'] = v.render()
+            kwargs['default'] = v.render_for_display()
             setattr(cls, k, field_class(**kwargs))
 
             setattr(cls, 'submit', SubmitField('Corriger'))

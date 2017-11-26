@@ -17,18 +17,19 @@ class DocumentModel(object):
     def __init__(self):
         # Structural data
         self.attributes = OrderedDict({
-            'id': IntegerAttribute(desc="Identifiant", displayable=False, revisable=False, extractible=False),
-            'media': StringAttribute(desc="Média", revisable=False),
+            'id': StringAttribute(desc="Identifiant", revisable=False, extractible=False, storable=False),
+            'media': StringAttribute(desc="Média", revisable=False, storable='keyword'),
             'gather_time': DateAttribute(desc="Date de collecte du document", revisable=False, extractible=False),
             'update_time': DateAttribute(desc="Date de révision", revisable=False, extractible=False),
             'url': StringAttribute(desc="URL de l'article", extractible=False),
 
             # Buffer data
-            'content': StringAttribute(desc="Contenu", displayable=False, revisable=False, extractible=False),
-            'body': StringAttribute(desc="Body", displayable=False, revisable=False),
+            'content': StringAttribute(desc="Contenu", displayable=False, revisable=False, extractible=False,
+                                       storable=False),
+            'body': StringAttribute(desc="Body", displayable=False, revisable=False, storable=False),
 
             # Extracted data
-            'category': StringAttribute(desc="Catégorie"),
+            'category': StringAttribute(desc="Catégorie", storable='keyword'),
             'title': StringAttribute(desc="Titre"),
             'description': StringAttribute(desc="Description"),
             'doc_publication_time': DateAttribute(desc="Date de publication de l'artice"),

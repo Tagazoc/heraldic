@@ -3,7 +3,7 @@
 
 """
 
-from flask import Blueprint, request, render_template, session, url_for
+from flask import Blueprint, request, render_template, session, url_for, flash
 from flask_nav.elements import Navbar, View
 from src.rendering.flask.nav import nav
 
@@ -27,8 +27,9 @@ def home():
         d.gather(request.form['url'])
         d.extract_fields()
 
+        d.store()
+        flash("L'article a été récupéré")
         ReviewForm.apply_model(d.model)
-
         review_form = ReviewForm()
 
         review_form.process()
@@ -40,11 +41,15 @@ def home():
 @bp.route("/review_document", methods=['POST'])
 def review_document():
     d = Document()
+    d.retrieve(request.form['id'])
     for k, v in d.model.attributes.items():
         if v.revisable:
-            v.update(request.form[k])
+            v.update_from_display(request.form[k])
+
+    d.update()
     ReviewForm.apply_model(d.model)
     form = ReviewForm()
 
     form.process()
+    flash("L'article a été mis à jour")
     return render_template('url_downloaded.html', form=form)
