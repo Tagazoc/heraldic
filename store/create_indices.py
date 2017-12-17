@@ -57,6 +57,8 @@ words_mapping = '''
 }'''
 
 ic.create('docs', body=docs_mapping)
+ic.create('docs_history', body=docs_mapping)
+
 
 ic.create('words', body=words_mapping)
 

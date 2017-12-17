@@ -1,0 +1,10 @@
+{% extends "layout.html" %}
+{% block content %}
+   <div class="container">
+      <div class="jumbotron">
+        <h1>Liste des articles</h1>
+        {% for hit in hits %}
+          <p>{{hit.title.render_for_display()}}</p>
+          {% endfor %}
+      </div>
+{%- endblock %}

@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """
-Generic document for media extractor implementation.
+Module implementing generic DocumentExtractor class.
 """
 
 from typing import List
@@ -13,7 +13,7 @@ from datetime import datetime
 
 class DocumentExtractor(object):
     """
-        Generic class for item extraction from a document, should not be directly instanciated.
+        Generic class for attribute extraction from a document, should not be directly instanciated.
     """
     domains = ['www.heraldic-project.org', 'hrldc.org']
     """The domains used in URLs of the selected media"""
@@ -21,7 +21,7 @@ class DocumentExtractor(object):
 
     def __init__(self, dm: DocumentModel) -> None:
         """
-        Class initializer.
+        Initialize extractor by parsing HTML contained in document model.
 
         :param dm: Document model which will contain all extracted items.
         """
@@ -30,7 +30,7 @@ class DocumentExtractor(object):
 
     def extract_fields(self):
         """
-        This function calls every extraction supported by the media.
+        This function calls every extraction function supported by the media.
         """
         for k, v in self.dm.attributes.items():
             if v.extractible:
@@ -38,6 +38,10 @@ class DocumentExtractor(object):
                 v.value = func()
 
     def _extract_media(self) -> str:
+        """
+        Function which returns media_name attribute, in order to work with extract_fields function.
+        :return: Media name
+        """
         return self.media_name
 
     def _extract_title(self) -> str:

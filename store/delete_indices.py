@@ -6,7 +6,9 @@ Delete indices (beware !)
 from datetime import datetime
 from elasticsearch.client.indices import IndicesClient
 from elasticsearch import Elasticsearch
-es = Elasticsearch()
+
+host = '127.0.0.1:1080'
+es = Elasticsearch(host)
 
 ic = IndicesClient(es)
 

@@ -20,8 +20,6 @@ class Attribute(object):
         self.storable = kwargs['storable'] if 'storable' in kwargs else self.DEFAULT_STORE_TYPE
         self.store_format = self.DEFAULT_STORE_FORMAT
 
-        self.old_value = None
-
     def __str__(self) -> str:
         return str(self.value)
 
@@ -31,14 +29,13 @@ class Attribute(object):
     def render_for_store(self) -> str:
         return str(self.value)
 
-    def update_from_display(self, value: str) -> None:
+    def set_from_display(self, value: str) -> None:
         self.update(value)
 
-    def update_from_store(self, value: str) -> None:
+    def set_from_store(self, value: str) -> None:
         self.update(value)
 
     def update(self, value):
-        self.old_value = self.value
         self.value = value
 
 
@@ -47,7 +44,7 @@ class IntegerAttribute(Attribute):
         super(IntegerAttribute, self).__init__(**kwargs)
         self.value = 0
 
-    def update_from_display(self, value: str):
+    def set_from_display(self, value: str):
         self.update(int(value))
 
 
@@ -65,7 +62,7 @@ class StringListAttribute(Attribute):
     def render_for_display(self):
         return "\n".join(self.value)
 
-    def update_from_display(self, value: str):
+    def set_from_display(self, value: str):
         self.update(value.split("\n"))
 
 
@@ -84,10 +81,10 @@ class DateAttribute(Attribute):
     def render_for_store(self):
         return round(self.value.timestamp())
 
-    def update_from_display(self, value: str):
+    def set_from_display(self, value: str):
         self.update(datetime.strptime(value, self.DATE_FORMAT))
 
-    def update_from_store(self, value: float):
+    def set_from_store(self, value: float):
         self.update(datetime.fromtimestamp(value))
 
 
@@ -99,9 +96,9 @@ class BooleanAttribute(Attribute):
     def render_for_display(self):
         return "Oui" if self.value else "Non"
 
-    def update_from_display(self, value: str):
+    def set_from_display(self, value: str):
         boolean = True if value == 'yes' else False
         self.update(boolean)
 
-    def update_from_store(self, value: bool):
+    def set_from_store(self, value: bool):
         self.update(value)

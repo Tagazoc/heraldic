@@ -1,52 +1,77 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """
-Class used as a model for documents.
+Module which implements Document class.
 """
 
 from src.media.known_media import KnownMedia
 from src.store.document_storer import DocumentStorer
 from src.gathering.html_document_gatherer import HTMLDocumentGatherer
 from src.models.document_model import DocumentModel
+from elasticsearch import Elasticsearch
 
 
 class Document(object):
-    DEFAULT_ES_HOSTS = '127.0.0.1:1080'
-
-    def __init__(self, store_hosts=None, **kwargs):
+    """
+    Class representing a Document during its way through Heraldic.
+    """
+    def __init__(self, es: Elasticsearch):
         self.model = DocumentModel()
+        self.old_versions = []
 
         self.extractor = None
 
-        self.storer = None
-        self.store_hosts = store_hosts if store_hosts else self.DEFAULT_ES_HOSTS
-        self.store_kwargs = kwargs
+        self.storer = DocumentStorer(es)
 
         self.gatherer = None
         self.renderer = None
 
-    def gather(self, url):
+    def gather(self, url: str):
+        """
+        Gather a document contents from an url.
+        :param url: URL of the document
+        :return:
+        """
         if not self.gatherer:
             self.gatherer = HTMLDocumentGatherer(self.model, url)
         self.gatherer.gather()
 
     def extract_fields(self):
+        """
+        Find document media and extract document fields according to it.
+        :return:
+        """
         if not self.extractor:
             extractor = KnownMedia()[self.model.domain]
             self.extractor = extractor(self.model)
         self.extractor.extract_fields()
 
     def store(self, doc_id: str=None):
-        if not self.storer:
-            self.storer = DocumentStorer(self.store_hosts, **self.store_kwargs)
+        """
+        Store document contents.
+        :param doc_id: ID of the document in the store
+        :return:
+        """
         return self.storer.store(self.model, doc_id)
 
     def retrieve(self, doc_id: str):
-        if not self.storer:
-            self.storer = DocumentStorer(self.store_hosts, **self.store_kwargs)
+        """
+        Retrieve document contents from a store.
+        :param doc_id: ID of the document in the store
+        :return:
+        """
         self.model = self.storer.retrieve(doc_id)
 
-    def update(self):
-        if not self.storer:
-            self.storer = DocumentStorer(self.store_hosts, **self.store_kwargs)
-        self.storer.update(self.model)
+    def update_from_display(self, attribute_dict: dict):
+        """
+        Update document from display (web form), updating model and adding old model (containing old attributes' values)
+        to old versions list.
+        :param attribute_dict: dict with values originating from display
+        :return:
+        """
+        new_model = DocumentModel()
+        new_model.set_from_display(attribute_dict)
+        old_model = self.model.update(new_model)
+        self.old_versions.append(old_model)
+        self.storer.update(self.model, old_model)
+

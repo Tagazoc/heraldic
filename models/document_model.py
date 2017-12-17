@@ -1,11 +1,11 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """
-Class used as a model for documents.
+Module which implements DocumentModel class.
 """
 
 import re
-from src.models.attribute import IntegerAttribute, StringListAttribute, StringAttribute,\
+from src.models.attribute import Attribute, StringListAttribute, StringAttribute,\
     DateAttribute, BooleanAttribute
 from collections import OrderedDict
 
@@ -14,12 +14,14 @@ class DocumentModel(object):
     """
     This class is a model which contains all possible attributes of a document.
     """
-    def __init__(self):
-        # Structural data
+    def __init__(self) -> None:
+        """ Ordered dict containing attributes """
         self.attributes = OrderedDict({
             'id': StringAttribute(desc="Identifiant", revisable=False, extractible=False, storable=False),
+            'doc_youngest_id': StringAttribute(desc="Identifiant le plus récent de l'article", displayable=False,
+                                               revisable=False, extractible=False, storable=False),
             'media': StringAttribute(desc="Média", revisable=False, storable='keyword'),
-            'gather_time': DateAttribute(desc="Date de collecte du document", revisable=False, extractible=False),
+            'gather_time': DateAttribute(desc="Date de collecte de l'article", revisable=False, extractible=False),
             'update_time': DateAttribute(desc="Date de révision", revisable=False, extractible=False),
             'url': StringAttribute(desc="URL de l'article", extractible=False),
 
@@ -41,14 +43,25 @@ class DocumentModel(object):
             'contains_private_sources': BooleanAttribute(desc="Sources privées"),
         })
 
-    def __getattr__(self, item):
+    def __getattr__(self, item: str) -> Attribute:
+        """
+        Shortcut for accessing attributes, for example : dm.media
+        :param item: attribute name
+        :return: attribute
+        """
         try:
             attributes = self.__getattribute__('attributes')
             return attributes[item]
         except AttributeError:
             return None
 
-    def __setattr__(self, key, value):
+    def __setattr__(self, key: str, value: str):
+        """
+        Shortcut for setting attribute value
+        :param key: attribute name
+        :param value: future attribute value
+        :return:
+        """
         if self.attributes and key in self.attributes.keys():
             self.attributes[key].value = value
         else:
@@ -66,3 +79,49 @@ class DocumentModel(object):
             return match.group(1)
         except AttributeError:
             raise ValueError
+
+    def update(self, model: 'DocumentModel') -> 'DocumentModel':
+        """
+        Updates model with another model : new values are set in current model, then old ones are returned
+        in another model.
+        :param model: model with newer values
+        :return: old model containing old values
+        """
+        old_model = DocumentModel()
+        old_model.doc_youngest_id.value = self.id.value
+        for k, v in model.attributes.items():
+            if k == 'update_time' or (v.revisable and v.value):
+                old_model.attributes[k].value = self.attributes[k].value
+                self.attributes[k].value = v.value
+        return old_model
+
+    def render_for_store(self) -> dict:
+        """
+        Render model as a body for storing its content.
+        :return: storable body filled with attributes data
+        """
+        body = {}
+        for k, v in self.attributes.items():
+            if v.storable and v.value:
+                body[k] = v.render_for_store()
+        return body
+
+    def set_from_store(self, attribute_dict: dict):
+        """
+        Fill storable attribute values from a store.
+        :param attribute_dict: Dict retrieved from a store
+        :return:
+        """
+        for k, v in self.attributes.items():
+            if v.storable and k in attribute_dict:
+                v.set_from_store(attribute_dict[k])
+
+    def set_from_display(self, attribute_dict: dict):
+        """
+        Fill revisable attribute values from a display (web form).
+        :param attribute_dict: dict with values originating from display
+        :return:
+        """
+        for k, v in self.attributes.items():
+            if v.revisable and k in attribute_dict:
+                v.set_from_display(attribute_dict[k])

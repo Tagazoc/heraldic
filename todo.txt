@@ -26,7 +26,13 @@
 
 # TODO Mettre en place la correction de document par interface Web
 
+# TODO Voir les returns / exceptions
+
+# TODO Faire la sécurité
+
 # TODO Faire la liste des médias à faire en priorité
+
+# TODO Sortir content du model
 
 # TODO Git sous github
 
