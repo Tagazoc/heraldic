@@ -5,6 +5,7 @@ Module implementing DocumentStorer class.
 """
 
 from src.models.document_model import DocumentModel
+from src.store.model_searcher import ModelSearcher
 from elasticsearch import Elasticsearch
 from typing import Union
 
@@ -15,7 +16,6 @@ class DocumentStorer(object):
     """
     def __init__(self, es: Elasticsearch) -> None:
         self.es = es
-        self.hits_models = []
 
     def store(self, dm: DocumentModel, doc_id=None):
         """
@@ -59,24 +59,10 @@ class DocumentStorer(object):
 
         return dm
 
-    def _search_term(self, terms: dict, index: str='docs') -> None:
-        body = {'query': {'term': terms}}
-        self._search(body, index)
-
-    def _search(self, body: dict, index: str='docs'):
-        res = self.es.search(index, 'doc', body)
-        for hit in res['hits']['hits']:
-            dm = DocumentModel()
-
-            dm.id.value = hit['_id']
-            dm.set_from_store(hit['_source'])
-            self.hits_models.append(dm)
-
-    def search_all(self):
-        self._search({})
-
-    def search_url(self, url):
-        self._search_term({'url': url})
-
-    def retrieve_old_versions(self, doc_id):
-        self._search_term({'doc_youngest_id': doc_id}, index='docs_history')
+    def retrieve_from_url(self, url: str) -> DocumentModel:
+        ms = ModelSearcher(self.es)
+        ms.search_url(url)
+        try:
+            return ms.hits_models[0]
+        except IndexError:
+            return DocumentModel()

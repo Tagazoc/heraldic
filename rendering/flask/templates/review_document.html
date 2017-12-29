@@ -18,6 +18,19 @@
   {% endif %}
 {% endwith %}
    <div class="col-md-12">
-       {{wtf.quick_form(form, url_for('heraldic.review_document'), novalidate=True)}}
+       <form action="{{url_for('heraldic.review_document')}}" class="form" method="POST" novalidate>
+            {{ form.hidden_tag() }}
+            {{ wtf.form_errors(form, hiddens='only') }}
+
+            {%- for field in form %}
+            {% if not bootstrap_is_hidden_field(field) -%}
+
+              {{ wtf.form_field(field,
+                            form_type='basic',
+                            horizontal_columns=('lg', 2, 10),
+                            button_map={}) }}
+            {%- endif %}
+            {%- endfor %}
+       </form>
    </div>
 {%- endblock %}

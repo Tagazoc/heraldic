@@ -9,7 +9,7 @@ from src.rendering.flask.nav import nav
 from src.rendering.flask.elasticsearch import es
 from src.rendering.flask.forms import UrlForm, ReviewForm
 from src.models.document import Document
-from src.store.document_storer import DocumentStorer
+from src.store.model_searcher import ModelSearcher
 
 
 # create our blueprint :)
@@ -23,9 +23,9 @@ nav.register_element('heraldic_top', Navbar(
 
 @bp.route("/", methods=['GET'])
 def home():
-    ds = DocumentStorer(es)
-    ds.search_all()
-    return render_template('search.html', hits=ds.hits_models)
+    ms = ModelSearcher(es)
+    ms.search_all_docs()
+    return render_template('search.html', hits=ms.hits_models)
 
 
 @bp.route('/submit_document', methods=['GET', 'POST'])
@@ -33,12 +33,18 @@ def submit_document():
     form = UrlForm()
 
     if form.validate_on_submit():
+        url = request.form['url']
         d = Document(es)
-        d.gather(request.form['url'])
-        d.extract_fields()
 
-        d.store()
-        flash("L'article a été récupéré")
+        d.retrieve_from_url(url)
+        if d.model.id.value:
+            flash("L'article existe déjà")
+        else:
+            d.gather(url)
+            d.extract_fields()
+
+            d.store()
+            flash("L'article a été récupéré")
         ReviewForm.apply_model(d.model)
         review_form = ReviewForm()
 

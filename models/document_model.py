@@ -23,7 +23,7 @@ class DocumentModel(object):
             'media': StringAttribute(desc="Média", revisable=False, storable='keyword'),
             'gather_time': DateAttribute(desc="Date de collecte de l'article", revisable=False, extractible=False),
             'update_time': DateAttribute(desc="Date de révision", revisable=False, extractible=False),
-            'url': StringAttribute(desc="URL de l'article", extractible=False),
+            'url': StringAttribute(desc="URL de l'article", extractible=False, storable='keyword'),
 
             # Buffer data
             'content': StringAttribute(desc="Contenu", displayable=False, revisable=False, extractible=False,

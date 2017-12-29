@@ -34,8 +34,11 @@ class DocumentExtractor(object):
         """
         for k, v in self.dm.attributes.items():
             if v.extractible:
-                func = getattr(self, "_extract_" + k)
-                v.value = func()
+                try:
+                    func = getattr(self, "_extract_" + k)
+                    v.value = func()
+                except ValueError:
+                    v.parse_error = True
 
     def _extract_media(self) -> str:
         """

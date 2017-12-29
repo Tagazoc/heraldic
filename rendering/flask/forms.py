@@ -36,4 +36,4 @@ class ReviewForm(FlaskForm):
             kwargs['default'] = v.render_for_display()
             setattr(cls, k, field_class(**kwargs))
 
-            setattr(cls, 'submit', SubmitField('Corriger'))
+        setattr(cls, 'submit', SubmitField('Corriger'))

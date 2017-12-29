@@ -62,6 +62,9 @@ class Document(object):
         """
         self.model = self.storer.retrieve(doc_id)
 
+    def retrieve_from_url(self, url: str):
+        self.model = self.storer.retrieve_from_url(url)
+
     def update_from_display(self, attribute_dict: dict):
         """
         Update document from display (web form), updating model and adding old model (containing old attributes' values)

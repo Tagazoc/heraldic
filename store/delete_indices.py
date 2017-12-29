@@ -13,6 +13,7 @@ es = Elasticsearch(host)
 ic = IndicesClient(es)
 
 ic.delete('docs')
+ic.delete('docs_history')
 
 ic.delete('words')
 

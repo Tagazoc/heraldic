@@ -18,6 +18,7 @@ class Attribute(object):
         self.revisable = kwargs['revisable'] if 'revisable' in kwargs else True
         self.extractible = kwargs['extractible'] if 'extractible' in kwargs else True
         self.storable = kwargs['storable'] if 'storable' in kwargs else self.DEFAULT_STORE_TYPE
+        self.parse_error = False
         self.store_format = self.DEFAULT_STORE_FORMAT
 
     def __str__(self) -> str:
@@ -26,8 +27,8 @@ class Attribute(object):
     def render_for_display(self) -> str:
         return str(self.value)
 
-    def render_for_store(self) -> str:
-        return str(self.value)
+    def render_for_store(self):
+        return self.value
 
     def set_from_display(self, value: str) -> None:
         self.update(value)
