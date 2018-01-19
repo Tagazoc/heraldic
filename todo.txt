@@ -1,4 +1,4 @@
-# TODO Déployer le serveur elastic quelque part -> OVH SSD 2 ou vaio
+# TODO Déployer le serveur elastic quelque part -> OVH SSD 2
 
 # TODO Terminer la liste des données extraites (sauf mots ofc)
 # Les sources : on met quoi ?
@@ -21,12 +21,14 @@
 # Puis traitement et proposition d'extraction
 # Puis validation et affichage du document
 
-# TODO Résoudre la question des versions des documents
+# TODO Résoudre la question des versions des documents -> OK
 # Index supplémentaire sur elastic bahouais.
 
-# TODO Mettre en place la correction de document par interface Web
+# TODO Mettre en place la correction de document par interface Web ->
 
-# TODO Voir les returns / exceptions
+# TODO Voir les returns / exceptions -> OK pour le parsing
+
+# TODO Faire la consultation d'article
 
 # TODO Faire la sécurité
 

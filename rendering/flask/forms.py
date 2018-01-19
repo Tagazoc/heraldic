@@ -12,6 +12,7 @@ from src.models.attribute import *
 
 class UrlForm(FlaskForm):
     url = StringField("URL de l'article")
+    gather_again = HiddenField()
 
     submit = SubmitField(u'Soumettre')
 
@@ -23,7 +24,10 @@ class ReviewForm(FlaskForm):
             if not v.displayable:
                 continue
             field_class = Attribute
-            kwargs = {'label': v.desc}
+            if v.parse_error:
+                kwargs = {'label': v.desc + " (Parsing error)"}
+            else:
+                kwargs = {'label': v.desc}
             if k == 'id':
                 field_class = HiddenField
             elif isinstance(v, StringAttribute) or isinstance(v, DateAttribute):
@@ -37,3 +41,4 @@ class ReviewForm(FlaskForm):
             setattr(cls, k, field_class(**kwargs))
 
         setattr(cls, 'submit', SubmitField('Corriger'))
+        setattr(cls, 'gather_again', SubmitField('Récupérer à nouveau'))

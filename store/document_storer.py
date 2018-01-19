@@ -7,7 +7,7 @@ Module implementing DocumentStorer class.
 from src.models.document_model import DocumentModel
 from src.store.model_searcher import ModelSearcher
 from elasticsearch import Elasticsearch
-from typing import Union
+from src.heraldic_exceptions import DocumentNotFoundException
 
 
 class DocumentStorer(object):
@@ -65,4 +65,4 @@ class DocumentStorer(object):
         try:
             return ms.hits_models[0]
         except IndexError:
-            return DocumentModel()
+            raise DocumentNotFoundException

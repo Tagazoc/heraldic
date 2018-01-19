@@ -65,16 +65,23 @@ class Document(object):
     def retrieve_from_url(self, url: str):
         self.model = self.storer.retrieve_from_url(url)
 
+    def update_from_model(self, new_model: DocumentModel):
+        """
+        Update document from another model, updating model and adding old model (containing old attributes' values)
+        to old versions list.
+        :param new_model: new model which attributes will override old ones (Cthulu ftaghn)
+        :return:
+        """
+        old_model = self.model.update(new_model)
+        self.old_versions.append(old_model)
+        self.storer.update(self.model, old_model)
+
     def update_from_display(self, attribute_dict: dict):
         """
-        Update document from display (web form), updating model and adding old model (containing old attributes' values)
-        to old versions list.
+        Update document from display (web form).
         :param attribute_dict: dict with values originating from display
         :return:
         """
         new_model = DocumentModel()
         new_model.set_from_display(attribute_dict)
-        old_model = self.model.update(new_model)
-        self.old_versions.append(old_model)
-        self.storer.update(self.model, old_model)
-
+        self.update_from_model(new_model)

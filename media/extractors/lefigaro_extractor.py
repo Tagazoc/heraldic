@@ -7,6 +7,7 @@ Le Monde website extractor implementation.
 from src.media.extractors.document_extractor import DocumentExtractor
 import re
 from datetime import datetime
+from src.heraldic_exceptions import HTMLParsingFailureException, DateFormatFailureException
 
 
 class LeFigaroExtractor(DocumentExtractor):
@@ -26,7 +27,11 @@ class LeFigaroExtractor(DocumentExtractor):
 
     def _extract_doc_publication_time(self):
         time_text = self.html_soup.find('li', attrs={'class': 'fig-content-metas__pub-date'}).time.text
-        return datetime.strptime(time_text, 'le %d/%m/%Y à %H:%M')
+        try:
+            pub_time = datetime.strptime(time_text, 'zle %d/%m/%Y à %H:%M')
+        except ValueError as err:
+            raise DateFormatFailureException(err.args[0])
+        return pub_time
 
     def _extract_doc_update_time(self):
         time_text = self.html_soup.find('li', attrs={'class': 'fig-content-metas__maj-date'}).time.text

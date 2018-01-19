@@ -28,7 +28,7 @@
               {{ wtf.form_field(field,
                             form_type='basic',
                             horizontal_columns=('lg', 2, 10),
-                            button_map={}) }}
+                            button_map={'submit': 'primary', 'gather_again': 'secondary'}) }}
             {%- endif %}
             {%- endfor %}
        </form>

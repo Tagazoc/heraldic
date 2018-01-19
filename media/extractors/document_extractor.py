@@ -9,6 +9,18 @@ import html
 from src.models.document_model import DocumentModel
 from bs4 import BeautifulSoup
 from datetime import datetime
+from src.heraldic_exceptions import ParsingFailureException, HTMLParsingFailureException, DateFormatFailureException
+
+
+def handle_parse_errors(decorated):
+    def wrapper(self):
+        try:
+            result = decorated(self)
+        except AttributeError:
+            raise HTMLParsingFailureException
+        return result
+
+    return wrapper
 
 
 class DocumentExtractor(object):
@@ -37,8 +49,8 @@ class DocumentExtractor(object):
                 try:
                     func = getattr(self, "_extract_" + k)
                     v.value = func()
-                except ValueError:
-                    v.parse_error = True
+                except ParsingFailureException as err:
+                    v.parse_error = err
 
     def _extract_media(self) -> str:
         """
@@ -47,13 +59,15 @@ class DocumentExtractor(object):
         """
         return self.media_name
 
+    @handle_parse_errors
     def _extract_title(self) -> str:
         """
         Extract HTML title (in <head> block) from HTML content.
         :return: HTML title
         """
-        return html.unescape(self.html_soup.head.title.text)
+        return html.unescape(self.html_soup.headd.title.text)
 
+    @handle_parse_errors
     def _extract_description(self) -> str:
         """
         Extract description (in meta tag, in <head> block) from HTML content.
@@ -61,6 +75,7 @@ class DocumentExtractor(object):
         """
         return html.unescape(self.html_soup.head.find('meta', attrs={"name": "description"})['content'])
 
+    @handle_parse_errors
     def _extract_body(self) -> str:
         """
         Extract document body (not HTML body of course, if it is an article this will return
@@ -69,6 +84,7 @@ class DocumentExtractor(object):
         """
         return ''
 
+    @handle_parse_errors
     def _extract_doc_publication_time(self) -> datetime:
         """
         Extract document date and time (if present) of publication.
@@ -76,6 +92,7 @@ class DocumentExtractor(object):
         """
         return datetime.now()
 
+    @handle_parse_errors
     def _extract_doc_update_time(self) -> datetime:
         """
         Extract document date and time (if present) about when it was updated.
@@ -83,6 +100,7 @@ class DocumentExtractor(object):
         """
         return datetime.now()
 
+    @handle_parse_errors
     def _extract_href_sources(self) -> List[str]:
         """
         Extract sources displayed as links from the document.
@@ -90,6 +108,7 @@ class DocumentExtractor(object):
         """
         return []
 
+    @handle_parse_errors
     def _extract_category(self) -> str:
         """
         Extract category as given by the media (specialized media may have only one category).
@@ -97,6 +116,7 @@ class DocumentExtractor(object):
         """
         return ''
 
+    @handle_parse_errors
     def _extract_explicit_sources(self) -> List[str]:
         """
         Extract sources explicitly given in the document
@@ -104,6 +124,7 @@ class DocumentExtractor(object):
         """
         return []
 
+    @handle_parse_errors
     def _extract_quoted_entities(self) -> List[str]:
         """
         Extract sources explicitly given in the document
@@ -111,6 +132,7 @@ class DocumentExtractor(object):
         """
         return []
 
+    @handle_parse_errors
     def _extract_contains_private_sources(self) -> bool:
         """
         Extract sources explicitly given in the document
@@ -142,3 +164,12 @@ class DocumentExtractor(object):
             filtered_as.append(a)
 
         return filtered_as
+
+    @staticmethod
+    def _format_datetime(string: str, format_string: str) -> datetime:
+        try:
+            date = datetime.strptime(string, format_string)
+        except ValueError as err:
+            raise DateFormatFailureException from err
+        return date
+

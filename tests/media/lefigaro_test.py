@@ -4,6 +4,8 @@
 Test lib for media "Le Figaro", which should only be imported from "media_gathering_test.py" file.
 """
 
+# http://www.lefigaro.fr/flash-actu/2016/12/23/97001-20161223FILWWW00292-attenta-de-nice-estrosi-decide-de-porter-plainte-suite-a-l-enquete-de-mediapart.php
+
 url = 'http://www.lefigaro.fr/flash-actu/2016/12/23/97001-20161223FILWWW00292-attenta-de-nice-estrosi-decide-de' \
       '-porter-plainte-suite-a-l-enquete-de-mediapart.php'
 
