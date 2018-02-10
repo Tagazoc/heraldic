@@ -1,43 +1,80 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """
-Module implementing ModelSearcher class.
+Module implementing model search functions.
 """
 
-from elasticsearch import Elasticsearch
-from src.models.document_model import DocumentModel
+from src.store.elastic import es
+from src.models.document_model import DocumentModel, OldDocumentModel
+from src.heraldic_exceptions import DocumentNotFoundException
+from typing import List
 
 
-class ModelSearcher(object):
+def retrieve(doc_id: str) -> DocumentModel:
     """
-        This class is used as an interface for storing and retrieving a document through its model.
+    Retrieve document from store.
+    :param doc_id: ID of the document
+    :return: The document model.
     """
+    res = es.get('docs', doc_id, 'doc')
+    dm = DocumentModel()
 
-    def __init__(self, es: Elasticsearch) -> None:
-        self.es = es
-        self.hits_models = []
+    dm.id.value = doc_id
+    dm.set_from_store(res['_source'])
 
-    def _search_term(self, terms: dict, index: str='docs', limit=0) -> None:
+    return dm
+
+
+def search_all_docs() -> List[DocumentModel]:
+    return _generate_doc_models(_search_term())
+
+
+def search_url(url) -> List[DocumentModel]:
+    return _generate_doc_models(_search_term({'url': url}, limit=1))
+
+
+def retrieve_old_versions(doc_id) -> List[DocumentModel]:
+    models = []
+    hits = _search_term({'doc_id': doc_id}, index='docs_history', sort=['version_no'])
+
+    for hit in hits:
+        dm = OldDocumentModel(doc_id)
+
+        dm.id.value = hit['_id']
+        dm.set_from_store(hit['_source'])
+        models.append(dm)
+    return models
+
+
+def retrieve_from_url(url: str) -> DocumentModel:
+    hits = search_url(url)
+    try:
+        return hits[0]
+    except IndexError:
+        raise DocumentNotFoundException
+
+
+def _generate_doc_models(hits) -> List[DocumentModel]:
+    models = []
+    for hit in hits:
+        dm = DocumentModel()
+
+        dm.id.value = hit['_id']
+        dm.set_from_store(hit['_source'])
+        models.append(dm)
+    return models
+
+
+def _search_term(terms: dict= {}, index='docs', limit=0, sort: list= None) -> List[DocumentModel]:
+    body = {}
+    if terms:
         body = {'query': {'term': terms}}
-        if limit:
-            # body['terminate_after'] = limit
-            pass
-        self._search(body, index)
+    if limit:
+        # body['terminate_after'] = limit
+        pass
+    if sort:
+        body['sort'] = sort
 
-    def _search(self, body: dict, index: str='docs'):
-        res = self.es.search(index, 'doc', body)
-        for hit in res['hits']['hits']:
-            dm = DocumentModel()
+    res = es.search(index, 'doc', body)
 
-            dm.id.value = hit['_id']
-            dm.set_from_store(hit['_source'])
-            self.hits_models.append(dm)
-
-    def search_all_docs(self):
-        self._search({})
-
-    def search_url(self, url):
-        self._search_term({'url': url}, limit=1)
-
-    def retrieve_old_versions(self, doc_id):
-        self._search_term({'doc_youngest_id': doc_id}, index='docs_history')
+    return res['hits']['hits']

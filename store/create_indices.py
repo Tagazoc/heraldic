@@ -13,6 +13,8 @@ es = Elasticsearch(host)
 
 ic = IndicesClient(es)
 
+model = DocumentModel()
+
 docs_mapping = '''
 {
     "mappings": {
@@ -20,9 +22,9 @@ docs_mapping = '''
             "properties": {
             '''
 
-model = DocumentModel()
+
 for k, v in model.attributes.items():
-    if v.storable:
+    if v.storable and k != 'doc_id':
         docs_mapping += '"' + k + '": {\n"type": "' + v.storable + '"'
         if v.store_format:
             docs_mapping += ', "format": "' + v.store_format + '"\n'
@@ -36,6 +38,29 @@ docs_mapping += '''
         }
     }
 }'''
+
+docs_history_mapping = '''
+{
+    "mappings": {
+        "doc": {
+            "properties": {
+            '''
+for k, v in model.attributes.items():
+    if v.storable:
+        docs_history_mapping += '"' + k + '": {\n"type": "' + v.storable + '"'
+        if v.store_format:
+            docs_history_mapping += ', "format": "' + v.store_format + '"\n'
+        docs_history_mapping += '},\n'
+
+docs_history_mapping += '''                
+                "words": {
+                    "type": "nested"
+                }
+            }
+        }
+    }
+}'''
+
 
 words_mapping = '''
 {  
@@ -57,7 +82,7 @@ words_mapping = '''
 }'''
 
 ic.create('docs', body=docs_mapping)
-ic.create('docs_history', body=docs_mapping)
+ic.create('docs_history', body=docs_history_mapping)
 
 
 ic.create('words', body=words_mapping)

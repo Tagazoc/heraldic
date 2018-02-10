@@ -3,8 +3,11 @@
    <div class="container">
       <div class="jumbotron">
         <h1>Liste des articles</h1>
-        {% for hit in hits %}
-          <p>{{hit.title.render_for_display()}}</p>
-          {% endfor %}
       </div>
+        <div class="list-group">
+        {% for hit in hits %}
+          <a href="{{url_for('heraldic.display_document')}}?doc_id={{hit.id.render_for_display()}}" class="list-group-item">{{hit.title.render_for_display()}}</a>
+          {% endfor %}
+        </div>
+   </div>
 {%- endblock %}

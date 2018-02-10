@@ -6,8 +6,10 @@ Module which implements DocumentModel class.
 
 import re
 from src.models.attribute import Attribute, StringListAttribute, StringAttribute,\
-    DateAttribute, BooleanAttribute
+    DateAttribute, BooleanAttribute, IntegerAttribute
 from collections import OrderedDict
+from datetime import datetime
+from copy import copy
 
 
 class DocumentModel(object):
@@ -18,11 +20,12 @@ class DocumentModel(object):
         """ Ordered dict containing attributes """
         self.attributes = OrderedDict({
             'id': StringAttribute(desc="Identifiant", revisable=False, extractible=False, storable=False),
-            'doc_youngest_id': StringAttribute(desc="Identifiant le plus récent de l'article", displayable=False,
-                                               revisable=False, extractible=False, storable=False),
             'media': StringAttribute(desc="Média", revisable=False, storable='keyword'),
-            'gather_time': DateAttribute(desc="Date de collecte de l'article", revisable=False, extractible=False),
-            'update_time': DateAttribute(desc="Date de révision", revisable=False, extractible=False),
+            'gather_time': DateAttribute(desc="Date de collecte de l'article", revisable=False, extractible=False,
+                                         value=datetime.now()),
+            'update_time': DateAttribute(desc="Date de révision", revisable=False, extractible=False,
+                                         value=datetime.now()),
+            'version_no': IntegerAttribute(desc="Numéro de version", revisable=False, extractible=False, value=1),
             'url': StringAttribute(desc="URL de l'article", extractible=False, storable='keyword'),
 
             # Buffer data
@@ -80,19 +83,28 @@ class DocumentModel(object):
         except AttributeError:
             raise ValueError
 
-    def update(self, model: 'DocumentModel') -> 'DocumentModel':
+    def update(self, model: 'DocumentModel') -> 'OldDocumentModel':
         """
         Updates model with another model : new values are set in current model, then old ones are returned
         in another model.
         :param model: model with newer values
-        :return: old model containing old values
+        :return: old model only containing old values
         """
-        old_model = DocumentModel()
-        old_model.doc_youngest_id.value = self.id.value
+        old_model = OldDocumentModel(self.id.value)
+
         for k, v in model.attributes.items():
-            if k == 'update_time' or (v.revisable and v.value):
-                old_model.attributes[k].value = self.attributes[k].value
+            if v.revisable and v.initialized and v.value != self.attributes[k].value:
+                old_model.attributes[k] = copy(self.attributes[k])
                 self.attributes[k].value = v.value
+
+        # Updating update_time
+        old_model.update_time.update(self.update_time.value)
+        self.update_time.update(model.update_time.value)
+
+        # Updating version_no
+        old_model.version_no.update(self.version_no.value)
+        self.version_no.value += 1
+
         return old_model
 
     def render_for_store(self) -> dict:
@@ -102,7 +114,7 @@ class DocumentModel(object):
         """
         body = {}
         for k, v in self.attributes.items():
-            if v.storable and v.value:
+            if v.storable:
                 body[k] = v.render_for_store()
         return body
 
@@ -120,8 +132,32 @@ class DocumentModel(object):
         """
         Fill revisable attribute values from a display (web form).
         :param attribute_dict: dict with values originating from display
-        :return:
+        :return:-
         """
         for k, v in self.attributes.items():
             if v.revisable and k in attribute_dict:
                 v.set_from_display(attribute_dict[k])
+
+
+class OldDocumentModel(DocumentModel):
+    """
+    Model version containing old versions of attributes.
+    """
+    def __init__(self, doc_id) -> None:
+        super(OldDocumentModel, self).__init__()
+
+        self.attributes['doc_id'] = StringAttribute(desc="Identifiant du document", displayable=False,
+                                                    revisable=False, extractible=False, storable='keyword',
+                                                    initialized=True, value=doc_id)
+        """ Associated up-to-date document identifier. """
+
+    def render_for_store(self) -> dict:
+        """
+        Render model as a body for storing its content ; uninitialized values are not stored for old versions.
+        :return: storable body filled with attributes data
+        """
+        body = {}
+        for k, v in self.attributes.items():
+            if v.storable and v.initialized:
+                body[k] = v.render_for_store()
+        return body

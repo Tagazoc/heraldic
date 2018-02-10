@@ -1,0 +1,19 @@
+{% extends "layout.html" %}
+{% block content %}
+
+{% for k, v in document.model.attributes.items() if v.displayable %}
+<div class="row">
+  <div class="col-sm-2"><a data-toggle="collapse" data-target="#{{k}}-old-versions">{{v.desc}}</a></div>
+  <div class="col-sm-1">{{v.version_no}}</div>
+  <div class="col-sm-9">{{v.render_for_display()}}</div>
+    <div id="{{k}}-old-versions" class="collapse col-sm-10 col-sm-offset-2">
+    {% for old_model in document.old_versions[::-1] if old_model.attributes[k].initialized %}
+        <div class="row">
+        <div class="col-sm-1">{{old_model.attributes[k].version_no}}</div>
+        <div class="col-sm-9">{{old_model.attributes[k].render_for_display()}}</div>
+</div>
+    {% endfor %}
+        </div>
+</div>
+{%      endfor %}
+    {%- endblock %}

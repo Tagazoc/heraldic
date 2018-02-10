@@ -5,13 +5,12 @@
 
 from flask import Blueprint, request, render_template, flash
 from flask_nav.elements import Navbar, View
-from src.rendering.flask.nav import nav
-from src.rendering.flask.elasticsearch import es
-from src.rendering.flask.forms import UrlForm, ReviewForm
-from src.models.document import Document
-from src.store.model_searcher import ModelSearcher
-from src.heraldic_exceptions import DocumentNotFoundException
 
+from src.heraldic_exceptions import DocumentNotFoundException
+from src.models.document import Document
+from src.rendering.flask.forms import UrlForm, ReviewForm
+from src.rendering.flask.nav import nav
+from src.store import model_searcher
 
 bp = Blueprint('heraldic', __name__)
 
@@ -23,9 +22,19 @@ nav.register_element('heraldic_top', Navbar(
 
 @bp.route("/", methods=['GET'])
 def home():
-    ms = ModelSearcher(es)
-    ms.search_all_docs()
-    return render_template('search.html', hits=ms.hits_models)
+    hits_models = model_searcher.search_all_docs()
+    return render_template('search.html', hits=hits_models)
+
+
+@bp.route('/display_document', methods=['GET', 'POST'])
+def display_document():
+    doc_id = request.args.get('doc_id')
+
+    d = Document()
+    d.retrieve(doc_id)
+    d.retrieve_old_versions(doc_id)
+
+    return render_template('display_document.html', document=d)
 
 
 @bp.route('/submit_document', methods=['GET', 'POST'])
@@ -34,25 +43,18 @@ def submit_document():
 
     if form.validate_on_submit():
         url = form.url.data  # request.form['url']
-        d = Document(es)
+        d = Document()
 
-        if form.gather_again.data:
-            new_d = Document(es)
-            new_d.gather(url)
-            new_d.extract_fields()
-            d.update_from_model(new_d.model)
-            flash("L'article a de nouveau été récupéré", "info")
-        elif form.submit.data:
-            try:
-                d.retrieve_from_url(url)
-            except DocumentNotFoundException:
-                d.gather(url)
-                d.extract_fields()
+        try:
+            d.retrieve_from_url(url)
+        except DocumentNotFoundException:
+            d.gather(url)
+            d.extract_fields()
 
-                d.store()
-                flash("L'article a été récupéré", "info")
-            else:
-                flash("L'article existe déjà", "warning")
+            d.store()
+            flash("L'article a été récupéré", "info")
+        else:
+            flash("L'article existe déjà", "warning")
 
         ReviewForm.apply_model(d.model)
         review_form = ReviewForm()
@@ -65,11 +67,11 @@ def submit_document():
 
 @bp.route("/review_document", methods=['POST'])
 def review_document():
-    d = Document(es)
+    d = Document()
     d.retrieve(request.form['id'])
 
     if 'gather_again' in request.form:
-        new_d = Document(es)
+        new_d = Document()
         new_d.gather(d.model.url)
         new_d.extract_fields()
         d.update_from_model(new_d.model)

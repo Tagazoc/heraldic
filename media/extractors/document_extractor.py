@@ -48,7 +48,7 @@ class DocumentExtractor(object):
             if v.extractible:
                 try:
                     func = getattr(self, "_extract_" + k)
-                    v.value = func()
+                    v.update(func())
                 except ParsingFailureException as err:
                     v.parse_error = err
 
@@ -65,7 +65,7 @@ class DocumentExtractor(object):
         Extract HTML title (in <head> block) from HTML content.
         :return: HTML title
         """
-        return html.unescape(self.html_soup.headd.title.text)
+        return html.unescape(self.html_soup.head.title.text)
 
     @handle_parse_errors
     def _extract_description(self) -> str:

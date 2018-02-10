@@ -24,13 +24,19 @@
 # TODO Résoudre la question des versions des documents -> OK
 # Index supplémentaire sur elastic bahouais.
 
-# TODO Mettre en place la correction de document par interface Web ->
+# TODO Mettre en place la correction de document par interface Web -> OK
 
 # TODO Voir les returns / exceptions -> OK pour le parsing
 
-# TODO Faire la consultation d'article
+# TODO Faire la consultation d'article -> OK
+
+# TODO Faire une autre classe de modèle pour les vieilles versions -> OK
+
+# TODO Voir les perfs
 
 # TODO Faire la sécurité
+
+# TODO Refaire les vues WTForms
 
 # TODO Faire la liste des médias à faire en priorité
 
