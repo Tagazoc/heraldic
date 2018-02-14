@@ -1,0 +1,26 @@
+[[source]]
+
+url = "https://pypi.python.org/simple"
+verify_ssl = true
+name = "pypi"
+
+
+[packages]
+
+requests = "*"
+uwsgi = "*"
+flask = "*"
+flask-bootstrap = "*"
+pytest = "*"
+"bs4" = "*"
+elasticsearch = "*"
+flask-appconfig = "*"
+flask-nav = "*"
+flask-debug = "*"
+flask-wtf = "*"
+wtforms = "*"
+spacy = "*"
+
+
+[dev-packages]
+
