@@ -16,7 +16,7 @@ def retrieve(doc_id: str) -> DocumentModel:
     :param doc_id: ID of the document
     :return: The document model.
     """
-    res = es.get('docs', doc_id, 'doc')
+    res = es.get('docs', id=doc_id, doc_type='doc')
     dm = DocumentModel()
 
     dm.id.value = doc_id
