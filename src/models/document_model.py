@@ -26,7 +26,7 @@ class DocumentModel(object):
             'update_time': DateAttribute(desc="Date de révision", revisable=False, extractible=False,
                                          value=datetime.now()),
             'version_no': IntegerAttribute(desc="Numéro de version", revisable=False, extractible=False, value=1),
-            'url': StringAttribute(desc="URL de l'article", extractible=False, storable='keyword'),
+            'url': StringAttribute(desc="URL de l'article", extractible=False, revisable=False, storable='keyword'),
 
             # Buffer data
             'content': StringAttribute(desc="Contenu", displayable=False, revisable=False, extractible=False,
@@ -34,13 +34,13 @@ class DocumentModel(object):
             'body': StringAttribute(desc="Body", displayable=False, revisable=False, storable=False),
 
             # Extracted data
-            'category': StringAttribute(desc="Catégorie", storable='keyword'),
-            'title': StringAttribute(desc="Titre"),
-            'description': StringAttribute(desc="Description"),
-            'doc_publication_time': DateAttribute(desc="Date de publication de l'artice"),
-            'doc_update_time': DateAttribute(desc="Date de mise à jour de l'article"),
+            'category': StringAttribute(desc="Catégorie", revisable=False, storable='keyword'),
+            'title': StringAttribute(desc="Titre", revisable=False),
+            'description': StringAttribute(desc="Description", revisable=False),
+            'doc_publication_time': DateAttribute(desc="Date de publication de l'article", revisable=False),
+            'doc_update_time': DateAttribute(desc="Date de mise à jour de l'article", revisable=False),
 
-            'href_sources': StringListAttribute(desc="Sources en lien hypertexte"),
+            'href_sources': StringListAttribute(desc="Sources en lien hypertexte", revisable=False),
             'explicit_sources': StringListAttribute(desc="Sources explicites"),
             'quoted_entities': StringListAttribute(desc="Entités citées"),
             'contains_private_sources': BooleanAttribute(desc="Sources privées"),
@@ -95,14 +95,14 @@ class DocumentModel(object):
         for k, v in model.attributes.items():
             if v.revisable and v.initialized and v.value != self.attributes[k].value:
                 old_model.attributes[k] = copy(self.attributes[k])
-                self.attributes[k].value = v.value
+                self.attributes[k] = copy(v)
 
         # Updating update_time
-        old_model.update_time.update(self.update_time.value)
-        self.update_time.update(model.update_time.value)
+        old_model.attributes['update_time'] = copy(self.update_time)
+        self.attributes['update_time'] = copy(model.update_time)
 
         # Updating version_no
-        old_model.version_no.update(self.version_no.value)
+        old_model.version_no = copy(self.version_no.value)
         self.version_no.value += 1
 
         return old_model

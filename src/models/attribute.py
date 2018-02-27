@@ -5,12 +5,14 @@ Class used for document attributes.
 """
 
 from datetime import datetime
+from re import match
 
 
 class Attribute(object):
     DEFAULT_STORE_TYPE = 'text'
     DEFAULT_STORE_FORMAT = ''
     DEFAULT_VALUE = ""
+    DEFAULT_INVALIDATION_TEXT = "Valeur incorrecte."
 
     def __init__(self, **kwargs) -> None:
         self.desc = kwargs['desc'] if 'desc' in kwargs else ""
@@ -67,6 +69,22 @@ class Attribute(object):
             self.initialized = True
         super(Attribute, self).__setattr__(key, value)
 
+    def validate(self, field):
+        if self.parse_error:
+            return False
+        else:
+            return self.validate_value(field)
+
+    def validate_value(self, field):
+        return True
+
+    @property
+    def validate_failure_text(self):
+        if self.parse_error:
+            return "Erreur de parsing : " + str(self.parse_error)
+        else:
+            return self.DEFAULT_INVALIDATION_TEXT
+
 
 class IntegerAttribute(Attribute):
     DEFAULT_STORE_TYPE = 'short'
@@ -103,6 +121,7 @@ class DateAttribute(Attribute):
     DEFAULT_STORE_TYPE = 'date'
     DEFAULT_STORE_FORMAT = 'epoch_millis'
     DEFAULT_VALUE = datetime.fromtimestamp(0)
+    DEFAULT_INVALIDATION_TEXT = 'Le format doit être le suivant : 18/07/2019 à 12:27'
 
     def __init__(self, **kwargs):
         super(DateAttribute, self).__init__(**kwargs)
@@ -118,6 +137,9 @@ class DateAttribute(Attribute):
 
     def set_from_store(self, value: float):
         self.update(datetime.fromtimestamp(value))
+
+    def validate_value(self, field):
+        return True if match(r'\d{2}/\d{2}/\d{4} à \d{2}:\d{2}', field) else False
 
 
 class BooleanAttribute(Attribute):

@@ -8,6 +8,7 @@ from src.media.known_media import KnownMedia
 from src.store import model_storer, model_searcher
 from src.gathering.html_document_gatherer import HTMLDocumentGatherer
 from src.models.document_model import DocumentModel
+# from src.analysis.text_analyzer import ta
 
 
 class Document(object):
@@ -92,6 +93,9 @@ class Document(object):
         new_model = DocumentModel()
         new_model.set_from_display(attribute_dict)
         self.update_from_model(new_model)
+
+    def analyze(self):
+        ta.analyze(self.model.content.value)
 
     def _set_attributes_versions(self):
         """

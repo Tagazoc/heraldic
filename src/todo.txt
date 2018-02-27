@@ -42,13 +42,13 @@
 
 # TODO Sortir content du model
 
-# TODO Git sous github
+# TODO Git sous github -> OK
 
 # TODO Implémenter les médias mainstream
 
 # TODO Faire le logo
 
-# TODO Récupérer les news de Google news API pour simplifier le choix d'articles sources
+# TODO Récupérer les news de Google news API et automatiser ce qui peut l'être
 
 # TODO Faire les médias de la fachosphère & de gauche
 

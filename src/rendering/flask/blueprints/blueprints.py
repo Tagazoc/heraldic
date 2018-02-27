@@ -3,12 +3,12 @@
 
 """
 
-from flask import Blueprint, request, render_template, flash
+from flask import Blueprint, request, render_template, flash, redirect, url_for
 from flask_nav.elements import Navbar, View
 
 from src.heraldic_exceptions import DocumentNotFoundException
 from src.models.document import Document
-from src.rendering.flask.forms import UrlForm, ReviewForm
+from src.rendering.flask.forms import UrlForm, ReviewForm, DisplayDocumentForm
 from src.rendering.flask.nav import nav
 from src.store import model_searcher
 
@@ -34,7 +34,9 @@ def display_document():
     d.retrieve(doc_id)
     d.retrieve_old_versions(doc_id)
 
-    return render_template('display_document.html', document=d)
+    form = DisplayDocumentForm(data={'id': d.model.id.value})
+
+    return render_template('display_document.html', document=d, form=form)
 
 
 @bp.route('/submit_document', methods=['GET', 'POST'])
@@ -52,38 +54,40 @@ def submit_document():
             d.extract_fields()
 
             d.store()
+
             flash("L'article a été récupéré", "info")
         else:
             flash("L'article existe déjà", "warning")
 
-        ReviewForm.apply_model(d.model)
-        review_form = ReviewForm()
-        review_form.process()
-
-        return render_template('review_document.html', form=review_form)
+        return redirect(url_for('heraldic.review_document', id=d.model.id))
 
     return render_template('url_form.html', form=form)
 
 
-@bp.route("/review_document", methods=['POST'])
+@bp.route("/review_document", methods=['GET', 'POST'])
 def review_document():
     d = Document()
-    d.retrieve(request.form['id'])
-
-    if 'gather_again' in request.form:
-        new_d = Document()
-        new_d.gather(d.model.url)
-        new_d.extract_fields()
-        d.update_from_model(new_d.model)
-        flash("L'article a de nouveau été récupéré", "info")
-
-    else:
-
-        d.update_from_display(request.form)
-        flash("L'article a été mis à jour", "info")
 
     ReviewForm.apply_model(d.model)
     form = ReviewForm()
+
+    doc_id = request.form['id'] if request.method == 'POST' else request.args['id']
+
+    d.retrieve(doc_id)
+
+    if form.validate_on_submit():
+        if 'gather_again' in request.form:
+            new_d = Document()
+            new_d.gather(d.model.url)
+            new_d.extract_fields()
+            d.update_from_model(new_d.model)
+            flash("L'article a de nouveau été récupéré", "info")
+
+        else:
+            d.update_from_display(request.form)
+            flash("L'article a été mis à jour", "info")
+
+    form.apply_model_default_values(d.model)
 
     form.process()
     return render_template('review_document.html', form=form)
