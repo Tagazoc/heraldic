@@ -8,7 +8,7 @@ from src.media.known_media import KnownMedia
 from src.store import model_storer, model_searcher
 from src.gathering.html_document_gatherer import HTMLDocumentGatherer
 from src.models.document_model import DocumentModel
-# from src.analysis.text_analyzer import ta
+from datetime import datetime
 
 
 class Document(object):
@@ -49,7 +49,7 @@ class Document(object):
         :param doc_id: ID of the document in the store
         :return:
         """
-        return model_storer.store(self.model, doc_id)
+        self.model.id = model_storer.store(self.model, doc_id)
 
     def retrieve(self, doc_id: str):
         """
@@ -84,18 +84,18 @@ class Document(object):
         self.old_versions.append(old_model)
         model_storer.update(self.model, old_model)
 
-    def update_from_display(self, attribute_dict: dict):
+    def update_from_revision(self, attribute_dict: dict):
         """
         Update document from display (web form).
         :param attribute_dict: dict with values originating from display
         :return:
         """
         new_model = DocumentModel()
-        new_model.set_from_display(attribute_dict)
+        new_model.set_from_revision(attribute_dict)
         self.update_from_model(new_model)
 
     def analyze(self):
-        ta.analyze(self.model.content.value)
+        pass  # ta.analyze(self.model.content.value)
 
     def _set_attributes_versions(self):
         """
@@ -116,4 +116,3 @@ class Document(object):
                         v.version_no = counter_dict[k]
                     # Next model version will be used as next occurrence of this attribute
                     counter_dict[k] = model.version_no.value + 1
-

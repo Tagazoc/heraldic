@@ -44,6 +44,10 @@
 
 # TODO Git sous github -> OK
 
+# TODO Faire des tests avec du POST sur l'interface Web
+
+# TODO Mettre la gestion des index dans elastic.py faire des constantes
+
 # TODO Implémenter les médias mainstream
 
 # TODO Faire le logo

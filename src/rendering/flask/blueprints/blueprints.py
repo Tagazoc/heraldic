@@ -6,7 +6,7 @@
 from flask import Blueprint, request, render_template, flash, redirect, url_for
 from flask_nav.elements import Navbar, View
 
-from src.heraldic_exceptions import DocumentNotFoundException
+from src.heraldic_exceptions import DocumentNotFoundException, DocumentNotChangedException
 from src.models.document import Document
 from src.rendering.flask.forms import UrlForm, ReviewForm, DisplayDocumentForm
 from src.rendering.flask.nav import nav
@@ -44,7 +44,7 @@ def submit_document():
     form = UrlForm()
 
     if form.validate_on_submit():
-        url = form.url.data  # request.form['url']
+        url = form.url.data
         d = Document()
 
         try:
@@ -68,24 +68,30 @@ def submit_document():
 def review_document():
     d = Document()
 
-    ReviewForm.apply_model(d.model)
-    form = ReviewForm()
-
     doc_id = request.form['id'] if request.method == 'POST' else request.args['id']
 
     d.retrieve(doc_id)
+
+    ReviewForm.apply_model(d.model)
+    form = ReviewForm()
 
     if form.validate_on_submit():
         if 'gather_again' in request.form:
             new_d = Document()
             new_d.gather(d.model.url)
             new_d.extract_fields()
-            d.update_from_model(new_d.model)
-            flash("L'article a de nouveau été récupéré", "info")
 
+            try:
+                d.update_from_model(new_d.model)
+                flash("L'article a de nouveau été récupéré", "info")
+            except DocumentNotChangedException:
+                flash("Aucune mise à jour constatée", "danger")
         else:
-            d.update_from_display(request.form)
-            flash("L'article a été mis à jour", "info")
+            try:
+                d.update_from_revision(request.form)
+                flash("L'article a été mis à jour", "info")
+            except DocumentNotChangedException:
+                flash("Aucune mise à jour constatée", "danger")
 
     form.apply_model_default_values(d.model)
 

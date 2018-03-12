@@ -7,6 +7,7 @@ Module implementing model search functions.
 from src.store.elastic import es
 from src.models.document_model import DocumentModel, OldDocumentModel
 from src.heraldic_exceptions import DocumentNotFoundException
+from elasticsearch.exceptions import NotFoundError
 from typing import List
 
 
@@ -21,6 +22,16 @@ def retrieve(doc_id: str) -> DocumentModel:
 
     dm.id.value = doc_id
     dm.set_from_store(res['_source'])
+
+    try:
+        dm.set_errors_from_store(retrieve_errors(doc_id))
+    except IndexError:
+        pass
+
+    try:
+        dm.set_suggestions_from_store(retrieve_suggestions(doc_id))
+    except IndexError:
+        pass
 
     return dm
 
@@ -44,6 +55,22 @@ def retrieve_old_versions(doc_id) -> List[DocumentModel]:
         dm.set_from_store(hit['_source'])
         models.append(dm)
     return models
+
+
+def retrieve_errors(doc_id) -> dict:
+    try:
+        res = es.get('errors', id=doc_id, doc_type='doc_errors')
+        return res['_source']
+    except NotFoundError:
+        return {}
+
+
+def retrieve_suggestions(doc_id) -> dict:
+    try:
+        res = es.get('suggestions', id=doc_id, doc_type='doc')
+        return res['_source']
+    except NotFoundError:
+        return {}
 
 
 def retrieve_from_url(url: str) -> DocumentModel:

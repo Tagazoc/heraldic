@@ -18,19 +18,6 @@
 </div>
 {%      endfor %}
     <div class="col-md-12">
-       <form action="{{url_for('heraldic.review_document')}}" class="form" method="POST">
-            {{ form.hidden_tag() }}
-            {{ wtf.form_errors(form, hiddens='only') }}
-
-            {%- for field in form %}
-            {% if not bootstrap_is_hidden_field(field) -%}
-
-              {{ wtf.form_field(field,
-                            form_type='basic',
-                            horizontal_columns=('lg', 2, 10),
-                            button_map={}) }}
-            {%- endif %}
-            {%- endfor %}
-       </form>
+       <a href="{{url_for('heraldic.review_document', id=document.model.id.value)}}" class="btn btn-info" role="button">Mettre à jour l'article</a>
    </div>
     {%- endblock %}

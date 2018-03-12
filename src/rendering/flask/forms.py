@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """
-Class used as a model for documents.
+This module implements form classes based on FlaskForm.
 """
 
 from flask_wtf import FlaskForm, Form
@@ -34,10 +34,10 @@ class ReviewForm(FlaskForm):
                 field_class = TextAreaField
             elif isinstance(v, BooleanAttribute):
                 field_class = SelectField
-                kwargs['choices'] = [('yes', 'Oui'), ('no', 'Non')]
+                kwargs['choices'] = [('', ''), ('yes', 'Oui'), ('no', 'Non')]
 
                 # Add default parameter first for handling WTForms issue #289
-                kwargs['default'] = 'no'
+                kwargs['default'] = ''
 
             if not v.revisable and k != 'id':
                 kwargs['render_kw'] = {'disabled': 'disabled'}
@@ -52,7 +52,10 @@ class ReviewForm(FlaskForm):
         for k, v in model.attributes.items():
             if not v.displayable:
                 continue
-            getattr(self, k).default = v.render_for_display()
+            if v.parsing_error:
+                getattr(self, k).label.text = v.desc + ' (' + v.parsing_error + ')'
+            else:
+                getattr(self, k).default = v.render_for_display()
 
     @classmethod
     def generate_validator(cls, attribute):

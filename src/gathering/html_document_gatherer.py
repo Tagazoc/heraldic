@@ -31,6 +31,15 @@ class HTMLDocumentGatherer(object):
             r = requests.get(self.url)
             self.dm.url = r.url
             self.dm.content = r.text
+
+            # Setting gather time in model
+            self.dm.gather_time = datetime.now()
+
+            # Unless we use the model to update another document, its version is 1.
+            self.dm.version_no = 1
+
+            # Specify model comes from gathering.
+            self.dm.from_gathering = True
         except (ValueError, ConnectionError):
             raise
 

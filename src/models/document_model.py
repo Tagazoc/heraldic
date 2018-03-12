@@ -7,9 +7,11 @@ Module which implements DocumentModel class.
 import re
 from src.models.attribute import Attribute, StringListAttribute, StringAttribute,\
     DateAttribute, BooleanAttribute, IntegerAttribute
+from src.heraldic_exceptions import DocumentNotChangedException
 from collections import OrderedDict
 from datetime import datetime
 from copy import copy
+from typing import Dict, Optional
 
 
 class DocumentModel(object):
@@ -18,14 +20,12 @@ class DocumentModel(object):
     """
     def __init__(self) -> None:
         """ Ordered dict containing attributes """
-        self.attributes = OrderedDict({
+        self.attributes: Dict[str, Attribute] = OrderedDict({
             'id': StringAttribute(desc="Identifiant", revisable=False, extractible=False, storable=False),
             'media': StringAttribute(desc="Média", revisable=False, storable='keyword'),
-            'gather_time': DateAttribute(desc="Date de collecte de l'article", revisable=False, extractible=False,
-                                         value=datetime.now()),
-            'update_time': DateAttribute(desc="Date de révision", revisable=False, extractible=False,
-                                         value=datetime.now()),
-            'version_no': IntegerAttribute(desc="Numéro de version", revisable=False, extractible=False, value=1),
+            'gather_time': DateAttribute(desc="Date de collecte de l'article", revisable=False, extractible=False),
+            'update_time': DateAttribute(desc="Date de révision", revisable=False, extractible=False),
+            'version_no': IntegerAttribute(desc="Numéro de version", revisable=False, extractible=False),
             'url': StringAttribute(desc="URL de l'article", extractible=False, revisable=False, storable='keyword'),
 
             # Buffer data
@@ -42,11 +42,17 @@ class DocumentModel(object):
 
             'href_sources': StringListAttribute(desc="Sources en lien hypertexte", revisable=False),
             'explicit_sources': StringListAttribute(desc="Sources explicites"),
-            'quoted_entities': StringListAttribute(desc="Entités citées"),
-            'contains_private_sources': BooleanAttribute(desc="Sources privées"),
+            'quoted_entities': StringListAttribute(desc="Entités citées", extractible=False),
+            'contains_private_sources': BooleanAttribute(desc="Sources privées", extractible=False),
         })
 
-    def __getattr__(self, item: str) -> Attribute:
+        self.from_gathering = False
+        """ Whether this model comes from document gathering (or revision). """
+
+        self.storable_values_updated = False
+        """ Whether some values did change during model update. """
+
+    def __getattr__(self, item: str) -> Optional[Attribute]:
         """
         Shortcut for accessing attributes, for example : dm.media
         :param item: attribute name
@@ -91,19 +97,35 @@ class DocumentModel(object):
         :return: old model only containing old values
         """
         old_model = OldDocumentModel(self.id.value)
+        storable_values_updated = False
+
+        filter_attr = 'extractible' if model.from_gathering else 'revisable'
 
         for k, v in model.attributes.items():
-            if v.revisable and v.initialized and v.value != self.attributes[k].value:
-                old_model.attributes[k] = copy(self.attributes[k])
-                self.attributes[k] = copy(v)
+            if v.__getattribute__(filter_attr):
+                if v.initialized and v.value != self.attributes[k].value:
+                    if v.storable:
+                        storable_values_updated = True
+                    old_model.attributes[k].update(self.attributes[k].value)
+                    self.attributes[k] = copy(v)
+
+                elif v.parsing_error is not None or v.suggestions != self.attributes[k].suggestions:
+                    # Updating attribute even if value did not change
+                    self.attributes[k] = copy(v)
+
+        # Did some values really change ?
+        self.storable_values_updated = storable_values_updated
 
         # Updating update_time
         old_model.attributes['update_time'] = copy(self.update_time)
-        self.attributes['update_time'] = copy(model.update_time)
+        self.attributes['update_time'].value = datetime.now()
 
         # Updating version_no
         old_model.version_no = copy(self.version_no.value)
         self.version_no.value += 1
+
+        # Updating from_gathering attribute
+        self.from_gathering = model.from_gathering
 
         return old_model
 
@@ -114,7 +136,7 @@ class DocumentModel(object):
         """
         body = {}
         for k, v in self.attributes.items():
-            if v.storable:
+            if v.storable and v.initialized:
                 body[k] = v.render_for_store()
         return body
 
@@ -128,7 +150,7 @@ class DocumentModel(object):
             if v.storable and k in attribute_dict:
                 v.set_from_store(attribute_dict[k])
 
-    def set_from_display(self, attribute_dict: dict):
+    def set_from_revision(self, attribute_dict: dict):
         """
         Fill revisable attribute values from a display (web form).
         :param attribute_dict: dict with values originating from display
@@ -137,6 +159,46 @@ class DocumentModel(object):
         for k, v in self.attributes.items():
             if v.revisable and k in attribute_dict:
                 v.set_from_display(attribute_dict[k])
+
+    @property
+    def errors(self):
+        error_dict = {}
+        for k, v in self.attributes.items():
+            if v.parsing_error is not None:
+                error_dict[k] = v.parsing_error
+        return error_dict
+
+    @property
+    def suggestions(self):
+        suggestions_dict = {}
+        for k, v in self.attributes.items():
+            if v.suggestions:
+                suggestions_dict[k] = v.suggestions
+        return suggestions_dict
+
+    @property
+    def has_suggestions(self):
+        return not self.suggestions == {}
+
+    @property
+    def has_errors(self):
+        return not self.errors == {}
+
+    def render_errors_for_store(self):
+        return self.errors
+
+    def render_suggestions_for_store(self):
+        return self.suggestions
+
+    def set_errors_from_store(self, error_dict: dict):
+        for k, v in self.attributes.items():
+            if k in error_dict.keys():
+                v.parsing_error = error_dict[k]
+
+    def set_suggestions_from_store(self, suggestions_dict: dict):
+        for k, v in self.attributes.items():
+            if k in suggestions_dict.keys():
+                v.suggestions = suggestions_dict[k]
 
 
 class OldDocumentModel(DocumentModel):
