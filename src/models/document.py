@@ -6,9 +6,9 @@ Module which implements Document class.
 
 from src.media.known_media import KnownMedia
 from src.store import model_storer, model_searcher
-from src.gathering.html_document_gatherer import HTMLDocumentGatherer
+from src.gathering.html_document_gatherer import HTTPDocumentGatherer, FileDocumentGatherer
 from src.models.document_model import DocumentModel
-from datetime import datetime
+from typing import List
 
 
 class Document(object):
@@ -17,7 +17,7 @@ class Document(object):
     """
     def __init__(self):
         self.model = DocumentModel()
-        self.old_versions = []
+        self.old_versions: List[DocumentModel] = []
 
         self.extractor = None
 
@@ -29,8 +29,11 @@ class Document(object):
         :param url: URL of the document
         :return:
         """
-        if not self.gatherer:
-            self.gatherer = HTMLDocumentGatherer(self.model, url)
+        self.gatherer = HTTPDocumentGatherer(self.model, url)
+        self.gatherer.gather()
+
+    def gather_from_file(self, url: str, filepath: str):
+        self.gatherer = FileDocumentGatherer(self.model, url, filepath)
         self.gatherer.gather()
 
     def extract_fields(self):
@@ -65,12 +68,11 @@ class Document(object):
         """
         self.model = model_searcher.retrieve_from_url(url)
 
-    def retrieve_old_versions(self, doc_id: str):
+    def retrieve_old_versions(self):
         """
         Retrieve old versions of a document from its ID.
-        :param doc_id: ID of the document in the store
         """
-        self.old_versions = model_searcher.retrieve_old_versions(doc_id)
+        self.old_versions = model_searcher.retrieve_old_versions(self.model.id.value)
         self._set_attributes_versions()
 
     def update_from_model(self, new_model: DocumentModel):
@@ -116,3 +118,10 @@ class Document(object):
                         v.version_no = counter_dict[k]
                     # Next model version will be used as next occurrence of this attribute
                     counter_dict[k] = model.version_no.value + 1
+
+    def delete(self):
+        """
+        Delete model in store, as old versions models.
+        :return:
+        """
+        model_storer.delete(self.model, self.old_versions)
