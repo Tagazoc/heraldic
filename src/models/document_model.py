@@ -7,7 +7,6 @@ Module which implements DocumentModel class.
 import re
 from src.models.attribute import Attribute, StringListAttribute, StringAttribute,\
     DateAttribute, BooleanAttribute, IntegerAttribute
-from src.heraldic_exceptions import DocumentNotChangedException
 from collections import OrderedDict
 from datetime import datetime
 from copy import copy
