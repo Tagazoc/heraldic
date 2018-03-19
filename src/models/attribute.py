@@ -40,7 +40,7 @@ class Attribute(object):
         self.extractible: bool = kwargs['extractible'] if 'extractible' in kwargs else True
         """ Whether it can be automatically extracted with parsing. """
 
-        self.storable: bool = kwargs['storable'] if 'storable' in kwargs else self.DEFAULT_STORE_TYPE
+        self.storable: str = kwargs['storable'] if 'storable' in kwargs else self.DEFAULT_STORE_TYPE
         """ Whether it will be stored. """
 
         self.initialized: bool = kwargs['initialized'] if 'initialized' in kwargs else False
