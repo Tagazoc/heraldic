@@ -18,6 +18,8 @@ def create_app(config=None):
         SECRET_KEY='IZUAY7CHYzeèzad_ezèyaz'
     ))
 
+    app.config.update(config or {})
+
     app.config.from_envvar('FLASKR_SETTINGS', silent=True)
 
     Bootstrap(app)
@@ -38,7 +40,3 @@ def register_blueprints(app):
         if hasattr(mod, 'bp'):
             app.register_blueprint(mod.bp)
     return None
-
-
-app = create_app()
-
