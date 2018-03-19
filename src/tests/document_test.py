@@ -5,81 +5,165 @@ Document test module.
 """
 
 from src.tests.media.liberation_test import *
-
-from datetime import datetime
-from elasticsearch import Elasticsearch
-from src.models.document import DocumentModel, Document
+from src.models.document import Document
 import pytest
-import pickle
-import sys
-
-d = Document()
-doc_id = 'UWiHsnxpzZry7bc'
-host = '192.168.1.31:9200'
-gather_date = None
-update_date = None
-fmt = "%d/%m/%Y %H:%M"
+from src.rendering.flask.factory import create_app
+from src.heraldic_exceptions import DocumentNotFoundException
+from src.store.model_searcher import retrieve_errors, retrieve_old_versions, retrieve_suggestions
 
 
-def test_document_gathering():
-    d.gather(url)
-    assert (d.model.content.startswith(response_beginning))
+# Flask test configuration
+config = {
+    "TESTING": True,
+    "WTF_CSRF_ENABLED": False
+}
+app = create_app(config)
+app_client = app.test_client()
 
 
-def test_document_extract():
-    d.extract_fields()
+def test_url_submit():
+    """
+    Test URL submission on Web interface within its Web response, then the attributes and suggestions of the document
+    retrieved from store. No old version should exist yet.
+    """
+    rv = app_client.post('/submit_document', data=dict(
+        url=doc_dict['url']
+    ), follow_redirects=True)
+    assert "a été récupéré" in str(rv.data, 'utf-8')
 
-    # Print everything to build test vars
-    print('title = "' + d.model.title.replace('"', '\\"') + '"')
-    print('description = "' + d.model.description.replace('"', '\\"') + '"')
-    print('category = "' + d.model.category.replace('"', '\\"') + '"')
-    print('body = "' + d.model.body.replace('"', '\\"') + '"')
-    print('doc_publication_time = "' + d.model.doc_publication_time.strftime(fmt) + '"')
-    print('doc_update_time = "' + d.model.doc_update_time.strftime(fmt) + '"')
-    print('href_sources = ' + d.model.href_sources.__str__())
-    print('explicit_sources = ' + d.model.explicit_sources.__str__())
+    d = Document()
+    d.retrieve_from_url(doc_dict['url'])
+    d.retrieve_old_versions()
 
-    assert (d.model.title == title)
-    assert (d.model.description == description)
-    assert (d.model.category == category)
-    assert (d.model.doc_publication_time == datetime.strptime(doc_publication_time_str, fmt))
-    assert (d.model.doc_update_time == datetime.strptime(doc_update_time_str, fmt))
-    assert (d.model.href_sources == href_sources)
-    assert (d.model.explicit_sources == explicit_sources)
+    # Prepare next test
+    update_doc_dict['id'] = d.model.id.value
 
-    p = pickle.dumps(d.model)
-    print('size : ' + str(sys.getsizeof(p)))
+    for k, v in doc_dict.items():
+        assert (d.model.attributes[k].render_for_display() == v)
 
+    for k, v in suggestion_dict.items():
+        assert (d.model.attributes[k].render_suggestions_for_display() == v)
 
-@pytest.mark.skip(reason="No Elastic yet")
-def test_document_store():
-    global doc_id
-    doc_id = d.model.media_name + doc_id
-
-    res = d.store(doc_id, host)
-    assert res
-
-    es = Elasticsearch(host)
-
-    res = es.get('docs', doc_id)
-    assert (res['_source']['title'] == title)
-    assert (res['_source']['description'] == description)
-    assert (res['_source']['category'] == category)
-    assert (res['_source']['href_sources'] == href_sources)
-    assert (res['_source']['explicit_sources'] == explicit_sources)
-
-    res = es.delete('docs', 'doc', doc_id)
-    assert (res['result'] == 'deleted')
+    assert d.old_versions == []
 
 
-@pytest.mark.skip(reason="No Elastic yet")
-def test_document_retrieve():
-    d.retrieve(doc_id, host)
-    assert isinstance(d.model, DocumentModel)
+def test_document_update():
+    """
+    Test document update from Web interface within its Web response, then attributes of the document from store, and
+    the old version of the document.
+    """
+    rv = app_client.post('/review_document', data=update_doc_dict, follow_redirects=True)
+    assert "mis à jour" in str(rv.data, 'utf-8')
 
-    assert (d.model.title == title)
-    assert (d.model.description == description)
-    assert (d.model.category == category)
-    assert (d.model.href_sources == href_sources)
-    assert (d.model.explicit_sources == explicit_sources)
+    d = Document()
+    d.retrieve(update_doc_dict['id'])
+    d.retrieve_old_versions()
 
+    for k, v in update_result_dict.items():
+        assert (d.model.attributes[k].render_for_display() == v)
+
+    for k, v in suggestion_dict.items():
+        assert (d.model.attributes[k].render_suggestions_for_display() == v)
+
+    for i in range(0, len(update_old_model_list)):
+        for k, v in update_old_model_list[i].items():
+            assert (d.old_versions[i].attributes[k].render_for_display() == v)
+
+
+def test_document_gather_again():
+    """
+    Test another gathering of this document from Web interface, and its Web response. Suggestions will be the same yet
+    refreshed, but document version and attributes will not update.
+    """
+    update_doc_dict['gather_again'] = 'Récupérer à nouveau'
+    rv = app_client.post('/review_document', data=update_doc_dict, follow_redirects=True)
+    assert "constaté" in str(rv.data, 'utf-8')
+
+    d = Document()
+    d.retrieve(update_doc_dict['id'])
+    d.retrieve_old_versions()
+
+    for k, v in update_result_dict.items():
+        assert (d.model.attributes[k].render_for_display() == v)
+
+    for k, v in suggestion_dict.items():
+        assert (d.model.attributes[k].render_suggestions_for_display() == v)
+
+    for i in range(0, len(update_old_model_list)):
+        for k, v in update_old_model_list[i].items():
+            assert (d.old_versions[i].attributes[k].render_for_display() == v)
+
+
+def test_document_error():
+    """
+    Test malformed document gathering from a slightly different file with parsing error. Event though document will be
+    update, rroneous attribute will not change. Error will be stored in specific index.
+    """
+    error_d = Document()
+    error_d.gather_from_file(doc_dict['url'], 'src/tests/media/article_liberation.htm')
+    error_d.extract_fields()
+
+    d = Document()
+    d.retrieve(update_doc_dict['id'])
+    d.update_from_model(error_d.model)
+    del d
+
+    d = Document()
+    d.retrieve(update_doc_dict['id'])
+    d.retrieve_old_versions()
+
+    for k, v in error_result_dict.items():
+        assert (d.model.attributes[k].render_for_display() == v)
+
+    assert (retrieve_suggestions(update_doc_dict['id']) == {})
+
+    for k in errors_list:
+        assert (d.model.attributes[k].parsing_error is not None)
+
+    for i in range(0, len(error_old_model_list)):
+        for k, v in error_old_model_list[i].items():
+            assert (d.old_versions[i].attributes[k].render_for_display() == v)
+
+
+def test_document_error_solved():
+    """
+    Gather "again" the document from original URL. No more errors, and document attributes are once again updated to
+    "original" values.
+    """
+    update_doc_dict['gather_again'] = 'Récupérer à nouveau'
+    rv = app_client.post('/review_document', data=update_doc_dict, follow_redirects=True)
+
+    assert "de nouveau" in str(rv.data, 'utf-8')
+
+    d = Document()
+    d.retrieve(update_doc_dict['id'])
+    d.retrieve_old_versions()
+
+    for k, v in final_gather_dict.items():
+        assert (d.model.attributes[k].render_for_display() == v)
+
+    for k, v in suggestion_dict.items():
+        assert (d.model.attributes[k].render_suggestions_for_display() == v)
+
+    for i in range(0, len(final_old_model_list)):
+        for k, v in final_old_model_list[i].items():
+            assert (d.old_versions[i].attributes[k].render_for_display() == v)
+
+
+def test_document_deletion():
+    """
+    Deletion of the document, and its attached objects : suggestions, errors (should not be) and old versions.
+    """
+    d = Document()
+    d.retrieve_from_url(doc_dict['url'])
+    d.retrieve_old_versions()
+    d.delete()
+
+    with pytest.raises(DocumentNotFoundException):
+        d.retrieve(update_doc_dict['id'])
+
+    assert (retrieve_errors(update_doc_dict['id']) == {})
+
+    assert (retrieve_suggestions(update_doc_dict['id']) == {})
+
+    assert (retrieve_old_versions(update_doc_dict['id']) == [])
