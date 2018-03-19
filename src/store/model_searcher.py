@@ -17,21 +17,18 @@ def retrieve(doc_id: str) -> DocumentModel:
     :param doc_id: ID of the document
     :return: The document model.
     """
-    res = es.get('docs', id=doc_id, doc_type='doc')
+    try:
+        res = es.get('docs', id=doc_id, doc_type='doc')
+    except NotFoundError:
+        raise DocumentNotFoundException
     dm = DocumentModel()
 
     dm.id.value = doc_id
     dm.set_from_store(res['_source'])
 
-    try:
-        dm.set_errors_from_store(retrieve_errors(doc_id))
-    except IndexError:
-        pass
+    dm.set_errors_from_store(retrieve_errors(doc_id))
 
-    try:
-        dm.set_suggestions_from_store(retrieve_suggestions(doc_id))
-    except IndexError:
-        pass
+    dm.set_suggestions_from_store(retrieve_suggestions(doc_id))
 
     return dm
 
@@ -76,9 +73,15 @@ def retrieve_suggestions(doc_id) -> dict:
 def retrieve_from_url(url: str) -> DocumentModel:
     hits = search_url(url)
     try:
-        return hits[0]
+        dm = hits[0]
     except IndexError:
         raise DocumentNotFoundException
+
+    dm.set_errors_from_store(retrieve_errors(dm.id.value))
+
+    dm.set_suggestions_from_store(retrieve_suggestions(dm.id.value))
+
+    return dm
 
 
 def _generate_doc_models(hits) -> List[DocumentModel]:
@@ -97,7 +100,7 @@ def _search_term(terms: dict= {}, index='docs', limit=0, sort: list= None) -> Li
     if terms:
         body = {'query': {'term': terms}}
     if limit:
-        # body['terminate_after'] = limit
+        body['terminate_after'] = limit
         pass
     if sort:
         body['sort'] = sort
