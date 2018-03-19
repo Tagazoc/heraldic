@@ -5,7 +5,7 @@ Test file
 """
 from elasticsearch.client.indices import IndicesClient
 from elasticsearch import Elasticsearch
-from src.models.document_model import DocumentModel
+from src.models.document_model import DocumentModel, OldDocumentModel
 
 host = '127.0.0.1:1080'
 es = Elasticsearch(host)
@@ -38,13 +38,14 @@ docs_mapping += '''
     }
 }'''
 
+old_model = OldDocumentModel('1')
 docs_history_mapping = '''
 {
     "mappings": {
         "doc": {
             "properties": {
             '''
-for k, v in model.attributes.items():
+for k, v in old_model.attributes.items():
     if v.storable:
         docs_history_mapping += '"' + k + '": {\n"type": "' + v.storable + '"'
         if v.store_format:
