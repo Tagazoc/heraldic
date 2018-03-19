@@ -32,7 +32,7 @@ def display_document():
 
     d = Document()
     d.retrieve(doc_id)
-    d.retrieve_old_versions(doc_id)
+    d.retrieve_old_versions()
 
     form = DisplayDocumentForm(data={'id': d.model.id.value})
 
@@ -78,7 +78,7 @@ def review_document():
     if form.validate_on_submit():
         if 'gather_again' in request.form:
             new_d = Document()
-            new_d.gather(d.model.url)
+            new_d.gather(d.model.url.value)
             new_d.extract_fields()
 
             try:
