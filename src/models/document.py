@@ -9,6 +9,7 @@ from src.store import model_storer, model_searcher
 from src.gathering.document_gatherer import HTTPDocumentGatherer, FileDocumentGatherer
 from src.models.document_model import DocumentModel
 from typing import List
+from src.heraldic_exceptions import DocumentExistsException
 
 
 class Document(object):
@@ -23,12 +24,15 @@ class Document(object):
 
         self.gatherer = None
 
-    def gather(self, url: str):
+    def gather(self, url: str, override: bool=False):
         """
         Gather a document contents from an url.
         :param url: URL of the document
+        :param override: disable existence check, in order to override document
         :return:
         """
+        if not override and model_searcher.check_url_existence(url):
+            raise DocumentExistsException
         self.gatherer = HTTPDocumentGatherer(self.model, url)
         self.gatherer.gather()
 

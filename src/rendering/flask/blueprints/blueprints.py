@@ -6,7 +6,7 @@
 from flask import Blueprint, request, render_template, flash, redirect, url_for
 from flask_nav.elements import Navbar, View
 
-from src.heraldic_exceptions import DocumentNotFoundException, DocumentNotChangedException
+from src.heraldic_exceptions import DocumentExistsException, DocumentNotChangedException
 from src.models.document import Document
 from src.rendering.flask.forms import UrlForm, ReviewForm, DisplayDocumentForm
 from src.rendering.flask.nav import nav
@@ -48,15 +48,13 @@ def submit_document():
         d = Document()
 
         try:
-            d.retrieve_from_url(url)
-        except DocumentNotFoundException:
             d.gather(url)
             d.extract_fields()
-
             d.store()
 
             flash("L'article a été récupéré", "info")
-        else:
+        except DocumentExistsException:
+            d.retrieve_from_url(url)
             flash("L'article existe déjà", "warning")
 
         return redirect(url_for('heraldic.review_document', id=d.model.id))
@@ -78,7 +76,7 @@ def review_document():
     if form.validate_on_submit():
         if 'gather_again' in request.form:
             new_d = Document()
-            new_d.gather(d.model.url.value)
+            new_d.gather(d.model.url.value, override=True)
             new_d.extract_fields()
 
             try:
