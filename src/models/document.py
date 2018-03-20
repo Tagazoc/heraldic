@@ -6,7 +6,7 @@ Module which implements Document class.
 
 from src.media.known_media import KnownMedia
 from src.store import model_storer, model_searcher
-from src.gathering.html_document_gatherer import HTTPDocumentGatherer, FileDocumentGatherer
+from src.gathering.document_gatherer import HTTPDocumentGatherer, FileDocumentGatherer
 from src.models.document_model import DocumentModel
 from typing import List
 
