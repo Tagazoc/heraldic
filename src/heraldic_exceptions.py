@@ -17,6 +17,10 @@ class DocumentNotFoundException(HeraldicException):
     pass
 
 
+class DocumentExistsException(HeraldicException):
+    pass
+
+
 class ParsingFailureException(HeraldicException):
     def __init__(self, message: str='Erreur de parsing'):
         self.message = message
