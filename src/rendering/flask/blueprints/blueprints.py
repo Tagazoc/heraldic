@@ -49,7 +49,6 @@ def submit_document():
 
         try:
             d.gather(url)
-            d.extract_fields()
             d.store()
 
             flash("L'article a été récupéré", "info")
@@ -77,7 +76,6 @@ def review_document():
         if 'gather_again' in request.form:
             new_d = Document()
             new_d.gather(d.model.url.value, override=True)
-            new_d.extract_fields()
 
             try:
                 d.update_from_model(new_d.model)

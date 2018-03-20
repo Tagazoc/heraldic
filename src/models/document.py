@@ -6,7 +6,6 @@ Module which implements Document class.
 
 from src.media.known_media import KnownMedia
 from src.store import model_storer, model_searcher
-from src.gathering.document_gatherer import HTTPDocumentGatherer, FileDocumentGatherer
 from src.models.document_model import DocumentModel
 from typing import List
 from src.heraldic_exceptions import DocumentExistsException
@@ -22,25 +21,25 @@ class Document(object):
 
         self.extractor = None
 
-        self.gatherer = None
-
     def gather(self, url: str, override: bool=False):
         """
-        Gather a document contents from an url.
+        Gather a document contents from an url, and parse it.
         :param url: URL of the document
         :param override: disable existence check, in order to override document
         :return:
         """
         if not override and model_searcher.check_url_existence(url):
             raise DocumentExistsException
-        self.gatherer = HTTPDocumentGatherer(self.model, url)
-        self.gatherer.gather()
+
+        self.model.gather_from_url(url)
+        self._extract_fields()
 
     def gather_from_file(self, url: str, filepath: str):
-        self.gatherer = FileDocumentGatherer(self.model, url, filepath)
-        self.gatherer.gather()
+        self.model.url = url
+        self.model.gather_from_file(filepath)
+        self._extract_fields()
 
-    def extract_fields(self):
+    def _extract_fields(self):
         """
         Find document media and extract document fields according to it.
         :return:

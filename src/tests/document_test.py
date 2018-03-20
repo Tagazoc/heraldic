@@ -101,7 +101,6 @@ def test_document_error():
     """
     error_d = Document()
     error_d.gather_from_file(doc_dict['url'], 'src/tests/media/article_liberation.htm')
-    error_d.extract_fields()
 
     d = Document()
     d.retrieve(update_doc_dict['id'])

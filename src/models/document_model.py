@@ -8,9 +8,11 @@ import re
 from src.models.attribute import Attribute, StringListAttribute, StringAttribute,\
     DateAttribute, BooleanAttribute, IntegerAttribute
 from collections import OrderedDict
-from datetime import datetime
 from copy import copy
 from typing import Dict, Optional
+import requests
+from datetime import datetime
+import validators
 
 
 class DocumentModel(object):
@@ -198,6 +200,48 @@ class DocumentModel(object):
         for k, v in self.attributes.items():
             if k in suggestions_dict.keys():
                 v.suggestions = suggestions_dict[k]
+
+    def gather_from_url(self, url: str):
+        """
+        Gather document from an URL.
+        :return: HTML content located at URL
+        """
+        try:
+            self._check_url(url)
+            r = requests.get(url)
+        except (ValueError, ConnectionError):
+            raise
+        # Setting final URL (in case of redirection)
+        self.attributes['url'].value = r.url
+
+        self.attributes['content'].value = r.text
+
+        self._set_gather_attributes()
+
+    def gather_from_file(self, filepath: str):
+        self.attributes['url'] = self.url
+        with open(filepath, 'r') as f:
+            self.attributes['content'].value = f.read()
+        self._set_gather_attributes()
+
+    def _set_gather_attributes(self):
+
+        # Setting gather time in model
+        self.attributes['gather_time'].value = datetime.now()
+
+        # Unless we use the model to update another document, its version is 1.
+        self.attributes['version_no'].value = 1
+
+        # Specify model comes from gathering.
+        self.from_gathering = True
+
+    @staticmethod
+    def _check_url(url) -> bool:
+        """
+        Check URL syntax.
+        :return: Result of the check.
+        """
+        return validators.url(url)
 
 
 class OldDocumentModel(DocumentModel):
