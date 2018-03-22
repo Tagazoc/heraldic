@@ -218,8 +218,8 @@ class DocumentModel(object):
 
         self._set_gather_attributes()
 
-    def gather_from_file(self, filepath: str):
-        self.attributes['url'] = self.url
+    def gather_from_file(self, url: str, filepath: str):
+        self.attributes['url'].value = url
         with open(filepath, 'r') as f:
             self.attributes['content'].value = f.read()
         self._set_gather_attributes()

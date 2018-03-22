@@ -99,12 +99,10 @@ def test_document_error():
     Test malformed document gathering from a slightly different file with parsing error. Event though document will be
     update, rroneous attribute will not change. Error will be stored in specific index.
     """
-    error_d = Document()
-    error_d.gather_from_file(doc_dict['url'], 'src/tests/media/article_liberation.htm')
-
     d = Document()
     d.retrieve(update_doc_dict['id'])
-    d.update_from_model(error_d.model)
+    d.gather(doc_dict['url'], override=True, filepath='src/tests/media/article_liberation.htm')
+
     del d
 
     d = Document()

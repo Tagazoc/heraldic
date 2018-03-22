@@ -49,7 +49,6 @@ def submit_document():
 
         try:
             d.gather(url)
-            d.store()
 
             flash("L'article a été récupéré", "info")
         except DocumentExistsException:
@@ -74,11 +73,8 @@ def review_document():
 
     if form.validate_on_submit():
         if 'gather_again' in request.form:
-            new_d = Document()
-            new_d.gather(d.model.url.value, override=True)
-
             try:
-                d.update_from_model(new_d.model)
+                d.gather(d.model.url.value, override=True)
                 flash("L'article a de nouveau été récupéré", "info")
             except DocumentNotChangedException:
                 flash("Aucune mise à jour constatée", "danger")

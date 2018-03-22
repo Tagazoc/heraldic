@@ -16,28 +16,38 @@ class Document(object):
     Class representing a Document during its way through Heraldic.
     """
     def __init__(self):
-        self.model = DocumentModel()
+        self.model: DocumentModel = DocumentModel()
         self.old_versions: List[DocumentModel] = []
 
         self.extractor = None
 
-    def gather(self, url: str, override: bool=False):
+    def gather(self, url: str, update_time=None, override: bool=False, filepath: str=''):
         """
-        Gather a document contents from an url, and parse it.
+        Gather a document contents from an url, parse it and store or update it.
         :param url: URL of the document
+        :param update_time: Update time (in rss feed) to avoid gathering if up-to-date
         :param override: disable existence check, in order to override document
+        :param filepath: Whether url is instead a file path.
         :return:
         """
-        if not override and model_searcher.check_url_existence(url):
-            raise DocumentExistsException
-
-        self.model.gather_from_url(url)
-        self._extract_fields()
-
-    def gather_from_file(self, url: str, filepath: str):
-        self.model.url = url
-        self.model.gather_from_file(filepath)
-        self._extract_fields()
+        if self.model.url.value:
+            # It is an update, is it already up-to-date ? Unless override flag
+            if not override and update_time and self.model.doc_update_time and self.model.doc_update_time >= update_time:
+                raise DocumentExistsException
+            up_d = Document()
+            if filepath:
+                up_d.model.gather_from_file(url, filepath)
+            else:
+                up_d.model.gather_from_url(url)
+            up_d._extract_fields()
+            self.update_from_model(up_d.model)
+        else:
+            if filepath:
+                self.model.gather_from_file(url, filepath)
+            else:
+                self.model.gather_from_url(url)
+            self._extract_fields()
+            self.store()
 
     def _extract_fields(self):
         """
