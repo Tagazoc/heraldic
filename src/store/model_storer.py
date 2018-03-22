@@ -95,3 +95,12 @@ def delete(dm: DocumentModel, old_models: List[DocumentModel]) -> None:
         es.delete('docs_history', id=old_dm.id, doc_type='doc')
 
     es.indices.refresh(index='docs_history')
+
+
+def store_feed(body):
+    es.store('feeds', 'feed', body)
+
+
+def update_feed(feed_id, body):
+    es.update('feeds', doc_type='feed', id=feed_id, body=body)
+

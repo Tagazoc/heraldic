@@ -8,6 +8,7 @@ from src.store.elastic import es
 from src.models.document_model import DocumentModel, OldDocumentModel
 from src.heraldic_exceptions import DocumentNotFoundException
 from elasticsearch.exceptions import NotFoundError
+from src.gathering.feeds import RssFeed
 from typing import List
 
 
@@ -31,6 +32,16 @@ def retrieve(doc_id: str) -> DocumentModel:
     dm.set_suggestions_from_store(retrieve_suggestions(doc_id))
 
     return dm
+
+
+def check_url_existence(url: str) -> bool:
+    """
+    Check whether a document exists with this URL.
+    :param url: URL of the potential document
+    :return: True if a document with this url exists in 'docs' index, else False
+    """
+    hits = _search_term({'url': url}, limit=1, _source=False)
+    return len(hits) > 0
 
 
 def search_all_docs() -> List[DocumentModel]:
@@ -84,6 +95,15 @@ def retrieve_from_url(url: str) -> DocumentModel:
     return dm
 
 
+def retrieve_feeds() -> List[RssFeed]:
+    feeds = []
+    hits = _search_term(index='feeds')
+    for hit in hits:
+        feeds.append(RssFeed(hit['_id'], hit['version'], hit['url']))
+
+    return feeds
+
+
 def _generate_doc_models(hits) -> List[DocumentModel]:
     models = []
     for hit in hits:
@@ -95,15 +115,14 @@ def _generate_doc_models(hits) -> List[DocumentModel]:
     return models
 
 
-def _search_term(terms: dict= {}, index='docs', limit=0, sort: list= None) -> List[DocumentModel]:
+def _search_term(terms: dict= {}, index='docs', limit=0, **kwargs) -> List[DocumentModel]:
     body = {}
     if terms:
         body = {'query': {'term': terms}}
     if limit:
         body['terminate_after'] = limit
-        pass
-    if sort:
-        body['sort'] = sort
+    for k, v in kwargs.items():
+        body[k] = v
 
     res = es.search(index, 'doc', body)
 
