@@ -4,11 +4,10 @@
 Module implementing model search functions.
 """
 
-from src.store.elastic import es
+from src.store.elastic import es, DocumentIndex, OldVersionIndex, ErrorIndex, SuggestionIndex, FeedsIndex
 from src.models.document_model import DocumentModel, OldDocumentModel
 from src.heraldic_exceptions import DocumentNotFoundException
 from elasticsearch.exceptions import NotFoundError
-from src.gathering.feeds import RssFeed
 from typing import List
 
 
@@ -19,7 +18,7 @@ def retrieve(doc_id: str) -> DocumentModel:
     :return: The document model.
     """
     try:
-        res = es.get('docs', id=doc_id, doc_type='doc')
+        res = es.get(DocumentIndex.INDEX_NAME, id=doc_id, doc_type=DocumentIndex.TYPE_NAME)
     except NotFoundError:
         raise DocumentNotFoundException
     dm = DocumentModel()
@@ -54,7 +53,7 @@ def search_url(url) -> List[DocumentModel]:
 
 def retrieve_old_versions(doc_id) -> List[DocumentModel]:
     models = []
-    hits = _search_term({'doc_id': doc_id}, index='docs_history', sort=['version_no'])
+    hits = _search_term({'doc_id': doc_id}, index=OldVersionIndex.INDEX_NAME, sort=['version_no'])
 
     for hit in hits:
         dm = OldDocumentModel(doc_id)
@@ -67,7 +66,7 @@ def retrieve_old_versions(doc_id) -> List[DocumentModel]:
 
 def retrieve_errors(doc_id) -> dict:
     try:
-        res = es.get('errors', id=doc_id, doc_type='doc_errors')
+        res = es.get(ErrorIndex.INDEX_NAME, id=doc_id, doc_type=ErrorIndex.TYPE_NAME)
         return res['_source']
     except NotFoundError:
         return {}
@@ -75,7 +74,7 @@ def retrieve_errors(doc_id) -> dict:
 
 def retrieve_suggestions(doc_id) -> dict:
     try:
-        res = es.get('suggestions', id=doc_id, doc_type='doc')
+        res = es.get(SuggestionIndex.INDEX_NAME, id=doc_id, doc_type=SuggestionIndex.TYPE_NAME)
         return res['_source']
     except NotFoundError:
         return {}
@@ -95,13 +94,10 @@ def retrieve_from_url(url: str) -> DocumentModel:
     return dm
 
 
-def retrieve_feeds() -> List[RssFeed]:
-    feeds = []
-    hits = _search_term(index='feeds')
-    for hit in hits:
-        feeds.append(RssFeed(hit['_id'], hit['version'], hit['url']))
+def retrieve_feeds_dicts() -> List[dict]:
+    hits = _search_term(index=FeedsIndex.INDEX_NAME)
 
-    return feeds
+    return hits
 
 
 def _generate_doc_models(hits) -> List[DocumentModel]:
@@ -115,7 +111,8 @@ def _generate_doc_models(hits) -> List[DocumentModel]:
     return models
 
 
-def _search_term(terms: dict= {}, index='docs', limit=0, **kwargs) -> List[DocumentModel]:
+def _search_term(terms: dict= {}, index=DocumentIndex.INDEX_NAME, doc_type=DocumentIndex.TYPE_NAME,
+                 limit=0, **kwargs) -> List[dict]:
     body = {}
     if terms:
         body = {'query': {'term': terms}}
@@ -124,6 +121,6 @@ def _search_term(terms: dict= {}, index='docs', limit=0, **kwargs) -> List[Docum
     for k, v in kwargs.items():
         body[k] = v
 
-    res = es.search(index, 'doc', body)
+    res = es.search(index, doc_type=doc_type, body=body)
 
     return res['hits']['hits']
