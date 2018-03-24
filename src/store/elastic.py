@@ -137,9 +137,10 @@ class FeedsIndex(ElasticIndex):
     @classmethod
     def _render_mapping_body(cls):
         properties_mapping = ''
-        attributes = ['url', 'title', 'description', 'link', 'version']
+        attributes = ['url', 'title', 'link']
         for k in attributes:
             properties_mapping += '"' + k + '": {\n"type": "keyword"},\n'
+        properties_mapping += '"update_time": {\n"type": "date", "format": "epoch_millis"},\n'
         # Removing last comma
         properties_mapping = properties_mapping[:-2] + '\n'
 

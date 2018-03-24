@@ -4,11 +4,13 @@
 Module which implements Document class.
 """
 
-from src.media.known_media import KnownMedia
+from src.media.known_media import known_media
 from src.store import model_storer, model_searcher
 from src.models.document_model import DocumentModel
 from typing import List
-from src.heraldic_exceptions import DocumentExistsException
+from src.heraldic_exceptions import DocumentExistsException, DomainNotSupportedException
+import validators
+import re
 
 
 class Document(object):
@@ -30,9 +32,12 @@ class Document(object):
         :param filepath: Whether url is instead a file path.
         :return:
         """
+        self._check_url(url)
+
         if self.model.url.value:
             # It is an update, is it already up-to-date ? Unless override flag
-            if not override and update_time and self.model.doc_update_time and self.model.doc_update_time >= update_time:
+            if not override and update_time and self.model.doc_update_time.value\
+                    and self.model.doc_update_time.value >= update_time:
                 raise DocumentExistsException
             up_d = Document()
             if filepath:
@@ -55,7 +60,7 @@ class Document(object):
         :return:
         """
         if not self.extractor:
-            extractor = KnownMedia()[self.model.domain]
+            extractor = known_media[self._get_domain(self.model.url)]
             self.extractor = extractor(self.model)
         self.extractor.extract_fields()
 
@@ -138,3 +143,24 @@ class Document(object):
         :return:
         """
         model_storer.delete(self.model, self.old_versions)
+
+    @staticmethod
+    def _get_domain(url):
+        domain_regex = re.compile(r'https?://(.*?)/')
+        try:
+            match = domain_regex.match(str(url))
+            return match.group(1)
+        except AttributeError:
+            raise ValueError
+
+    @staticmethod
+    def _check_url(url):
+        """
+        Check URL syntax.
+        :return: Result of the check.
+        """
+        if not validators.url(url):
+            raise ValueError
+        domain = Document._get_domain(url)
+        if known_media[domain] is None:
+            raise DomainNotSupportedException

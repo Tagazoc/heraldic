@@ -20,6 +20,8 @@ flask-debug = "*"
 flask-wtf = "*"
 wtforms = "*"
 spacy = "*"
+validators = "*"
+feedparser = "*"
 
 
 [dev-packages]

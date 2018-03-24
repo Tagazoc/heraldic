@@ -3,47 +3,50 @@
 
 import feedparser
 from src.models.document import Document
-from src.heraldic_exceptions import DocumentExistsException
+from src.heraldic_exceptions import DocumentExistsException, DomainNotSupportedException
 from src.store import model_storer, model_searcher
+from typing import List
+from datetime import datetime
+from time import mktime
 
 
 class RssFeed:
-    def __init__(self, feed_url, version=None, feed_id=None):
+    def __init__(self, feed_url, update_time=None, feed_id=None):
         self.id = feed_id
-        self.stored_version = version
         self.url = feed_url
-        self.current_version = None
+        self.stored_update_time: datetime = datetime.fromtimestamp(update_time) if update_time else None
+        self.update_time = None
         self.title = None
-        self.description = None
         self.link = None
-        self.items = []
+        self.entries = []
 
     def gather(self):
         feed = feedparser.parse(self.url)
 
-        self.url = feed['url']
-        self.current_version = feed['version']
-        self.title = feed['channel']['title']
-        self.description = feed['channel']['description']
-        self.link = feed['channel']['link']
-        self.items = feed['items']
+        self.url = feed['href']
+        self.update_time = datetime.fromtimestamp(mktime(feed['feed']['updated_parsed']))
+        self.title = feed['feed']['title']
+        self.link = feed['feed']['link']
+        self.entries = feed['entries']
 
     def harvest(self):
-        for item in self.items:
+        for item in self.entries:
             d = Document()
+            link = item['link']
+            update_time = datetime.fromtimestamp(mktime(item['updated_parsed']))
             try:
-                d.gather(item['link'])
-                d.store()
+                d.gather(link, update_time=update_time)
             except DocumentExistsException:
+                pass
+            except DomainNotSupportedException:
                 pass
 
     def render_for_store(self):
         body = {
             'url': self.url,
             'title': self.title,
-            'description': self.description,
+            'update_time': self.update_time.timestamp(),
             'link': self.link,
-            'version': self.current_version
         }
         return body
 
@@ -52,3 +55,19 @@ class RssFeed:
 
     def store(self):
         model_storer.store_feed(self.render_for_store())
+
+
+class FeedHarvester:
+    def __init__(self):
+        self.feeds: List[RssFeed] = []
+
+    def retrieve_feeds(self):
+        feeds_dicts = model_searcher.retrieve_feeds_dicts()
+        self.feeds = [RssFeed(dic['_source']['url'], dic['_source']['update_time'], dic['_id']) for dic in feeds_dicts]
+
+    def harvest(self):
+        for feed in self.feeds:
+            feed.gather()
+            if feed.update_time >= feed.stored_update_time:
+                feed.harvest()
+                feed.update()

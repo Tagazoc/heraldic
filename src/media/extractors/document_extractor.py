@@ -18,6 +18,8 @@ def handle_parsing_errors(decorated):
             result = decorated(self)
         except AttributeError:
             raise HTMLParsingFailureException
+        except TypeError:
+            raise HTMLParsingFailureException
         return result
 
     return wrapper

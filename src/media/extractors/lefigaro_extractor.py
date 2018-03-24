@@ -7,7 +7,7 @@ Le Monde website extractor implementation.
 from src.media.extractors.document_extractor import DocumentExtractor, handle_parsing_errors
 import re
 from datetime import datetime
-from src.heraldic_exceptions import HTMLParsingFailureException, DateFormatFailureException
+from src.heraldic_exceptions import DateFormatFailureException
 
 
 class LeFigaroExtractor(DocumentExtractor):

@@ -32,6 +32,10 @@
 
 # TODO Faire une autre classe de modèle pour les vieilles versions -> OK
 
+# TODO Vérifier les résultats des requêtes ES
+
+# T
+
 # TODO Voir les perfs
 
 # TODO Faire la sécurité

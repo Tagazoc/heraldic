@@ -12,7 +12,6 @@ from copy import copy
 from typing import Dict, Optional
 import requests
 from datetime import datetime
-import validators
 
 
 class DocumentModel(object):
@@ -76,19 +75,6 @@ class DocumentModel(object):
             self.attributes[key].value = value
         else:
             super(DocumentModel, self).__setattr__(key, value)
-
-    @property
-    def domain(self) -> str:
-        """
-        Domain property extracts domain from url.
-        :return: Web domain from which document was gathered.
-        """
-        domain_regex = re.compile(r'https?://(.*?)/')
-        try:
-            match = domain_regex.match(str(self.url))
-            return match.group(1)
-        except AttributeError:
-            raise ValueError
 
     def update(self, model: 'DocumentModel') -> 'OldDocumentModel':
         """
@@ -207,7 +193,6 @@ class DocumentModel(object):
         :return: HTML content located at URL
         """
         try:
-            self._check_url(url)
             r = requests.get(url)
         except (ValueError, ConnectionError):
             raise
@@ -234,14 +219,6 @@ class DocumentModel(object):
 
         # Specify model comes from gathering.
         self.from_gathering = True
-
-    @staticmethod
-    def _check_url(url) -> bool:
-        """
-        Check URL syntax.
-        :return: Result of the check.
-        """
-        return validators.url(url)
 
 
 class OldDocumentModel(DocumentModel):

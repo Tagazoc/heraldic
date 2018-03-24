@@ -19,7 +19,7 @@ class KnownMedia(object):
     def __getitem__(self, domain):
         try:
             return self.media_by_domain[domain]
-        except ValueError:
+        except KeyError:
             raise DomainNotSupportedException
 
     def _set_media_domains(self):
@@ -28,6 +28,8 @@ class KnownMedia(object):
                 if val.__name__.endswith('Extractor'):
                     for domain in val.domains:
                         self.media_by_domain[domain] = val
+            except KeyError:
+                continue
             except AttributeError:
                 continue
 
@@ -38,3 +40,6 @@ class KnownMedia(object):
     #                 self.domains_by_media[val.__name__[:-9]] = val.domains
     #         except AttributeError:
     #             continue
+
+
+known_media = KnownMedia()

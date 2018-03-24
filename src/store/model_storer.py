@@ -72,7 +72,7 @@ def update(dm: DocumentModel, om: OldDocumentModel):
     if dm.storable_values_updated:
         dm_body = dm.render_for_store()
         es.update(DocumentIndex.INDEX_NAME, doc_type=DocumentIndex.TYPE_NAME, id=dm.id.value,
-                  body={DocumentIndex.TYPE_NAME: dm_body})
+                  body={'doc': dm_body})
 
         om_body = om.render_for_store()
         es.index(OldVersionIndex.INDEX_NAME, doc_type=OldVersionIndex.TYPE_NAME, body=om_body)
@@ -100,8 +100,8 @@ def delete(dm: DocumentModel, old_models: List[DocumentModel]) -> None:
 
 
 def store_feed(body: dict):
-    es.store(FeedsIndex.INDEX_NAME, doc_type=FeedsIndex.TYPE_NAME, body=body)
+    es.index(FeedsIndex.INDEX_NAME, doc_type=FeedsIndex.TYPE_NAME, body=body)
 
 
 def update_feed(feed_id, body):
-    es.update(FeedsIndex.INDEX_NAME, doc_type=FeedsIndex.TYPE_NAME, id=feed_id, body=body)
+    es.update(FeedsIndex.INDEX_NAME, doc_type=FeedsIndex.TYPE_NAME, id=feed_id, body={'doc': body})
