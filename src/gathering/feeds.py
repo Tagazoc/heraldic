@@ -3,11 +3,13 @@
 
 import feedparser
 from src.models.document import Document
-from src.heraldic_exceptions import DocumentExistsException, DomainNotSupportedException
+from src.heraldic_exceptions import DocumentExistsException, DomainNotSupportedException, DocumentNotFoundException,\
+    DocumentNotChangedException
 from src.store import model_storer, model_searcher
 from typing import List
 from datetime import datetime
 from time import mktime
+from src.misc.logging import logger
 
 
 class RssFeed:
@@ -30,16 +32,27 @@ class RssFeed:
         self.entries = feed['entries']
 
     def harvest(self):
+        gather_count = 0
+        exists_count = 0
+        not_supported_count = 0
         for item in self.entries:
             d = Document()
             link = item['link']
             update_time = datetime.fromtimestamp(mktime(item['updated_parsed']))
             try:
+                d.retrieve_from_url(link)
+            except DocumentNotFoundException:
+                pass
+            try:
                 d.gather(link, update_time=update_time)
+                gather_count += 1
             except DocumentExistsException:
-                pass
+                exists_count += 1
+            except DocumentNotChangedException:
+                exists_count += 1
             except DomainNotSupportedException:
-                pass
+                not_supported_count += 1
+        logger.log('INFO_FEED_HARVEST_END', self.url, gather_count, len(self.entries), exists_count, not_supported_count)
 
     def render_for_store(self):
         body = {
@@ -52,9 +65,11 @@ class RssFeed:
 
     def update(self):
         model_storer.update_feed(self.id, self.render_for_store())
+        logger.log('INFO_FEED_UPDATE_SUCCESS', self.url)
 
     def store(self):
         model_storer.store_feed(self.render_for_store())
+        logger.log('INFO_FEED_STORE_SUCCESS', self.url)
 
 
 class FeedHarvester:

@@ -4,13 +4,16 @@
 Exceptions used in Heraldic program.
 """
 
+from src.misc.logging import logger
+
 
 class HeraldicException(Exception):
     pass
 
 
 class DomainNotSupportedException(HeraldicException, ValueError):
-    pass
+    def __init__(self, domain):
+        logger.log('WARN_DOMAIN_NOT_SUPPORTED', domain)
 
 
 class DocumentNotFoundException(HeraldicException):
@@ -18,7 +21,8 @@ class DocumentNotFoundException(HeraldicException):
 
 
 class DocumentExistsException(HeraldicException):
-    pass
+    def __init__(self, url):
+        logger.log('INFO_DOC_ALREADY_UPTODATE', url)
 
 
 class ParsingFailureException(HeraldicException):
@@ -27,14 +31,15 @@ class ParsingFailureException(HeraldicException):
 
 
 class HTMLParsingFailureException(ParsingFailureException):
-    def __init__(self, message: str='Erreur de parsing HTML'):
+    def __init__(self, message: str='HTML parsing error'):
         self.message = message
 
 
 class DateFormatFailureException(ParsingFailureException):
-    def __init__(self, message=''):
+    def __init__(self, message='Date format error'):
         self.message = message
 
 
 class DocumentNotChangedException(HeraldicException):
-    pass
+    def __init__(self, doc_id, url):
+        logger.log('INFO_DOC_NOT_CHANGED', doc_id, url)

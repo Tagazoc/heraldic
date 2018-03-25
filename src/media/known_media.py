@@ -8,6 +8,7 @@ from src.media.extractors.liberation_extractor import LiberationExtractor
 from src.media.extractors.lemonde_extractor import LeMondeExtractor
 from src.media.extractors.lefigaro_extractor import LeFigaroExtractor
 from src.heraldic_exceptions import DomainNotSupportedException
+from src.misc.logging import logger
 
 
 class KnownMedia(object):
@@ -20,7 +21,7 @@ class KnownMedia(object):
         try:
             return self.media_by_domain[domain]
         except KeyError:
-            raise DomainNotSupportedException
+            raise DomainNotSupportedException(domain)
 
     def _set_media_domains(self):
         for name, val in globals().items():

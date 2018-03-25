@@ -9,6 +9,7 @@ from src.store import model_storer, model_searcher
 from src.models.document_model import DocumentModel
 from typing import List
 from src.heraldic_exceptions import DocumentExistsException, DomainNotSupportedException
+from src.misc.logging import logger
 import validators
 import re
 
@@ -38,7 +39,7 @@ class Document(object):
             # It is an update, is it already up-to-date ? Unless override flag
             if not override and update_time and self.model.doc_update_time.value\
                     and self.model.doc_update_time.value >= update_time:
-                raise DocumentExistsException
+                raise DocumentExistsException(url)
             up_d = Document()
             if filepath:
                 up_d.model.gather_from_file(url, filepath)
@@ -46,6 +47,7 @@ class Document(object):
                 up_d.model.gather_from_url(url)
             up_d._extract_fields()
             self.update_from_model(up_d.model)
+            logger.log('INFO_DOC_UPDATE_SUCCESS', url)
         else:
             if filepath:
                 self.model.gather_from_file(url, filepath)
@@ -53,6 +55,7 @@ class Document(object):
                 self.model.gather_from_url(url)
             self._extract_fields()
             self.store()
+            logger.log('INFO_DOC_STORE_SUCCESS', url)
 
     def _extract_fields(self):
         """
@@ -143,6 +146,7 @@ class Document(object):
         :return:
         """
         model_storer.delete(self.model, self.old_versions)
+        logger.log('WARN_DOC_DELETED', self.model.id.value, self.model.url.value)
 
     @staticmethod
     def _get_domain(url):
@@ -160,7 +164,8 @@ class Document(object):
         :return: Result of the check.
         """
         if not validators.url(url):
+            logger.log('WARN_DOMAIN_MALFORMED', url)
             raise ValueError
         domain = Document._get_domain(url)
         if known_media[domain] is None:
-            raise DomainNotSupportedException
+            raise DomainNotSupportedException(domain)

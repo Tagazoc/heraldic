@@ -9,6 +9,7 @@ from src.store.elastic import es, DocumentIndex, OldVersionIndex, ErrorIndex, Su
 from elasticsearch.exceptions import NotFoundError
 from src.heraldic_exceptions import DocumentNotChangedException
 from typing import List
+from src.misc.logging import logger
 
 
 def store(dm: DocumentModel, doc_id=None):
@@ -78,7 +79,7 @@ def update(dm: DocumentModel, om: OldDocumentModel):
         es.index(OldVersionIndex.INDEX_NAME, doc_type=OldVersionIndex.TYPE_NAME, body=om_body)
         es.indices.refresh(index=OldVersionIndex.INDEX_NAME)
     else:
-        raise DocumentNotChangedException
+        raise DocumentNotChangedException(dm.id.value, dm.url.value)
 
 
 def delete(dm: DocumentModel, old_models: List[DocumentModel]) -> None:

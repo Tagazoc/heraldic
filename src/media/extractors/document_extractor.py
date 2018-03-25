@@ -10,6 +10,7 @@ from src.models.document_model import DocumentModel
 from bs4 import BeautifulSoup
 from datetime import datetime
 from src.heraldic_exceptions import ParsingFailureException, HTMLParsingFailureException, DateFormatFailureException
+from src.misc.logging import logger
 
 
 def handle_parsing_errors(decorated):
@@ -52,6 +53,7 @@ class DocumentExtractor(object):
                     func = getattr(self, "_extract_" + k)
                     v.set_from_extraction(func())
                 except ParsingFailureException as err:
+                    logger.log('WARN_ATTRIBUTE_PARSING_ERROR', k, self.dm.url.value, err.message)
                     v.parsing_error = err.message
 
     def _extract_media(self) -> str:
