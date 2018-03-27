@@ -31,8 +31,8 @@ def test_url_submit():
     ), follow_redirects=True)
     assert "a été récupéré" in str(rv.data, 'utf-8')
 
-    d = Document()
-    d.retrieve_from_url(doc_dict['url'])
+    d = Document(doc_dict['url'])
+    d.retrieve_from_url()
     d.retrieve_old_versions()
 
     # Prepare next test
@@ -151,8 +151,8 @@ def test_document_deletion():
     """
     Deletion of the document, and its attached objects : suggestions, errors (should not be) and old versions.
     """
-    d = Document()
-    d.retrieve_from_url(doc_dict['url'])
+    d = Document(doc_dict['url'])
+    d.retrieve_from_url()
     d.retrieve_old_versions()
     d.delete()
 

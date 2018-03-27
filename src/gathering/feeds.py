@@ -36,15 +36,15 @@ class RssFeed:
         exists_count = 0
         not_supported_count = 0
         for item in self.entries:
-            d = Document()
             link = item['link']
+            d = Document(link)
             update_time = datetime.fromtimestamp(mktime(item['updated_parsed']))
             try:
-                d.retrieve_from_url(link)
+                d.retrieve_from_url()
             except DocumentNotFoundException:
                 pass
             try:
-                d.gather(link, update_time=update_time)
+                d.gather(update_time=update_time)
                 gather_count += 1
             except DocumentExistsException:
                 exists_count += 1

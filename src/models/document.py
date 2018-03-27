@@ -18,44 +18,50 @@ class Document(object):
     """
     Class representing a Document during its way through Heraldic.
     """
-    def __init__(self):
+    def __init__(self, url: str=''):
         self.model: DocumentModel = DocumentModel()
         self.old_versions: List[DocumentModel] = []
+        self.url = ''
+        if url:
+            self.url = self._check_and_truncate_url(url)
 
         self.extractor = None
 
-    def gather(self, url: str, update_time=None, override: bool=False, filepath: str=''):
+    def gather(self, update_time=None, override: bool=False, filepath: str=''):
         """
         Gather a document contents from an url, parse it and store or update it.
-        :param url: URL of the document
         :param update_time: Update time (in rss feed) to avoid gathering if up-to-date
         :param override: disable existence check, in order to override document
         :param filepath: Whether url is instead a file path.
         :return:
         """
-        self._check_url(url)
+
+        # TODO Après avoir tronqué les paramètres de l'URL originale du document (à mettre en attribut et à récupérer
+        # dès la construction ?), on recherche cette URL dans l'index, puis on request,
+        # durant lequel on ajoute l'URL originale
+        # et l'URL finale aux URL du document (à passer en StringListAttribute) si absentes
 
         if self.model.url.value:
             # It is an update, is it already up-to-date ? Unless override flag
             if not override and update_time and self.model.doc_update_time.value\
                     and self.model.doc_update_time.value >= update_time:
-                raise DocumentExistsException(url)
+                raise DocumentExistsException(self.url)
             up_d = Document()
             if filepath:
-                up_d.model.gather_from_file(url, filepath)
+                up_d.model.gather_from_file(self.url, filepath)
             else:
-                up_d.model.gather_from_url(url)
+                up_d.model.gather_from_url(self.url)
             up_d._extract_fields()
             self.update_from_model(up_d.model)
-            logger.log('INFO_DOC_UPDATE_SUCCESS', url)
+            logger.log('INFO_DOC_UPDATE_SUCCESS', self.url)
         else:
             if filepath:
-                self.model.gather_from_file(url, filepath)
+                self.model.gather_from_file(self.url, filepath)
             else:
-                self.model.gather_from_url(url)
+                self.model.gather_from_url(self.url)
             self._extract_fields()
             self.store()
-            logger.log('INFO_DOC_STORE_SUCCESS', url)
+            logger.log('INFO_DOC_STORE_SUCCESS', self.url)
 
     def _extract_fields(self):
         """
@@ -63,7 +69,7 @@ class Document(object):
         :return:
         """
         if not self.extractor:
-            extractor = known_media[self._get_domain(self.model.url)]
+            extractor = known_media[self._get_domain(self.model.url.value)]
             self.extractor = extractor(self.model)
         self.extractor.extract_fields()
 
@@ -81,13 +87,13 @@ class Document(object):
         :param doc_id: ID of the document in the store
         """
         self.model = model_searcher.retrieve(doc_id)
+        self.url = self.model.url.value
 
-    def retrieve_from_url(self, url: str):
+    def retrieve_from_url(self):
         """
         Retrieve a document from its URL.
-        :param url: URL of the document
         """
-        self.model = model_searcher.retrieve_from_url(url)
+        self.model = model_searcher.retrieve_from_url(self.url)
 
     def retrieve_old_versions(self):
         """
@@ -152,13 +158,13 @@ class Document(object):
     def _get_domain(url):
         domain_regex = re.compile(r'https?://(.*?)/')
         try:
-            match = domain_regex.match(str(url))
+            match = domain_regex.match(url)
             return match.group(1)
         except AttributeError:
             raise ValueError
 
     @staticmethod
-    def _check_url(url):
+    def _check_and_truncate_url(url):
         """
         Check URL syntax.
         :return: Result of the check.
@@ -169,3 +175,6 @@ class Document(object):
         domain = Document._get_domain(url)
         if known_media[domain] is None:
             raise DomainNotSupportedException(domain)
+        url_regex = re.compile(r'^(.*?)(?:\?|$)')
+        match = url_regex.match(url)
+        return match.group(1)

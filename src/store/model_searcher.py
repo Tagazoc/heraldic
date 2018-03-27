@@ -61,6 +61,10 @@ def search_all_docs() -> List[DocumentModel]:
     return _generate_doc_models(_search_term())
 
 
+def search_all_errors() -> List[dict]:
+    res = _search_term({}, ErrorIndex.INDEX_NAME, ErrorIndex.TYPE_NAME)
+
+
 def search_url(url) -> List[DocumentModel]:
     return _generate_doc_models(_search_term({'term': {'url': url}}, limit=1))
 
