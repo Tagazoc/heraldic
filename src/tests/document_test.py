@@ -19,6 +19,7 @@ config = {
 }
 app = create_app(config)
 app_client = app.test_client()
+url = doc_dict['urls']
 
 
 def test_url_submit():
@@ -27,11 +28,11 @@ def test_url_submit():
     retrieved from store. No old version should exist yet.
     """
     rv = app_client.post('/submit_document', data=dict(
-        url=doc_dict['url']
+        url=url
     ), follow_redirects=True)
     assert "a été récupéré" in str(rv.data, 'utf-8')
 
-    d = Document(doc_dict['url'])
+    d = Document(url)
     d.retrieve_from_url()
     d.retrieve_old_versions()
 
@@ -99,9 +100,9 @@ def test_document_error():
     Test malformed document gathering from a slightly different file with parsing error. Event though document will be
     update, rroneous attribute will not change. Error will be stored in specific index.
     """
-    d = Document()
+    d = Document(url)
     d.retrieve(update_doc_dict['id'])
-    d.gather(doc_dict['url'], override=True, filepath='src/tests/media/article_liberation.htm')
+    d.gather(override=True, filepath='src/tests/media/article_liberation.htm')
 
     del d
 
@@ -151,7 +152,7 @@ def test_document_deletion():
     """
     Deletion of the document, and its attached objects : suggestions, errors (should not be) and old versions.
     """
-    d = Document(doc_dict['url'])
+    d = Document(url)
     d.retrieve_from_url()
     d.retrieve_old_versions()
     d.delete()

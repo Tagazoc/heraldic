@@ -37,9 +37,15 @@ class RssFeed:
         not_supported_count = 0
         for item in self.entries:
             link = item['link']
-            d = Document(link)
+
             update_time = datetime.fromtimestamp(mktime(item['updated_parsed']))
             try:
+                d = Document(link)
+            except DomainNotSupportedException:
+                not_supported_count += 1
+                continue
+            try:
+
                 d.retrieve_from_url()
             except DocumentNotFoundException:
                 pass

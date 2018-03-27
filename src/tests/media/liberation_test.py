@@ -7,7 +7,7 @@ Test lib for media "Libération", which should only be imported from "media_gath
 doc_dict = {
     "media": "liberation",
     "version_no": "1",
-    "url": "http://www.liberation.fr/france/2017/08/31/un-cadre-du-ps-en-soins-intensifs-apres-une-agression-par-un-depute-lrem_1593251",
+    "urls": "http://www.liberation.fr/france/2017/08/31/un-cadre-du-ps-en-soins-intensifs-apres-une-agression-par-un-depute-lrem_1593251",
     "category": "Politique",
     "title": "Un cadre du PS en «soins intensifs» après une agression par un député LREM - Libération",
     "description": "Le premier secrétaire de la fédération PS des Français de l'étranger, Boris Faure, est en «soins intensifs» après l’agression commise mercredi par un député REM, M’jid El Guerrab. ",
@@ -34,7 +34,7 @@ update_doc_dict = {
 update_result_dict = {
     "media": "liberation",
     "version_no": "2",
-    "url": "http://www.liberation.fr/france/2017/08/31/un-cadre-du-ps-en-soins-intensifs-apres-une-agression-par-un-depute-lrem_1593251",
+    "urls": "http://www.liberation.fr/france/2017/08/31/un-cadre-du-ps-en-soins-intensifs-apres-une-agression-par-un-depute-lrem_1593251",
     "category": "Politique",
     "title": "Un cadre du PS en «soins intensifs» après une agression par un député LREM - Libération",
     "description": "Le premier secrétaire de la fédération PS des Français de l'étranger, Boris Faure, est en «soins intensifs» après l’agression commise mercredi par un député REM, M’jid El Guerrab. ",
@@ -58,7 +58,7 @@ update_old_model_list = [
 error_result_dict = {
     "media": "liberation",
     "version_no": "3",
-    "url": "http://www.liberation.fr/france/2017/08/31/un-cadre-du-ps-en-soins-intensifs-apres-une-agression-par-un-depute-lrem_1593251",
+    "urls": "http://www.liberation.fr/france/2017/08/31/un-cadre-du-ps-en-soins-intensifs-apres-une-agression-par-un-depute-lrem_1593251",
     "category": "Politique",
     "title": "Un cadre du PS en «soins intensifs» après une agression par un député LREM - Libération",
     "description": "Le premier secrétaire de la fédération PS des Français de l'étranger, Boris Faure, est en «soins intensifs» après l’agression commise mercredi par un député REM, M’jid El Guerrab. ",
@@ -91,7 +91,7 @@ error_old_model_list = [
 final_gather_dict = {
     "media": "liberation",
     "version_no": "4",
-    "url": "http://www.liberation.fr/france/2017/08/31/un-cadre-du-ps-en-soins-intensifs-apres-une-agression-par-un-depute-lrem_1593251",
+    "urls": "http://www.liberation.fr/france/2017/08/31/un-cadre-du-ps-en-soins-intensifs-apres-une-agression-par-un-depute-lrem_1593251",
     "category": "Politique",
     "title": "Un cadre du PS en «soins intensifs» après une agression par un député LREM - Libération",
     "description": "Le premier secrétaire de la fédération PS des Français de l'étranger, Boris Faure, est en «soins intensifs» après l’agression commise mercredi par un député REM, M’jid El Guerrab. ",

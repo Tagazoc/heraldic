@@ -7,6 +7,7 @@ Class used for document attributes.
 from datetime import datetime
 from re import match
 from typing import List, Optional
+from copy import copy
 
 
 def uninitialized_display_wrapper(func):
@@ -28,7 +29,7 @@ class Attribute(object):
         self.desc: str = kwargs['desc'] if 'desc' in kwargs else ""
         """ Description of the attribute. """
 
-        self.value = kwargs['value'] if 'value' in kwargs else self.DEFAULT_VALUE
+        self.value = kwargs['value'] if 'value' in kwargs else copy(self.DEFAULT_VALUE)
         """ Default value """
 
         self.displayable: bool = kwargs['displayable'] if 'displayable' in kwargs else True
@@ -130,6 +131,11 @@ class StringListAttribute(Attribute):
 
     def __init__(self, **kwargs):
         super(StringListAttribute, self).__init__(**kwargs)
+
+    def append(self, value):
+        if value not in self.value:
+            self.value.append(value)
+        self.initialized = True
 
     @uninitialized_display_wrapper
     def render_for_display(self):

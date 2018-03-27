@@ -24,6 +24,7 @@ class Document(object):
         self.url = ''
         if url:
             self.url = self._check_and_truncate_url(url)
+        # TODO Mettre id ou url ici, avec le retrieve directement
 
         self.extractor = None
 
@@ -36,17 +37,12 @@ class Document(object):
         :return:
         """
 
-        # TODO Après avoir tronqué les paramètres de l'URL originale du document (à mettre en attribut et à récupérer
-        # dès la construction ?), on recherche cette URL dans l'index, puis on request,
-        # durant lequel on ajoute l'URL originale
-        # et l'URL finale aux URL du document (à passer en StringListAttribute) si absentes
-
-        if self.model.url.value:
+        if self.model.urls.value:
             # It is an update, is it already up-to-date ? Unless override flag
             if not override and update_time and self.model.doc_update_time.value\
                     and self.model.doc_update_time.value >= update_time:
                 raise DocumentExistsException(self.url)
-            up_d = Document()
+            up_d = Document(self.url)
             if filepath:
                 up_d.model.gather_from_file(self.url, filepath)
             else:
@@ -69,7 +65,7 @@ class Document(object):
         :return:
         """
         if not self.extractor:
-            extractor = known_media[self._get_domain(self.model.url.value)]
+            extractor = known_media[self._get_domain(self.url)]
             self.extractor = extractor(self.model)
         self.extractor.extract_fields()
 
@@ -87,7 +83,7 @@ class Document(object):
         :param doc_id: ID of the document in the store
         """
         self.model = model_searcher.retrieve(doc_id)
-        self.url = self.model.url.value
+        self.url = self.model.urls.value[0]
 
     def retrieve_from_url(self):
         """
@@ -152,7 +148,7 @@ class Document(object):
         :return:
         """
         model_storer.delete(self.model, self.old_versions)
-        logger.log('WARN_DOC_DELETED', self.model.id.value, self.model.url.value)
+        logger.log('WARN_DOC_DELETED', self.model.id.value, self.url)
 
     @staticmethod
     def _get_domain(url):
@@ -164,7 +160,7 @@ class Document(object):
             raise ValueError
 
     @staticmethod
-    def _check_and_truncate_url(url):
+    def _check_and_truncate_url(url) -> str:
         """
         Check URL syntax.
         :return: Result of the check.

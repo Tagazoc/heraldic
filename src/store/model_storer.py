@@ -79,7 +79,7 @@ def update(dm: DocumentModel, om: OldDocumentModel):
         es.index(OldVersionIndex.INDEX_NAME, doc_type=OldVersionIndex.TYPE_NAME, body=om_body)
         es.indices.refresh(index=OldVersionIndex.INDEX_NAME)
     else:
-        raise DocumentNotChangedException(dm.id.value, dm.url.value)
+        raise DocumentNotChangedException(dm.id.value, dm.urls.value[0])
 
 
 def delete(dm: DocumentModel, old_models: List[DocumentModel]) -> None:

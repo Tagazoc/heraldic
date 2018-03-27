@@ -26,7 +26,8 @@ class DocumentModel(object):
             'gather_time': DateAttribute(desc="Date de collecte de l'article", revisable=False, extractible=False),
             'update_time': DateAttribute(desc="Date de révision", revisable=False, extractible=False),
             'version_no': IntegerAttribute(desc="Numéro de version", revisable=False, extractible=False),
-            'url': StringAttribute(desc="URL de l'article", extractible=False, revisable=False, storable='keyword'),
+            'urls': StringListAttribute(desc="URLs de l'article", extractible=False, revisable=False,
+                                        storable='keyword'),
 
             # Buffer data
             'content': StringAttribute(desc="Contenu", displayable=False, revisable=False, extractible=False,
@@ -197,14 +198,18 @@ class DocumentModel(object):
         except (ValueError, ConnectionError):
             raise
         # Setting final URL (in case of redirection)
-        self.attributes['url'].value = r.url
+        urls: StringListAttribute = self.attributes['urls']
+        urls.append(r.url)
+        urls.append(url)
 
         self.attributes['content'].value = r.text
 
         self._set_gather_attributes()
 
     def gather_from_file(self, url: str, filepath: str):
-        self.attributes['url'].value = url
+        urls: StringListAttribute = self.attributes['urls']
+        urls.append(url)
+
         with open(filepath, 'r') as f:
             self.attributes['content'].value = f.read()
         self._set_gather_attributes()

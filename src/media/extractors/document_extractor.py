@@ -53,7 +53,7 @@ class DocumentExtractor(object):
                     func = getattr(self, "_extract_" + k)
                     v.set_from_extraction(func())
                 except ParsingFailureException as err:
-                    logger.log('WARN_ATTRIBUTE_PARSING_ERROR', k, self.dm.url.value, err.message)
+                    logger.log('WARN_ATTRIBUTE_PARSING_ERROR', k, self.dm.urls.value[0], err.message)
                     v.parsing_error = err.message
 
     def _extract_media(self) -> str:

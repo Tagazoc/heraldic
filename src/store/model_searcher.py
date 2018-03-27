@@ -39,13 +39,13 @@ def check_url_existence(url: str) -> bool:
     :param url: URL of the potential document
     :return: True if a document with this url exists in 'docs' index, else False
     """
-    hits = _search_term({'term': {'url': url}}, limit=1, _source=False)
+    hits = _search_term({'match': {'urls': url}}, limit=1, _source=False)
     return len(hits) > 0
 
 
 def check_url_uptodate(url: str, update_time) -> bool:
     query = {
-        'term': {'url': url},
+        'match': {'urls': url},
         'range': {
             'update_time': {
                 "gte": update_time
@@ -66,7 +66,7 @@ def search_all_errors() -> List[dict]:
 
 
 def search_url(url) -> List[DocumentModel]:
-    return _generate_doc_models(_search_term({'term': {'url': url}}, limit=1))
+    return _generate_doc_models(_search_term({'match': {'urls': url}}, limit=1))
 
 
 def retrieve_old_versions(doc_id) -> List[DocumentModel]:
