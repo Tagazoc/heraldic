@@ -10,7 +10,8 @@ from src.heraldic_exceptions import DocumentNotFoundException, DocumentNotChange
 from src.models.document import Document
 from src.rendering.flask.forms import UrlForm, ReviewForm, DisplayDocumentForm
 from src.rendering.flask.nav import nav
-from src.store import model_searcher
+from src.models import model_searcher
+from src.media.known_media import known_media
 
 bp = Blueprint('heraldic', __name__)
 
@@ -22,7 +23,15 @@ nav.register_element('heraldic_top', Navbar(
 
 @bp.route("/", methods=['GET'])
 def home():
-    hits_models = model_searcher.search(limit=100)
+    media_names = known_media
+    return render_template('home.html', media_names=media_names)
+
+
+@bp.route('/media', methods=['GET', 'POST'])
+def media():
+    media_id = request.args.get('media_id')
+
+    hits_models = model_searcher.search_by_media(media_id)
     return render_template('search.html', hits=hits_models)
 
 

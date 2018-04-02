@@ -27,13 +27,14 @@ def handle_parsing_errors(decorated):
     return wrapper
 
 
-class DocumentExtractor(object):
+class MediaExtractor(object):
     """
         Generic class for attribute extraction from a document, should not be directly instanciated.
     """
     domains = ['www.heraldic-project.org', 'hrldc.org']
     """The domains used in URLs of the selected media"""
     media_name = 'generic'
+    display_name = 'Generic'
 
     def __init__(self, dm: DocumentModel) -> None:
         """

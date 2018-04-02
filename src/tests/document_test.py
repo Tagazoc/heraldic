@@ -9,7 +9,7 @@ from src.models.document import Document
 import pytest
 from src.rendering.flask.factory import create_app
 from src.heraldic_exceptions import DocumentNotFoundException
-from src.store.model_searcher import retrieve_errors, retrieve_old_versions, retrieve_suggestions
+from src.store.index_searcher import retrieve_errors, retrieve_old_versions, retrieve_suggestions
 
 
 # Flask test configuration

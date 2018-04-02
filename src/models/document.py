@@ -5,7 +5,7 @@ Module which implements Document class.
 """
 
 from src.media.known_media import known_media
-from src.store import model_storer, model_searcher
+from src.store import index_storer, index_searcher
 from src.models.document_model import DocumentModel
 from typing import List
 from src.heraldic_exceptions import DocumentExistsException, DomainNotSupportedException
@@ -74,7 +74,7 @@ class Document(object):
         :return:
         """
         if not self.extractor:
-            extractor = known_media[self._get_domain(self.url)]
+            extractor = known_media.get_media_by_domain(self._get_domain(self.url))
             self.extractor = extractor(self.model)
         self.extractor.extract_fields()
 
@@ -84,27 +84,27 @@ class Document(object):
         :param doc_id: ID of the document in the store
         :return:
         """
-        self.model.id = model_storer.store(self.model, doc_id)
+        self.model.id = index_storer.store(self.model, doc_id)
 
     def retrieve(self, doc_id: str):
         """
         Retrieve document contents from a store.
         :param doc_id: ID of the document in the store
         """
-        self.model = model_searcher.retrieve(doc_id)
+        self.model = index_searcher.retrieve(doc_id)
         self.url = self.model.urls.value[0]
 
     def retrieve_from_url(self):
         """
         Retrieve a document from its URL.
         """
-        self.model = model_searcher.retrieve_from_url(self.url)
+        self.model = index_searcher.retrieve_from_url(self.url)
 
     def retrieve_old_versions(self):
         """
         Retrieve old versions of a document from its ID.
         """
-        self.old_versions = model_searcher.retrieve_old_versions(self.model.id.value)
+        self.old_versions = index_searcher.retrieve_old_versions(self.model.id.value)
         self._set_attributes_versions()
 
     def update_from_model(self, new_model: DocumentModel):
@@ -116,7 +116,7 @@ class Document(object):
         """
         old_model = self.model.update(new_model)
         self.old_versions.append(old_model)
-        model_storer.update(self.model, old_model)
+        index_storer.update(self.model, old_model)
 
     def update_from_revision(self, attribute_dict: dict):
         """
@@ -156,7 +156,7 @@ class Document(object):
         Delete model in store, as old versions models.
         :return:
         """
-        model_storer.delete(self.model, self.old_versions)
+        index_storer.delete(self.model, self.old_versions)
         logger.log('WARN_DOC_DELETED', self.model.id.value, self.url)
 
     def _is_uptodate(self, update_time: float):
@@ -182,8 +182,8 @@ class Document(object):
             logger.log('WARN_DOMAIN_MALFORMED', url)
             raise ValueError
         domain = Document._get_domain(url)
-        if known_media[domain] is None:
-            raise DomainNotSupportedException(domain)
+        # Validate domain is supported
+        known_media.get_media_by_domain(domain)
         url_regex = re.compile(r'^(.*?)(?:\?|$)')
         match = url_regex.match(url)
         return match.group(1)

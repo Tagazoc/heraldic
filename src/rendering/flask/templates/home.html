@@ -1,0 +1,13 @@
+{% extends "layout.html" %}
+{% block content %}
+   <div class="container">
+      <div class="jumbotron">
+        <h1>Liste des médias</h1>
+      </div>
+        <div class="list-group">
+        {% for hit in hits %}
+          <a href="{{url_for('heraldic.display_document')}}?doc_id={{hit.id.render_for_display()}}" class="list-group-item">{{hit.title.render_for_display()}}</a>
+          {% endfor %}
+        </div>
+   </div>
+{%- endblock %}

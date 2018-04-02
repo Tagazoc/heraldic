@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """
-Module implementing model search functions.
+Module implementing index search functions.
 """
 
 from src.store.elastic import es, DocumentIndex, OldVersionIndex, ErrorIndex, SuggestionIndex, FeedsIndex
@@ -71,6 +71,10 @@ def search(q=None, body_query=None, limit: int=0) -> List[DocumentModel]:
         from_ += size
 
     return _generate_doc_models(total_hits)
+
+
+def count(q=None, body_query=None, index=DocumentIndex.INDEX_NAME, doc_type=DocumentIndex.TYPE_NAME) -> int:
+    return es.count(index=index, doc_type=doc_type, q=q, body=body_query)
 
 
 def search_all_errors() -> List[dict]:

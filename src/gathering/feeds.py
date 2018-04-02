@@ -5,7 +5,7 @@ import feedparser
 from src.models.document import Document
 from src.heraldic_exceptions import DocumentExistsException, DomainNotSupportedException, DocumentNotFoundException,\
     DocumentNotChangedException
-from src.store import model_storer, model_searcher
+from src.store import index_storer, index_searcher
 from typing import List
 from datetime import datetime
 from time import mktime
@@ -70,11 +70,11 @@ class RssFeed:
         return body
 
     def update(self):
-        model_storer.update_feed(self.id, self.render_for_store())
+        index_storer.update_feed(self.id, self.render_for_store())
         logger.log('INFO_FEED_UPDATE_SUCCESS', self.url)
 
     def store(self):
-        model_storer.store_feed(self.render_for_store())
+        index_storer.store_feed(self.render_for_store())
         logger.log('INFO_FEED_STORE_SUCCESS', self.url)
 
 
@@ -83,7 +83,7 @@ class FeedHarvester:
         self.feeds: List[RssFeed] = []
 
     def retrieve_feeds(self):
-        feeds_dicts = model_searcher.retrieve_feeds_dicts()
+        feeds_dicts = index_searcher.retrieve_feeds_dicts()
         self.feeds = [RssFeed(dic['_source']['url'], dic['_source']['update_time'], dic['_id']) for dic in feeds_dicts]
 
     def harvest(self, override=False):
