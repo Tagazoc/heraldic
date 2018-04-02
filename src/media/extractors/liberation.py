@@ -4,18 +4,17 @@
 Le Monde website extractor implementation.
 """
 
-from src.media.extractors.media_extractor import MediaExtractor, handle_parsing_errors
+from src.media.generic_media import GenericMedia, handle_parsing_errors
 import re
-from datetime import datetime, time
-from src.heraldic_exceptions import HTMLParsingFailureException, DateFormatFailureException
+from src.heraldic_exceptions import HTMLParsingFailureException
 
 
-class LiberationExtractor(MediaExtractor):
+class Liberation(GenericMedia):
     """
     Class used for extracting items from french media "Libération".
     """
     domains = ['www.liberation.fr']
-    media_name = 'liberation'
+    id = 'liberation'
     display_name = 'Libération'
 
     @handle_parsing_errors

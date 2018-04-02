@@ -4,18 +4,15 @@
 Le Monde website extractor implementation.
 """
 
-from src.media.extractors.media_extractor import MediaExtractor, handle_parsing_errors
-import re
-from datetime import datetime
-from src.heraldic_exceptions import DateFormatFailureException
+from src.media.generic_media import GenericMedia, handle_parsing_errors
 
 
-class LeFigaroExtractor(MediaExtractor):
+class LeFigaro(GenericMedia):
     """
     Class used for extracting items from french media "Le Figaro".
     """
     domains = ['www.lefigaro.fr']
-    media_name = 'le_figaro'
+    id = 'le_figaro'
     display_name = 'Le Figaro'
 
     @handle_parsing_errors

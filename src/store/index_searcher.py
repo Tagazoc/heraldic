@@ -74,7 +74,7 @@ def search(q=None, body_query=None, limit: int=0) -> List[DocumentModel]:
 
 
 def count(q=None, body_query=None, index=DocumentIndex.INDEX_NAME, doc_type=DocumentIndex.TYPE_NAME) -> int:
-    return es.count(index=index, doc_type=doc_type, q=q, body=body_query)
+    return es.count(index=index, doc_type=doc_type, q=q, body=body_query)['count']
 
 
 def search_all_errors() -> List[dict]:

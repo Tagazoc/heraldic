@@ -8,6 +8,7 @@ from typing import List
 import html
 from src.models.document_model import DocumentModel
 from bs4 import BeautifulSoup
+from src.store import index_searcher
 from datetime import datetime
 from src.heraldic_exceptions import ParsingFailureException, HTMLParsingFailureException, DateFormatFailureException
 from src.misc.logging import logger
@@ -27,13 +28,13 @@ def handle_parsing_errors(decorated):
     return wrapper
 
 
-class MediaExtractor(object):
+class GenericMedia(object):
     """
         Generic class for attribute extraction from a document, should not be directly instanciated.
     """
     domains = ['www.heraldic-project.org', 'hrldc.org']
     """The domains used in URLs of the selected media"""
-    media_name = 'generic'
+    id = 'generic'
     display_name = 'Generic'
 
     def __init__(self, dm: DocumentModel) -> None:
@@ -44,6 +45,10 @@ class MediaExtractor(object):
         """
         self.html_soup = BeautifulSoup(dm.content.render_for_display(), "html.parser")
         self.dm = dm
+
+    @classmethod
+    def get_document_count(cls) -> int:
+        return index_searcher.count(q='media:' + cls.id)
 
     def extract_fields(self):
         """
@@ -60,10 +65,10 @@ class MediaExtractor(object):
 
     def _extract_media(self) -> str:
         """
-        Function which returns media_name attribute, in order to work with extract_fields function.
+        Function which returns media name attribute, in order to work with extract_fields function.
         :return: Media name
         """
-        return self.media_name
+        return self.id
 
     @handle_parsing_errors
     def _extract_title(self) -> str:

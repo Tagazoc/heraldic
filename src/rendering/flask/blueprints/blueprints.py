@@ -23,12 +23,12 @@ nav.register_element('heraldic_top', Navbar(
 
 @bp.route("/", methods=['GET'])
 def home():
-    media_names = known_media
-    return render_template('home.html', media_names=media_names)
+    media_classes = known_media.media_classes
+    return render_template('home.html', media_classes=media_classes)
 
 
-@bp.route('/media', methods=['GET', 'POST'])
-def media():
+@bp.route('/display_media', methods=['GET'])
+def display_media():
     media_id = request.args.get('media_id')
 
     hits_models = model_searcher.search_by_media(media_id)

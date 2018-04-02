@@ -4,17 +4,17 @@
 Le Monde website extractor implementation.
 """
 
-from src.media.extractors.media_extractor import MediaExtractor, handle_parsing_errors
+from src.media.generic_media import GenericMedia, handle_parsing_errors
 import re
 from datetime import datetime
 
 
-class LeMondeExtractor(MediaExtractor):
+class LeMonde(GenericMedia):
     """
     Class used for extracting items from french media "Le Monde".
     """
     domains = ['www.lemonde.fr']
-    media_name = 'le_monde'
+    id = 'le_monde'
     display_name = 'Le Monde'
 
     @handle_parsing_errors
