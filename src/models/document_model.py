@@ -188,10 +188,10 @@ class DocumentModel(object):
             if k in suggestions_dict.keys():
                 v.suggestions = suggestions_dict[k]
 
-    def gather_from_url(self, url: str):
+    def gather_from_url(self, url: str) -> str:
         """
         Gather document from an URL.
-        :return: HTML content located at URL
+        :return: Final URL of the document.
         """
         try:
             r = requests.get(url)
@@ -199,12 +199,12 @@ class DocumentModel(object):
             raise
         # Setting final URL (in case of redirection)
         urls: StringListAttribute = self.attributes['urls']
-        urls.append(r.url)
         urls.append(url)
 
         self.attributes['content'].value = r.text
 
         self._set_gather_attributes()
+        return r.url
 
     def gather_from_file(self, url: str, filepath: str):
         urls: StringListAttribute = self.attributes['urls']

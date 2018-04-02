@@ -22,7 +22,7 @@ nav.register_element('heraldic_top', Navbar(
 
 @bp.route("/", methods=['GET'])
 def home():
-    hits_models = model_searcher.search_all_docs()
+    hits_models = model_searcher.search(limit=100)
     return render_template('search.html', hits=hits_models)
 
 

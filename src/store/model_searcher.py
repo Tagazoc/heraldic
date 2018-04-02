@@ -39,7 +39,7 @@ def check_url_existence(url: str) -> bool:
     :param url: URL of the potential document
     :return: True if a document with this url exists in 'docs' index, else False
     """
-    hits = _search_term({'match': {'urls': url}}, limit=1, _source=False)
+    hits = _search_query({'match': {'urls': url}}, terminate_after=1, _source=False)
     return len(hits) > 0
 
 
@@ -52,28 +52,41 @@ def check_url_uptodate(url: str, update_time) -> bool:
             }
         }
     }
-    hits = _search_term(query, limit=1, _source=False)
+    hits = _search_query(query, terminate_after=1, _source=False)
 
     return len(hits) > 0
 
 
-def search_all_docs() -> List[DocumentModel]:
-    return _generate_doc_models(_search_term())
+def search(q=None, body_query=None, limit: int=0) -> List[DocumentModel]:
+    from_ = 0
+    total_hits = []
+    size = 100
+
+    hits = _search_query(query=body_query, q=q, from_=from_, size=size, terminate_after=limit)
+    total_hits.extend(hits['hits'])
+    from_ += size
+    while hits['total'] > from_:
+        hits = _search_query(query=body_query, q=q, from_=from_, size=size, terminate_after=limit)
+        total_hits.extend(hits['hits'])
+        from_ += size
+
+    return _generate_doc_models(total_hits)
 
 
 def search_all_errors() -> List[dict]:
-    res = _search_term({}, ErrorIndex.INDEX_NAME, ErrorIndex.TYPE_NAME)
+    res = _search_query({}, ErrorIndex.INDEX_NAME, ErrorIndex.TYPE_NAME)
 
 
 def search_url(url) -> List[DocumentModel]:
-    return _generate_doc_models(_search_term({'match': {'urls': url}}, limit=1))
+    hits = _search_query({'match': {'urls': url}}, terminate_after=1)
+    return _generate_doc_models(hits['hits'])
 
 
 def retrieve_old_versions(doc_id) -> List[DocumentModel]:
     models = []
-    hits = _search_term({'term': {'doc_id': doc_id}}, index=OldVersionIndex.INDEX_NAME, sort=['version_no'])
+    hits = _search_query({'term': {'doc_id': doc_id}}, index=OldVersionIndex.INDEX_NAME, sort=['version_no'])
 
-    for hit in hits:
+    for hit in hits['hits']:
         dm = OldDocumentModel(doc_id)
 
         dm.id.value = hit['_id']
@@ -113,9 +126,9 @@ def retrieve_from_url(url: str) -> DocumentModel:
 
 
 def retrieve_feeds_dicts() -> List[dict]:
-    hits = _search_term(index=FeedsIndex.INDEX_NAME, doc_type=FeedsIndex.TYPE_NAME)
+    hits = _search_query(index=FeedsIndex.INDEX_NAME, doc_type=FeedsIndex.TYPE_NAME)
 
-    return hits
+    return hits['hits']
 
 
 def _generate_doc_models(hits) -> List[DocumentModel]:
@@ -129,16 +142,12 @@ def _generate_doc_models(hits) -> List[DocumentModel]:
     return models
 
 
-def _search_term(query: dict= {}, index=DocumentIndex.INDEX_NAME, doc_type=DocumentIndex.TYPE_NAME,
-                 limit=0, **kwargs) -> List[dict]:
+def _search_query(query: dict=None, index=DocumentIndex.INDEX_NAME, doc_type=DocumentIndex.TYPE_NAME,
+                  **kwargs) -> dict:
     body = {}
-    if query:
+    if query is not None:
         body = {'query': query}
-    if limit:
-        body['terminate_after'] = limit
-    for k, v in kwargs.items():
-        body[k] = v
+    res = es.search(index, doc_type=doc_type, body=body, **kwargs)
+    es.search()
 
-    res = es.search(index, doc_type=doc_type, body=body)
-
-    return res['hits']['hits']
+    return res['hits']

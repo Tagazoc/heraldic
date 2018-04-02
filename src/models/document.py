@@ -16,7 +16,7 @@ import re
 
 class Document(object):
     """
-    Class representing a Document during its way through Heraldic.
+    Class representing a Document through its way through Heraldic.
     """
     def __init__(self, url: str=''):
         self.model: DocumentModel = DocumentModel()
@@ -27,6 +27,13 @@ class Document(object):
         # TODO Mettre id ou url ici, avec le retrieve directement
 
         self.extractor = None
+
+    @classmethod
+    def from_model(cls, model):
+        doc = cls()
+        doc.model = model
+        doc.url = model.urls.value[0]
+        return doc
 
     def gather(self, update_time=None, override: bool=False, filepath: str=''):
         """
@@ -39,14 +46,14 @@ class Document(object):
 
         if self.model.urls.value:
             # It is an update, is it already up-to-date ? Unless override flag
-            if not override and update_time and self.model.doc_update_time.value\
-                    and self.model.doc_update_time.value >= update_time:
+            if not override and self._is_uptodate(update_time):
                 raise DocumentExistsException(self.url)
             up_d = Document(self.url)
             if filepath:
                 up_d.model.gather_from_file(self.url, filepath)
             else:
-                up_d.model.gather_from_url(self.url)
+                final_url = up_d.model.gather_from_url(self.url)
+                self.model.urls.append(self._check_and_truncate_url(final_url))
             up_d._extract_fields()
             self.update_from_model(up_d.model)
             logger.log('INFO_DOC_UPDATE_SUCCESS', self.url)
@@ -54,7 +61,9 @@ class Document(object):
             if filepath:
                 self.model.gather_from_file(self.url, filepath)
             else:
-                self.model.gather_from_url(self.url)
+                final_url = self.model.gather_from_url(self.url)
+                self.model.urls.append(self._check_and_truncate_url(final_url))
+
             self._extract_fields()
             self.store()
             logger.log('INFO_DOC_STORE_SUCCESS', self.url)
@@ -149,6 +158,10 @@ class Document(object):
         """
         model_storer.delete(self.model, self.old_versions)
         logger.log('WARN_DOC_DELETED', self.model.id.value, self.url)
+
+    def _is_uptodate(self, update_time: float):
+        date = self.model.doc_update_time.value if self.model.doc_update_time.initialized else self.model.doc_publication_time.value
+        return date >= update_time
 
     @staticmethod
     def _get_domain(url):

@@ -92,6 +92,8 @@ class Attribute(object):
 
     def update(self, value):
         self.value = value
+        if value is None:
+            self.initialized = False
 
     def __setattr__(self, key, value):
         """ Catch value update to enable initialized flag """

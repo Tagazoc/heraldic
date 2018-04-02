@@ -31,7 +31,7 @@ class RssFeed:
         self.link = feed['feed']['link']
         self.entries = feed['entries']
 
-    def harvest(self):
+    def harvest(self, override: bool=False):
         gather_count = 0
         exists_count = 0
         not_supported_count = 0
@@ -50,7 +50,7 @@ class RssFeed:
             except DocumentNotFoundException:
                 pass
             try:
-                d.gather(update_time=update_time)
+                d.gather(update_time=update_time, override=override)
                 gather_count += 1
             except DocumentExistsException:
                 exists_count += 1
@@ -86,9 +86,9 @@ class FeedHarvester:
         feeds_dicts = model_searcher.retrieve_feeds_dicts()
         self.feeds = [RssFeed(dic['_source']['url'], dic['_source']['update_time'], dic['_id']) for dic in feeds_dicts]
 
-    def harvest(self):
+    def harvest(self, override=False):
         for feed in self.feeds:
             feed.gather()
             if feed.update_time >= feed.stored_update_time:
-                feed.harvest()
+                feed.harvest(override=override)
                 feed.update()
