@@ -22,13 +22,16 @@ class LeMondeExtractor(DocumentExtractor):
 
     @handle_parsing_errors
     def _extract_doc_publication_time(self):
-        time_text = self.html_soup.find('time', attrs={'itemprop': 'datePublished'}).text
-        return datetime.strptime(time_text, '%d.%m.%Y à %Hh%M')
+        time_text = self.html_soup.find('time', attrs={'itemprop': 'datePublished'}).get('datetime')
+        return datetime.strptime(time_text[:-6], '%Y-%m-%dT%H:%M:%S')
 
     @handle_parsing_errors
     def _extract_doc_update_time(self):
-        time_text = self.html_soup.find('time', attrs={'itemprop': 'dateModified'}).text
-        return datetime.strptime(time_text, '%d.%m.%Y à %Hh%M')
+        try:
+            time_text = self.html_soup.find('time', attrs={'itemprop': 'dateModified'}).get('datetime')
+            return datetime.strptime(time_text[:-6], '%Y-%m-%dT%H:%M:%S')
+        except AttributeError:
+            return None
 
     @handle_parsing_errors
     def _extract_href_sources(self):
@@ -40,11 +43,17 @@ class LeMondeExtractor(DocumentExtractor):
     @handle_parsing_errors
     def _extract_category(self):
         html_nav = self.html_soup.find('nav', attrs={'id': 'nav_ariane'})
-        return html_nav['class'][0]
+        html_title = self.html_soup.find('div', attrs={'class': 'tt_rubrique_ombrelle'}).contents[1].text
+        return html_title
 
     @handle_parsing_errors
     def _extract_explicit_sources(self):
         html_span = self.html_soup.find('span', attrs={'id': 'publisher'})
         data_source = html_span['data-source']
         source = re.search(r' avec (.*)', data_source)
-        return [source.group(1)]
+        try:
+            sources = source.group(1)
+        except AttributeError:
+            return []
+        sources = sources.split(' et ')
+        return sources

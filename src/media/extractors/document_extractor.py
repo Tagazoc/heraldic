@@ -11,6 +11,7 @@ from bs4 import BeautifulSoup
 from datetime import datetime
 from src.heraldic_exceptions import ParsingFailureException, HTMLParsingFailureException, DateFormatFailureException
 from src.misc.logging import logger
+import re
 
 
 def handle_parsing_errors(decorated):
@@ -94,7 +95,13 @@ class DocumentExtractor(object):
         Extract document date and time (if present) of publication.
         :return: Document publication date and time as timestamp
         """
-        return datetime.now()
+        time_text = self.html_soup.find('meta', attrs={'property': "article:published_time"}).get('content')
+        try:
+            time_text = re.sub(r'\+\d{2}:\d{2}', '', time_text)
+            pub_time = datetime.strptime(time_text, '%Y-%m-%dT%H:%M:%S')
+        except ValueError as err:
+            raise DateFormatFailureException(err.args[0])
+        return pub_time
 
     @handle_parsing_errors
     def _extract_doc_update_time(self) -> datetime:
@@ -102,7 +109,13 @@ class DocumentExtractor(object):
         Extract document date and time (if present) about when it was updated.
         :return: Document update date and time as timestamp
         """
-        return datetime.now()
+        time_text = self.html_soup.find('meta', attrs={'property': "article:modified_time"}).get('content')
+        try:
+            time_text = re.sub(r'\+\d{2}:\d{2}', '', time_text)
+            pub_time = datetime.strptime(time_text, '%Y-%m-%dT%H:%M:%S')
+        except ValueError as err:
+            raise DateFormatFailureException(err.args[0])
+        return pub_time
 
     @handle_parsing_errors
     def _extract_href_sources(self) -> List[str]:
