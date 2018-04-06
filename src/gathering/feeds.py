@@ -3,7 +3,7 @@
 
 import feedparser
 from src.models.document import Document
-from src.heraldic_exceptions import DocumentExistsException, DomainNotSupportedException, DocumentNotFoundException,\
+from src.misc.exceptions import DocumentExistsException, DomainNotSupportedException, DocumentNotFoundException,\
     DocumentNotChangedException
 from src.store import index_storer, index_searcher
 from typing import List
@@ -26,7 +26,11 @@ class RssFeed:
         feed = feedparser.parse(self.url)
 
         self.url = feed['href']
-        self.update_time = datetime.fromtimestamp(mktime(feed['feed']['updated_parsed']))
+        try:
+            self.update_time = datetime.fromtimestamp(mktime(feed['feed']['updated_parsed']))
+        except KeyError:
+            # Sometimes...
+            self.update_time = datetime.now()
         self.title = feed['feed']['title']
         self.link = feed['feed']['link']
         self.entries = feed['entries']
@@ -38,7 +42,10 @@ class RssFeed:
         for item in self.entries:
             link = item['link']
 
-            update_time = datetime.fromtimestamp(mktime(item['updated_parsed']))
+            try:
+                update_time = datetime.fromtimestamp(mktime(item['updated_parsed']))
+            except KeyError:
+                update_time = datetime.fromtimestamp(mktime(item['published_parsed']))
             try:
                 d = Document(link)
             except DomainNotSupportedException:

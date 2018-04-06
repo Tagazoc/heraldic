@@ -4,6 +4,7 @@
 
 from src.gathering.feeds import FeedHarvester, RssFeed
 import sys
+from src.store.elastic import FeedsIndex
 
 
 def main(argv):
@@ -11,6 +12,8 @@ def main(argv):
     harvester.retrieve_feeds()
 
     feed_urls = [feed.url for feed in harvester.feeds]
+    FeedsIndex.delete()
+    FeedsIndex.create()
 
     with open(argv[0], 'r') as f:
         for url in f.readlines():

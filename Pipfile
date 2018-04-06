@@ -22,6 +22,8 @@ wtforms = "*"
 spacy = "*"
 validators = "*"
 feedparser = "*"
+networkx = "*"
+matplotlib = "*"
 
 
 [dev-packages]

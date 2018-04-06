@@ -6,7 +6,7 @@ Module implementing index search functions.
 
 from src.store.elastic import es, DocumentIndex, OldVersionIndex, ErrorIndex, SuggestionIndex, FeedsIndex
 from src.models.document_model import DocumentModel, OldDocumentModel
-from src.heraldic_exceptions import DocumentNotFoundException
+from src.misc.exceptions import DocumentNotFoundException
 from elasticsearch.exceptions import NotFoundError
 from typing import List
 

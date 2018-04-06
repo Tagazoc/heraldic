@@ -1,3 +1,5 @@
 http://rss.liberation.fr/rss/latest/
 http://www.lefigaro.fr/rss/figaro_actualites.xml
 http://www.lemonde.fr/rss/une.xml
+https://www.lexpress.fr/rss/alaune.xml
+http://www.20minutes.fr/feeds/rss-une.xml

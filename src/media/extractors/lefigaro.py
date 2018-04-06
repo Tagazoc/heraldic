@@ -22,7 +22,7 @@ class LeFigaro(GenericMedia):
     @handle_parsing_errors
     def _extract_href_sources(self):
         html_as = self.html_soup.find('div', attrs={'class': 'fig-content__body'}).find_all('a')
-        html_as = self._exclude_hrefs(html_as, 'class', 'author', parent=True)
+        html_as = self._exclude_hrefs_by_attribute(html_as, 'class', 'author', parent=True)
 
         return [a['href'] for a in html_as]
 

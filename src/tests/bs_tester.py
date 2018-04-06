@@ -10,6 +10,7 @@ from bs4 import BeautifulSoup
 
 url = sys.argv[1]
 
-d = Document()
-d.model.gather_from_url(url)
+d = Document(url)
+d.retrieve_from_url()
+d.gather()
 bs = BeautifulSoup(d.model.content.render_for_display(), "html.parser")

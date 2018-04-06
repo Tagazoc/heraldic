@@ -7,7 +7,7 @@ Class used to know which media are supported and which domain.
 from typing import Set
 from src.media import extractors
 from src.media.generic_media import GenericMedia
-from src.heraldic_exceptions import DomainNotSupportedException
+from src.misc.exceptions import DomainNotSupportedException
 import pkgutil
 import inspect
 

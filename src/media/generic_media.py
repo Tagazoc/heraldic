@@ -10,7 +10,7 @@ from src.models.document_model import DocumentModel
 from bs4 import BeautifulSoup
 from src.store import index_searcher
 from datetime import datetime
-from src.heraldic_exceptions import ParsingFailureException, HTMLParsingFailureException, DateFormatFailureException
+from src.misc.exceptions import ParsingFailureException, HTMLParsingFailureException, DateFormatFailureException
 from src.misc.logging import logger
 import re
 
@@ -58,7 +58,14 @@ class GenericMedia(object):
             if v.extractible:
                 try:
                     func = getattr(self, "_extract_" + k)
-                    v.set_from_extraction(func())
+                    extracted_data = func()
+                    try:
+                        # Apply post-treatment if any
+                        post_func = getattr(self, "_post_extract_" + k)
+                        extracted_data = post_func(extracted_data)
+                    except AttributeError:
+                        pass
+                    v.set_from_extraction(extracted_data)
                 except ParsingFailureException as err:
                     logger.log('WARN_ATTRIBUTE_PARSING_ERROR', k, self.dm.urls.value[0], err.message)
                     v.parsing_error = err.message
@@ -131,6 +138,18 @@ class GenericMedia(object):
         """
         return []
 
+    def _post_extract_href_sources(self, hrefs: List[str]) -> List[str]:
+        """
+        Modify local links in fully qualified links.
+        :param hrefs: Previously extracted hrefs
+        :return:
+        """
+        result = []
+        for href in hrefs:
+            # Use first defined domain, should work "almost" every time
+            result.append(re.sub(r'^/([^/])', self.domains[0] + r'/\1', href))
+        return result
+
     @handle_parsing_errors
     def _extract_category(self) -> str:
         """
@@ -148,13 +167,13 @@ class GenericMedia(object):
         return []
 
     @staticmethod
-    def _exclude_hrefs(html_as: List, attribute: str, value: str, parent=False):
+    def _exclude_hrefs_by_attribute(html_as: List, attribute: str, value: str, parent=False):
         """
-        # Exclude links with specific attribute, as they are additional links
-        :param html_as:
-        :param attribute:
-        :param value:
-        :param parent:
+        Exclude local additional links (which are not really sources)
+        :param html_as: As to be filtered
+        :param attribute: Attribute of A which is targeted
+        :param value: Value targeted
+        :param parent: Test attribute and value on parent of A
         :return:
         """
         filtered_as = []
@@ -171,6 +190,11 @@ class GenericMedia(object):
             filtered_as.append(a)
 
         return filtered_as
+
+    @staticmethod
+    def _exclude_hrefs_by_regex(html_as: List, regex: str):
+        reg = re.compile(regex)
+        return [a for a in html_as if not reg.search(a['href'])]
 
     @staticmethod
     def _format_datetime(string: str, format_string: str) -> datetime:

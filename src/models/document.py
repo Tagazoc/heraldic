@@ -8,8 +8,9 @@ from src.media.known_media import known_media
 from src.store import index_storer, index_searcher
 from src.models.document_model import DocumentModel
 from typing import List
-from src.heraldic_exceptions import DocumentExistsException, DomainNotSupportedException
+from src.misc.exceptions import DocumentExistsException
 from src.misc.logging import logger
+from src.misc.functions import get_domain
 import validators
 import re
 
@@ -46,7 +47,7 @@ class Document(object):
 
         if self.model.urls.value:
             # It is an update, is it already up-to-date ? Unless override flag
-            if not override and self._is_uptodate(update_time):
+            if not override and update_time and self._is_uptodate(update_time):
                 raise DocumentExistsException(self.url)
             up_d = Document(self.url)
             if filepath:
@@ -74,7 +75,7 @@ class Document(object):
         :return:
         """
         if not self.extractor:
-            extractor = known_media.get_media_by_domain(self._get_domain(self.url))
+            extractor = known_media.get_media_by_domain(get_domain(self.url))
             self.extractor = extractor(self.model)
         self.extractor.extract_fields()
 
@@ -164,15 +165,6 @@ class Document(object):
         return date >= update_time
 
     @staticmethod
-    def _get_domain(url):
-        domain_regex = re.compile(r'https?://(.*?)/')
-        try:
-            match = domain_regex.match(url)
-            return match.group(1)
-        except AttributeError:
-            raise ValueError
-
-    @staticmethod
     def _check_and_truncate_url(url) -> str:
         """
         Check URL syntax.
@@ -181,7 +173,7 @@ class Document(object):
         if not validators.url(url):
             logger.log('WARN_DOMAIN_MALFORMED', url)
             raise ValueError
-        domain = Document._get_domain(url)
+        domain = get_domain(url)
         # Validate domain is supported
         known_media.get_media_by_domain(domain)
         url_regex = re.compile(r'^(.*?)(?:\?|$)')

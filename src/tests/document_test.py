@@ -8,7 +8,7 @@ from src.tests.media.liberation_test import *
 from src.models.document import Document
 import pytest
 from src.rendering.flask.factory import create_app
-from src.heraldic_exceptions import DocumentNotFoundException
+from src.misc.exceptions import DocumentNotFoundException
 from src.store.index_searcher import retrieve_errors, retrieve_old_versions, retrieve_suggestions
 
 

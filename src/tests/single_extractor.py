@@ -9,8 +9,10 @@ import sys
 
 
 def main(argv):
-    d = Document()
-    d.gather(argv[0])
+    url = input()
+    d = Document(url)
+    d.retrieve_from_url()
+    d.gather()
     for k, v in d.model.attributes.items():
         if v.extractible:
             if v.parsing_error:

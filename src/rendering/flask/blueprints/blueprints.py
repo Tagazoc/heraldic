@@ -6,7 +6,7 @@
 from flask import Blueprint, request, render_template, flash, redirect, url_for
 from flask_nav.elements import Navbar, View
 
-from src.heraldic_exceptions import DocumentNotFoundException, DocumentNotChangedException
+from src.misc.exceptions import DocumentNotFoundException, DocumentNotChangedException
 from src.models.document import Document
 from src.rendering.flask.forms import UrlForm, ReviewForm, DisplayDocumentForm
 from src.rendering.flask.nav import nav

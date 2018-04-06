@@ -4,7 +4,7 @@
 
 from src.models import model_searcher
 from src.models.document import Document
-from src.heraldic_exceptions import DocumentNotChangedException
+from src.misc.exceptions import DocumentNotChangedException, DomainNotSupportedException
 
 
 models = model_searcher.search_by_media("le_monde")
@@ -15,3 +15,6 @@ for model in models:
         d.gather(override=True)
     except DocumentNotChangedException:
         pass
+    except DomainNotSupportedException:
+        # DIE !
+        d.delete()

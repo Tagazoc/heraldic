@@ -4,7 +4,7 @@
 
 from src.gathering.feeds import FeedHarvester
 
-OVERRIDE = True
+OVERRIDE = False
 harvester = FeedHarvester()
 harvester.retrieve_feeds()
 harvester.harvest(OVERRIDE)

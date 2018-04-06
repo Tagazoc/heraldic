@@ -7,9 +7,8 @@ Module implementing Store methods.
 from src.models.document_model import DocumentModel, OldDocumentModel
 from src.store.elastic import es, DocumentIndex, OldVersionIndex, ErrorIndex, SuggestionIndex, FeedsIndex
 from elasticsearch.exceptions import NotFoundError
-from src.heraldic_exceptions import DocumentNotChangedException
+from src.misc.exceptions import DocumentNotChangedException
 from typing import List
-from src.misc.logging import logger
 
 
 def store(dm: DocumentModel, doc_id=None):
