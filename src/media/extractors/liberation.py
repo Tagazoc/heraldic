@@ -34,7 +34,7 @@ class Liberation(GenericMedia):
         html_as = self.html_soup.find('div', attrs={'class': 'article-body'}).find_all('a')
         html_as = self._exclude_hrefs_by_attribute(html_as, 'class', 'author', parent=True)
 
-        return [a['href'] for a in html_as]
+        return [a['href'] for a in html_as if a.get('href') is not None]
 
     @handle_parsing_errors
     def _extract_category(self):

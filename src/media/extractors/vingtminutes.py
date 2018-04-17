@@ -22,19 +22,6 @@ class VingtMinutes(GenericMedia):
         return self.html_soup.article.find('div', attrs={'class': 'content'}).text
 
     @handle_parsing_errors
-    def _extract_doc_publication_time(self):
-        time_text = self.html_soup.find('time').get('datetime')
-        return datetime.strptime(time_text[:-6], '%Y-%m-%dT%H:%M:%S')
-
-    @handle_parsing_errors
-    def _extract_doc_update_time(self):
-        try:
-            time_text = self.html_soup.find_all('time')[1].get('datetime')
-            return datetime.strptime(time_text[:-6], '%Y-%m-%dT%H:%M:%S')
-        except AttributeError:
-            return None
-
-    @handle_parsing_errors
     def _extract_href_sources(self):
         html_as = self.html_soup.article.find('div', attrs={'class': 'content'}).find_all('a')
 
@@ -49,7 +36,7 @@ class VingtMinutes(GenericMedia):
         # And "generic" links, which seem to end with "/" :
         html_as = self._exclude_hrefs_by_regex(html_as, r'/$')
 
-        return [a['href'] for a in html_as]
+        return [a['href'] for a in html_as if a.get('href') is not None]
 
     @handle_parsing_errors
     def _extract_category(self):

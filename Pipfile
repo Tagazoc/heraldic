@@ -24,6 +24,7 @@ validators = "*"
 feedparser = "*"
 networkx = "*"
 matplotlib = "*"
+mediacloud = "*"
 
 
 [dev-packages]

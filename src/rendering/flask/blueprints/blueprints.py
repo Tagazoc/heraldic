@@ -39,8 +39,7 @@ def display_media():
 def display_document():
     doc_id = request.args.get('doc_id')
 
-    d = Document()
-    d.retrieve(doc_id)
+    d = Document(doc_id=doc_id)
     d.retrieve_old_versions()
 
     form = DisplayDocumentForm(data={'id': d.model.id.value})
@@ -54,14 +53,12 @@ def submit_document():
 
     if form.validate_on_submit():
         url = form.url.data
+
         d = Document(url)
-
-        try:
-            d.retrieve_from_url()
+        if d.model.initialized:
             flash("L'article existe déjà", "warning")
-        except DocumentNotFoundException:
+        else:
             d.gather()
-
             flash("L'article a été récupéré", "info")
 
         return redirect(url_for('heraldic.review_document', id=d.model.id))
@@ -71,11 +68,8 @@ def submit_document():
 
 @bp.route("/review_document", methods=['GET', 'POST'])
 def review_document():
-    d = Document()
-
     doc_id = request.form['id'] if request.method == 'POST' else request.args['id']
-
-    d.retrieve(doc_id)
+    d = Document(doc_id=doc_id)
 
     ReviewForm.apply_model(d.model)
     form = ReviewForm()

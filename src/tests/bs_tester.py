@@ -11,6 +11,5 @@ from bs4 import BeautifulSoup
 url = sys.argv[1]
 
 d = Document(url)
-d.retrieve_from_url()
-d.gather()
+d.model.gather_from_url(url)
 bs = BeautifulSoup(d.model.content.render_for_display(), "html.parser")

@@ -10,7 +10,7 @@ import sys
 
 def main(argv):
     url = input()
-    d = Document(url)
+    d = Document(url, debug=True)
     d.retrieve_from_url()
     d.gather()
     for k, v in d.model.attributes.items():

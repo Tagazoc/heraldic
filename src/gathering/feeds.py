@@ -7,7 +7,7 @@ from src.misc.exceptions import DocumentExistsException, DomainNotSupportedExcep
     DocumentNotChangedException
 from src.store import index_storer, index_searcher
 from typing import List
-from datetime import datetime
+from datetime import datetime, timedelta
 from time import mktime
 from src.misc.logging import logger
 
@@ -93,9 +93,18 @@ class FeedHarvester:
         feeds_dicts = index_searcher.retrieve_feeds_dicts()
         self.feeds = [RssFeed(dic['_source']['url'], dic['_source']['update_time'], dic['_id']) for dic in feeds_dicts]
 
-    def harvest(self, override=False):
+    def harvest(self, override=False, delay=0):
         for feed in self.feeds:
             feed.gather()
-            if feed.update_time >= feed.stored_update_time:
+            if feed.update_time >= feed.stored_update_time + timedelta(seconds=delay):
                 feed.harvest(override=override)
                 feed.update()
+
+    def harvest_feed(self, feed_url, override=False):
+        for feed in self.feeds:
+            if feed.url == feed_url:
+                feed.gather()
+                feed.harvest(override=override)
+                feed.update()
+                return
+        raise ValueError

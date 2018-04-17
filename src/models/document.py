@@ -8,7 +8,7 @@ from src.media.known_media import known_media
 from src.store import index_storer, index_searcher
 from src.models.document_model import DocumentModel
 from typing import List
-from src.misc.exceptions import DocumentExistsException
+from src.misc.exceptions import DocumentExistsException, DocumentNotFoundException
 from src.misc.logging import logger
 from src.misc.functions import get_domain
 import validators
@@ -19,14 +19,21 @@ class Document(object):
     """
     Class representing a Document through its way through Heraldic.
     """
-    def __init__(self, url: str=''):
+    def __init__(self, url: str='', doc_id: str='', debug=False, _do_not_retrieve=False):
         self.model: DocumentModel = DocumentModel()
         self.old_versions: List[DocumentModel] = []
         self.url = ''
-        if url:
-            self.url = self._check_and_truncate_url(url)
-        # TODO Mettre id ou url ici, avec le retrieve directement
 
+        if doc_id and not _do_not_retrieve:
+            self._retrieve(doc_id)
+        elif url:
+            self.url = self._check_and_truncate_url(url)
+            if not _do_not_retrieve:
+                try:
+                    self.retrieve_from_url()
+                except DocumentNotFoundException:
+                    pass
+        self.debug = debug
         self.extractor = None
 
     @classmethod
@@ -45,11 +52,11 @@ class Document(object):
         :return:
         """
 
-        if self.model.urls.value:
+        if self.model.initialized:
             # It is an update, is it already up-to-date ? Unless override flag
             if not override and update_time and self._is_uptodate(update_time):
                 raise DocumentExistsException(self.url)
-            up_d = Document(self.url)
+            up_d = Document(self.url, debug=self.debug, _do_not_retrieve=True)
             if filepath:
                 up_d.model.gather_from_file(self.url, filepath)
             else:
@@ -77,7 +84,7 @@ class Document(object):
         if not self.extractor:
             extractor = known_media.get_media_by_domain(get_domain(self.url))
             self.extractor = extractor(self.model)
-        self.extractor.extract_fields()
+        self.extractor.extract_fields(debug=self.debug)
 
     def store(self, doc_id: str=None):
         """
@@ -87,7 +94,7 @@ class Document(object):
         """
         self.model.id = index_storer.store(self.model, doc_id)
 
-    def retrieve(self, doc_id: str):
+    def _retrieve(self, doc_id: str):
         """
         Retrieve document contents from a store.
         :param doc_id: ID of the document in the store

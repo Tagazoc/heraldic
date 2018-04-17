@@ -33,7 +33,6 @@ def test_url_submit():
     assert "a été récupéré" in str(rv.data, 'utf-8')
 
     d = Document(url)
-    d.retrieve_from_url()
     d.retrieve_old_versions()
 
     # Prepare next test
@@ -56,8 +55,7 @@ def test_document_update():
     rv = app_client.post('/review_document', data=update_doc_dict, follow_redirects=True)
     assert "mis à jour" in str(rv.data, 'utf-8')
 
-    d = Document()
-    d.retrieve(update_doc_dict['id'])
+    d = Document(doc_id=update_doc_dict['id'])
     d.retrieve_old_versions()
 
     for k, v in update_result_dict.items():
@@ -80,8 +78,7 @@ def test_document_gather_again():
     rv = app_client.post('/review_document', data=update_doc_dict, follow_redirects=True)
     assert "constaté" in str(rv.data, 'utf-8')
 
-    d = Document()
-    d.retrieve(update_doc_dict['id'])
+    d = Document(doc_id=update_doc_dict['id'])
     d.retrieve_old_versions()
 
     for k, v in update_result_dict.items():
@@ -100,14 +97,12 @@ def test_document_error():
     Test malformed document gathering from a slightly different file with parsing error. Event though document will be
     update, rroneous attribute will not change. Error will be stored in specific index.
     """
-    d = Document(url)
-    d.retrieve(update_doc_dict['id'])
+    d = Document(url, doc_id=update_doc_dict['id'])
     d.gather(override=True, filepath='src/tests/media/article_liberation.htm')
 
     del d
 
-    d = Document()
-    d.retrieve(update_doc_dict['id'])
+    d = Document(doc_id=update_doc_dict['id'])
     d.retrieve_old_versions()
 
     for k, v in error_result_dict.items():
@@ -133,8 +128,7 @@ def test_document_error_solved():
 
     assert "de nouveau" in str(rv.data, 'utf-8')
 
-    d = Document()
-    d.retrieve(update_doc_dict['id'])
+    d = Document(doc_id=update_doc_dict['id'])
     d.retrieve_old_versions()
 
     for k, v in final_gather_dict.items():
@@ -158,7 +152,7 @@ def test_document_deletion():
     d.delete()
 
     with pytest.raises(DocumentNotFoundException):
-        d.retrieve(update_doc_dict['id'])
+        d = Document(doc_id=update_doc_dict['id'])
 
     assert (retrieve_errors(update_doc_dict['id']) == {})
 

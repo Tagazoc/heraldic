@@ -16,12 +16,16 @@ import re
 
 
 def handle_parsing_errors(decorated):
-    def wrapper(self):
+    def wrapper(self, *args):
         try:
-            result = decorated(self)
+            result = decorated(self, *args)
         except AttributeError:
             raise HTMLParsingFailureException
         except TypeError:
+            raise HTMLParsingFailureException
+        except KeyError:
+            raise HTMLParsingFailureException
+        except IndexError:
             raise HTMLParsingFailureException
         return result
 
@@ -50,7 +54,7 @@ class GenericMedia(object):
     def get_document_count(cls) -> int:
         return index_searcher.count(q='media:' + cls.id)
 
-    def extract_fields(self):
+    def extract_fields(self, debug=False):
         """
         This function calls every extraction function supported by the media.
         """
@@ -69,6 +73,8 @@ class GenericMedia(object):
                 except ParsingFailureException as err:
                     logger.log('WARN_ATTRIBUTE_PARSING_ERROR', k, self.dm.urls.value[0], err.message)
                     v.parsing_error = err.message
+                    if debug:
+                        raise
 
     def _extract_media(self) -> str:
         """
@@ -108,10 +114,16 @@ class GenericMedia(object):
         Extract document date and time (if present) of publication.
         :return: Document publication date and time as timestamp
         """
-        time_text = self.html_soup.find('meta', attrs={'property': "article:published_time"}).get('content')
         try:
-            time_text = re.sub(r'\+\d{2}:\d{2}', '', time_text)
-            pub_time = datetime.strptime(time_text, '%Y-%m-%dT%H:%M:%S')
+            time_text = self.html_soup.find('meta', attrs={'property': "article:published_time"}).get('content')
+        except AttributeError:
+            try:
+                time_text = self.html_soup.find('time', attrs={'itemprop': 'datePublished'}).get('datetime')
+            except AttributeError:
+                time_text = self.html_soup.find('time').get('datetime')
+
+        try:
+            pub_time = datetime.strptime(time_text[:19], '%Y-%m-%dT%H:%M:%S')
         except ValueError as err:
             raise DateFormatFailureException(err.args[0])
         return pub_time
@@ -122,10 +134,16 @@ class GenericMedia(object):
         Extract document date and time (if present) about when it was updated.
         :return: Document update date and time as timestamp
         """
-        time_text = self.html_soup.find('meta', attrs={'property': "article:modified_time"}).get('content')
         try:
-            time_text = re.sub(r'\+\d{2}:\d{2}', '', time_text)
-            pub_time = datetime.strptime(time_text, '%Y-%m-%dT%H:%M:%S')
+            time_text = self.html_soup.find('meta', attrs={'property': "article:modified_time"}).get('content')
+        except AttributeError:
+            try:
+                time_text = self.html_soup.find('time', attrs={'itemprop': 'dateModified'}).get('datetime')
+            except AttributeError:
+                time_text = self.html_soup.find_all('time')[1].get('datetime')
+
+        try:
+            pub_time = datetime.strptime(time_text[:19], '%Y-%m-%dT%H:%M:%S')
         except ValueError as err:
             raise DateFormatFailureException(err.args[0])
         return pub_time
@@ -138,14 +156,18 @@ class GenericMedia(object):
         """
         return []
 
+    @handle_parsing_errors
     def _post_extract_href_sources(self, hrefs: List[str]) -> List[str]:
         """
-        Modify local links in fully qualified links.
+        Change local links in fully qualified links, and discard local hash links.
+
         :param hrefs: Previously extracted hrefs
         :return:
         """
         result = []
         for href in hrefs:
+            if re.match(r'^#', href):
+                continue
             # Use first defined domain, should work "almost" every time
             result.append(re.sub(r'^/([^/])', self.domains[0] + r'/\1', href))
         return result
@@ -162,9 +184,24 @@ class GenericMedia(object):
     def _extract_explicit_sources(self) -> List[str]:
         """
         Extract sources explicitly given in the document
-        :return: list of the explicit sources
+        :return: list of explicit sources
         """
         return []
+
+    @handle_parsing_errors
+    def _extract_keywords(self) -> List[str]:
+        """
+        Extract keywords displayed on the webpage
+        :return: list of keywords
+        """
+        keywords_set = set()
+        keywords_tags = self.html_soup.find_all('meta', attrs={'name': 'keywords'})
+        if not keywords_tags:
+            keywords_tags = self.html_soup.find_all('meta', attrs={'name': 'news_keywords'})
+        for tag in keywords_tags:
+            keywords = tag.get('content').split(',')
+            keywords_set = keywords_set.union([word.strip() for word in keywords])
+        return list(keywords_set)
 
     @staticmethod
     def _exclude_hrefs_by_attribute(html_as: List, attribute: str, value: str, parent=False):

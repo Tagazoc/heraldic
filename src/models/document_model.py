@@ -41,6 +41,7 @@ class DocumentModel(object):
             'doc_publication_time': DateAttribute(desc="Date de publication de l'article", revisable=False),
             'doc_update_time': DateAttribute(desc="Date de mise à jour de l'article", revisable=False),
 
+            'keywords': StringListAttribute(desc="Mots-clés de l'article", revisable=False),
             'href_sources': StringListAttribute(desc="Sources en lien hypertexte", revisable=False),
             'explicit_sources': StringListAttribute(desc="Sources explicites"),
             'quoted_entities': StringListAttribute(desc="Entités citées", extractible=False),
@@ -76,6 +77,10 @@ class DocumentModel(object):
             self.attributes[key].value = value
         else:
             super(DocumentModel, self).__setattr__(key, value)
+
+    @property
+    def initialized(self):
+        return self.urls.value != []
 
     def update(self, model: 'DocumentModel') -> 'OldDocumentModel':
         """
