@@ -12,7 +12,7 @@ for model in models:
     print(model.id.value + " : " + model.urls.value[0])
     d = Document.from_model(model)
     try:
-        d.gather(override=True)
+        d.gather(update=True)
     except DocumentNotChangedException:
         pass
     except DomainNotSupportedException:

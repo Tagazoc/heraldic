@@ -4,3 +4,5 @@ http://www.lemonde.fr/rss/une.xml
 https://www.lexpress.fr/rss/alaune.xml
 http://www.20minutes.fr/feeds/rss-une.xml
 https://mrmondialisation.org/feed/
+http://www.huffingtonpost.fr/feeds/index.xml
+http://www.bfmtv.com/rss/info/flux-rss/flux-toutes-les-actualites/

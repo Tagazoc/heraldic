@@ -77,7 +77,7 @@ def review_document():
     if form.validate_on_submit():
         if 'gather_again' in request.form:
             try:
-                d.gather(override=True)
+                d.gather(update=True)
                 flash("L'article a de nouveau été récupéré", "info")
             except DocumentNotChangedException:
                 flash("Aucune mise à jour constatée", "danger")

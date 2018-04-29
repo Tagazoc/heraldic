@@ -98,7 +98,7 @@ def test_document_error():
     update, rroneous attribute will not change. Error will be stored in specific index.
     """
     d = Document(url, doc_id=update_doc_dict['id'])
-    d.gather(override=True, filepath='src/tests/media/article_liberation.htm')
+    d.gather(update=True, filepath='src/tests/media/article_liberation.htm')
 
     del d
 

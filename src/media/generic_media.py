@@ -4,29 +4,36 @@
 Module implementing generic DocumentExtractor class.
 """
 
-from typing import List
+from typing import List, Optional
 import html
 from src.models.document_model import DocumentModel
 from bs4 import BeautifulSoup
 from src.store import index_searcher
 from datetime import datetime
-from src.misc.exceptions import ParsingFailureException, HTMLParsingFailureException, DateFormatFailureException
+from src.misc.exceptions import OptionalParsingFailureException, HTMLOptionalParsingFailureException,\
+    DateFormatOptionalFailureException, MandatoryParsingFailureException, InvalidUrlException
 from src.misc.logging import logger
+from src.misc.functions import get_truncated_url
 import re
 
 
-def handle_parsing_errors(decorated):
+def optional_parsing_function(decorated):
     def wrapper(self, *args):
         try:
             result = decorated(self, *args)
-        except AttributeError:
-            raise HTMLParsingFailureException
-        except TypeError:
-            raise HTMLParsingFailureException
-        except KeyError:
-            raise HTMLParsingFailureException
-        except IndexError:
-            raise HTMLParsingFailureException
+        except Exception:
+            raise HTMLOptionalParsingFailureException
+        return result
+
+    return wrapper
+
+
+def mandatory_parsing_function(decorated):
+    def wrapper(self, *args):
+        try:
+            result = decorated(self, *args)
+        except Exception:
+            raise MandatoryParsingFailureException
         return result
 
     return wrapper
@@ -70,11 +77,14 @@ class GenericMedia(object):
                     except AttributeError:
                         pass
                     v.set_from_extraction(extracted_data)
-                except ParsingFailureException as err:
+                except OptionalParsingFailureException as err:
                     logger.log('WARN_ATTRIBUTE_PARSING_ERROR', k, self.dm.urls.value[0], err.message)
                     v.parsing_error = err.message
                     if debug:
                         raise
+                except MandatoryParsingFailureException as err:
+                    logger.log('WARN_MANDATORY_ATTRIBUTE_PARSING_ERROR', k, self.dm.urls.value[0], err.message)
+                    raise
 
     def _extract_media(self) -> str:
         """
@@ -83,7 +93,7 @@ class GenericMedia(object):
         """
         return self.id
 
-    @handle_parsing_errors
+    @optional_parsing_function
     def _extract_title(self) -> str:
         """
         Extract HTML title (in <head> block) from HTML content.
@@ -91,7 +101,7 @@ class GenericMedia(object):
         """
         return html.unescape(self.html_soup.head.title.text)
 
-    @handle_parsing_errors
+    @optional_parsing_function
     def _extract_description(self) -> str:
         """
         Extract description (in meta tag, in <head> block) from HTML content.
@@ -99,7 +109,7 @@ class GenericMedia(object):
         """
         return html.unescape(self.html_soup.head.find('meta', attrs={"name": "description"})['content'])
 
-    @handle_parsing_errors
+    @mandatory_parsing_function
     def _extract_body(self) -> str:
         """
         Extract document body (not HTML body of course, if it is an article this will return
@@ -108,7 +118,7 @@ class GenericMedia(object):
         """
         return ''
 
-    @handle_parsing_errors
+    @optional_parsing_function
     def _extract_doc_publication_time(self) -> datetime:
         """
         Extract document date and time (if present) of publication.
@@ -125,30 +135,35 @@ class GenericMedia(object):
         try:
             pub_time = datetime.strptime(time_text[:19], '%Y-%m-%dT%H:%M:%S')
         except ValueError as err:
-            raise DateFormatFailureException(err.args[0])
+            raise DateFormatOptionalFailureException(err.args[0])
         return pub_time
 
-    @handle_parsing_errors
-    def _extract_doc_update_time(self) -> datetime:
+    @optional_parsing_function
+    def _extract_doc_update_time(self) -> Optional[datetime]:
         """
         Extract document date and time (if present) about when it was updated.
         :return: Document update date and time as timestamp
         """
         try:
-            time_text = self.html_soup.find('meta', attrs={'property': "article:modified_time"}).get('content')
-        except AttributeError:
+            # TODO demander sur IRC si c'est le meilleur moyen de faire
             try:
-                time_text = self.html_soup.find('time', attrs={'itemprop': 'dateModified'}).get('datetime')
+                time_text = self.html_soup.find('meta', attrs={'property': "article:modified_time"}).get('content')
             except AttributeError:
-                time_text = self.html_soup.find_all('time')[1].get('datetime')
+                try:
+                    time_text = self.html_soup.find('time', attrs={'itemprop': 'dateModified'}).get('datetime')
+                except AttributeError:
+                    time_text = self.html_soup.find_all('time')[1].get('datetime')
+        except IndexError:
+            # Should all fail, return None
+            return None
 
         try:
             pub_time = datetime.strptime(time_text[:19], '%Y-%m-%dT%H:%M:%S')
         except ValueError as err:
-            raise DateFormatFailureException(err.args[0])
+            raise DateFormatOptionalFailureException(err.args[0])
         return pub_time
 
-    @handle_parsing_errors
+    @optional_parsing_function
     def _extract_href_sources(self) -> List[str]:
         """
         Extract sources displayed as links from the document.
@@ -156,7 +171,7 @@ class GenericMedia(object):
         """
         return []
 
-    @handle_parsing_errors
+    @optional_parsing_function
     def _post_extract_href_sources(self, hrefs: List[str]) -> List[str]:
         """
         Change local links in fully qualified links, and discard local hash links.
@@ -169,10 +184,15 @@ class GenericMedia(object):
             if re.match(r'^#', href):
                 continue
             # Use first defined domain, should work "almost" every time
-            result.append(re.sub(r'^/([^/])', self.domains[0] + r'/\1', href))
+            try:
+                url = get_truncated_url(re.sub(r'^/([^/])', self.domains[0] + r'/\1', href))
+            except InvalidUrlException:
+                continue
+            result.append(url)
+
         return result
 
-    @handle_parsing_errors
+    @optional_parsing_function
     def _extract_category(self) -> str:
         """
         Extract category as given by the media (specialized media may have only one category).
@@ -180,7 +200,7 @@ class GenericMedia(object):
         """
         return ''
 
-    @handle_parsing_errors
+    @optional_parsing_function
     def _extract_explicit_sources(self) -> List[str]:
         """
         Extract sources explicitly given in the document
@@ -188,7 +208,7 @@ class GenericMedia(object):
         """
         return []
 
-    @handle_parsing_errors
+    @optional_parsing_function
     def _extract_keywords(self) -> List[str]:
         """
         Extract keywords displayed on the webpage
@@ -238,5 +258,5 @@ class GenericMedia(object):
         try:
             date = datetime.strptime(string, format_string)
         except ValueError as err:
-            raise DateFormatFailureException from err
+            raise DateFormatOptionalFailureException from err
         return date

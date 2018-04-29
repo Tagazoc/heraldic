@@ -4,7 +4,7 @@
 Le Monde website extractor implementation.
 """
 
-from src.media.generic_media import GenericMedia, handle_parsing_errors
+from src.media.generic_media import GenericMedia, optional_parsing_function, mandatory_parsing_function
 import re
 from datetime import datetime
 
@@ -17,23 +17,23 @@ class LeMonde(GenericMedia):
     id = 'le_monde'
     display_name = 'Le Monde'
 
-    @handle_parsing_errors
+    @mandatory_parsing_function
     def _extract_body(self):
         return self.html_soup.article.find('div', attrs={'id': 'articleBody'}).text
 
-    @handle_parsing_errors
+    @optional_parsing_function
     def _extract_href_sources(self):
         html_as = self.html_soup.article.find_all('a')
         html_as = self._exclude_hrefs_by_attribute(html_as, 'class', 'lien_interne')
         html_as = self._exclude_hrefs_by_attribute(html_as, 'class', 'lire', parent=True)
         return [a['href'] for a in html_as if a.get('href') is not None]
 
-    @handle_parsing_errors
+    @optional_parsing_function
     def _extract_category(self):
         html_title = self.html_soup.find('div', attrs={'class': 'tt_rubrique_ombrelle'}).contents[1].text
         return html_title
 
-    @handle_parsing_errors
+    @optional_parsing_function
     def _extract_explicit_sources(self):
         html_span = self.html_soup.find('span', attrs={'id': 'publisher'})
         data_source = html_span['data-source']

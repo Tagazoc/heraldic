@@ -18,10 +18,15 @@ class Logger:
         'INFO_DOC_NOT_CHANGED': 'Document "%{doc_id}" with URL %{url} did not change after revision.',
         'WARN_ATTRIBUTE_PARSING_ERROR': 'Extraction of "%{attribute}" attribute for URL %{url} failed :'
                                         ' %{error_message}',
+        'WARN_MANDATORY_ATTRIBUTE_PARSING_ERROR': 'Extraction of mandatory "%{attribute}" attribute for URL'
+                                                  ' %{url} failed : %{error_message}',
         'INFO_FEED_STORE_SUCCESS': 'Feed %{feed_url} was successfully indexed.',
         'INFO_FEED_UPDATE_SUCCESS': 'Feed %{feed_url} was successfully updated.',
         'INFO_FEED_HARVEST_END': 'Feed %{feed_url} gathered %{gathered} documents on %{total} (%{existed} '
-                                 'already up-to-date, %{unsupported} which domain was not supported)'
+                                 'already up-to-date, %{unsupported} which domain was not supported, %{errors}'
+                                 ' whose parsing failed), and recursively gathered %{i_gathered} links on '
+                                 '%{i_total} (%{i_existed} already up-to-date, %{i_unsupported} which domain '
+                                 'was not supported, %{i_errors} whose parsing failed)'
     }
     LOG_TYPES = LOG_TYPES_DICT.keys()
 

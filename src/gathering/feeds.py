@@ -3,13 +3,14 @@
 
 import feedparser
 from src.models.document import Document
-from src.misc.exceptions import DocumentExistsException, DomainNotSupportedException, DocumentNotFoundException,\
-    DocumentNotChangedException
+from src.misc.exceptions import DocumentExistsException, DomainNotSupportedException, MandatoryParsingFailureException,\
+    DocumentNotChangedException, InvalidUrlException
 from src.store import index_storer, index_searcher
 from typing import List
 from datetime import datetime, timedelta
 from time import mktime
 from src.misc.logging import logger
+from src.misc.functions import get_truncated_url
 
 
 class RssFeed:
@@ -21,6 +22,22 @@ class RssFeed:
         self.title = None
         self.link = None
         self.entries = []
+        self.gathered_urls = set()
+
+        self._counts = {
+            'gathered': 0,
+            'exist': 0,
+            'not_supported': 0,
+            'errors': 0
+        }
+
+        self._inside_counts = {
+            'gathered': 0,
+            'total': 0,
+            'exist': 0,
+            'not_supported': 0,
+            'errors': 0
+        }
 
     def gather(self):
         feed = feedparser.parse(self.url)
@@ -35,37 +52,63 @@ class RssFeed:
         self.link = feed['feed']['link']
         self.entries = feed['entries']
 
-    def harvest(self, override: bool=False):
-        gather_count = 0
-        exists_count = 0
-        not_supported_count = 0
-        for item in self.entries:
-            link = item['link']
+    def harvest(self, update_entries: bool=True, max_depth=100):
+
+        self._gather_links(self.entries, update_entries=update_entries, max_depth=max_depth)
+
+        logger.log('INFO_FEED_HARVEST_END', self.url, self._counts['gathered'], len(self.entries), self._counts['exist'],
+                   self._counts['not_supported'], self._counts['errors'], self._inside_counts['gathered'],
+                   self._inside_counts['total'], self._inside_counts['exist'], self._inside_counts['not_supported'],
+                   self._inside_counts['errors'])
+
+    def _gather_links(self, items: List, update_entries=False, max_depth=100, depth=0):
+        counts = self._counts if depth == 0 else self._inside_counts
+        for item in items:
 
             try:
+                # items are feed entries
+                url = item['link']
                 update_time = datetime.fromtimestamp(mktime(item['updated_parsed']))
             except KeyError:
+                url = item['link']
                 update_time = datetime.fromtimestamp(mktime(item['published_parsed']))
-            try:
-                d = Document(link)
-            except DomainNotSupportedException:
-                not_supported_count += 1
-                continue
-            try:
+            except TypeError:
+                # items are only links
+                url = item
+                update_time = None
 
-                d.retrieve_from_url()
-            except DocumentNotFoundException:
-                pass
+            d = None
             try:
-                d.gather(update_time=update_time, override=override)
-                gather_count += 1
+                # TODO faire des gatherexceptions
+                url = get_truncated_url(url)
+                if url in self.gathered_urls:
+                    continue
+                self.gathered_urls = self.gathered_urls.union([url])
+                d = Document(url)
+                d.gather(update_time=update_time, update=update_entries)
+                self.gathered_urls = self.gathered_urls.union(d.model.urls.value)
+                counts['gathered'] += 1
             except DocumentExistsException:
-                exists_count += 1
+                counts['exist'] += 1
+                continue
             except DocumentNotChangedException:
-                exists_count += 1
+                counts['exist'] += 1
+                continue
             except DomainNotSupportedException:
-                not_supported_count += 1
-        logger.log('INFO_FEED_HARVEST_END', self.url, gather_count, len(self.entries), exists_count, not_supported_count)
+                counts['not_supported'] += 1
+                continue
+            except MandatoryParsingFailureException:
+                counts['errors'] += 1
+                continue
+            except InvalidUrlException:
+                counts['errors'] += 1
+                continue
+
+            if max_depth > depth:
+                inside_links = d.model.href_sources.value
+                self._inside_counts['total'] += len(inside_links)
+                # Gather internal links, but without updating existing documents
+                self._gather_links(inside_links, update_entries=False, max_depth=max_depth, depth=depth + 1)
 
     def render_for_store(self):
         body = {
@@ -97,14 +140,14 @@ class FeedHarvester:
         for feed in self.feeds:
             feed.gather()
             if feed.update_time >= feed.stored_update_time + timedelta(seconds=delay):
-                feed.harvest(override=override)
+                feed.harvest(update_entries=override)
                 feed.update()
 
-    def harvest_feed(self, feed_url, override=False):
+    def harvest_feed(self, feed_url, update_entries=True, max_depth=5):
         for feed in self.feeds:
             if feed.url == feed_url:
                 feed.gather()
-                feed.harvest(override=override)
+                feed.harvest(update_entries=update_entries, max_depth=max_depth)
                 feed.update()
                 return
         raise ValueError

@@ -5,8 +5,8 @@
 from src.gathering.feeds import FeedHarvester
 
 OVERRIDE = True
-FEED_URL = 'https://mrmondialisation.org/feed/'
+FEED_URL = 'http://www.bfmtv.com/rss/info/flux-rss/flux-toutes-les-actualites/'
 
 harvester = FeedHarvester()
 harvester.retrieve_feeds()
-harvester.harvest_feed(FEED_URL)
+harvester.harvest_feed(FEED_URL, OVERRIDE)

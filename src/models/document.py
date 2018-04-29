@@ -10,29 +10,26 @@ from src.models.document_model import DocumentModel
 from typing import List
 from src.misc.exceptions import DocumentExistsException, DocumentNotFoundException
 from src.misc.logging import logger
-from src.misc.functions import get_domain
-import validators
-import re
+from src.misc.functions import get_domain, get_truncated_url
 
 
 class Document(object):
     """
     Class representing a Document through its way through Heraldic.
     """
-    def __init__(self, url: str='', doc_id: str='', debug=False, _do_not_retrieve=False):
+    def __init__(self, url: str='', doc_id: str='', debug=False):
         self.model: DocumentModel = DocumentModel()
         self.old_versions: List[DocumentModel] = []
         self.url = ''
 
-        if doc_id and not _do_not_retrieve:
+        if doc_id:
             self._retrieve(doc_id)
         elif url:
             self.url = self._check_and_truncate_url(url)
-            if not _do_not_retrieve:
-                try:
-                    self.retrieve_from_url()
-                except DocumentNotFoundException:
-                    pass
+            try:
+                self.retrieve_from_url()
+            except DocumentNotFoundException:
+                pass
         self.debug = debug
         self.extractor = None
 
@@ -43,27 +40,25 @@ class Document(object):
         doc.url = model.urls.value[0]
         return doc
 
-    def gather(self, update_time=None, override: bool=False, filepath: str=''):
+    def gather(self, update_time=None, update: bool=False, filepath: str= ''):
         """
         Gather a document contents from an url, parse it and store or update it.
         :param update_time: Update time (in rss feed) to avoid gathering if up-to-date
-        :param override: disable existence check, in order to override document
+        :param update: disable existence check, in order to override document
         :param filepath: Whether url is instead a file path.
-        :return:
         """
-
         if self.model.initialized:
             # It is an update, is it already up-to-date ? Unless override flag
-            if not override and update_time and self._is_uptodate(update_time):
+            if not update and (not update_time or self._is_uptodate(update_time)):
                 raise DocumentExistsException(self.url)
-            up_d = Document(self.url, debug=self.debug, _do_not_retrieve=True)
+            updated_model = DocumentModel()
             if filepath:
-                up_d.model.gather_from_file(self.url, filepath)
+                updated_model.gather_from_file(self.url, filepath)
             else:
-                final_url = up_d.model.gather_from_url(self.url)
+                final_url = updated_model.gather_from_url(self.url)
                 self.model.urls.append(self._check_and_truncate_url(final_url))
-            up_d._extract_fields()
-            self.update_from_model(up_d.model)
+            self._extract_fields(updated_model)
+            self.update_from_model(updated_model)
             logger.log('INFO_DOC_UPDATE_SUCCESS', self.url)
         else:
             if filepath:
@@ -73,20 +68,21 @@ class Document(object):
                 self.model.urls.append(self._check_and_truncate_url(final_url))
 
             self._extract_fields()
-            self.store()
+            self._store()
             logger.log('INFO_DOC_STORE_SUCCESS', self.url)
 
-    def _extract_fields(self):
+    def _extract_fields(self, model=None):
         """
         Find document media and extract document fields according to it.
         :return:
         """
+        model = model if model is not None else self.model
         if not self.extractor:
             extractor = known_media.get_media_by_domain(get_domain(self.url))
-            self.extractor = extractor(self.model)
+            self.extractor = extractor(model)
         self.extractor.extract_fields(debug=self.debug)
 
-    def store(self, doc_id: str=None):
+    def _store(self, doc_id: str=None):
         """
         Store document contents.
         :param doc_id: ID of the document in the store
@@ -168,7 +164,8 @@ class Document(object):
         logger.log('WARN_DOC_DELETED', self.model.id.value, self.url)
 
     def _is_uptodate(self, update_time: float):
-        date = self.model.doc_update_time.value if self.model.doc_update_time.initialized else self.model.doc_publication_time.value
+        date = self.model.doc_update_time.value if self.model.doc_update_time.initialized \
+            else self.model.doc_publication_time.value
         return date >= update_time
 
     @staticmethod
@@ -177,12 +174,9 @@ class Document(object):
         Check URL syntax.
         :return: Result of the check.
         """
-        if not validators.url(url):
-            logger.log('WARN_DOMAIN_MALFORMED', url)
-            raise ValueError
         domain = get_domain(url)
+
         # Validate domain is supported
         known_media.get_media_by_domain(domain)
-        url_regex = re.compile(r'^(.*?)(?:\?|$)')
-        match = url_regex.match(url)
-        return match.group(1)
+
+        return get_truncated_url(url)

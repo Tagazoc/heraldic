@@ -11,6 +11,11 @@ class HeraldicException(Exception):
     pass
 
 
+class InvalidUrlException(HeraldicException, ValueError):
+    def __init__(self, url):
+        logger.log('WARN_URL_INVALID', url)
+
+
 class DomainNotSupportedException(HeraldicException, ValueError):
     def __init__(self, domain):
         logger.log('WARN_DOMAIN_NOT_SUPPORTED', domain)
@@ -25,17 +30,22 @@ class DocumentExistsException(HeraldicException):
         logger.log('INFO_DOC_ALREADY_UPTODATE', url)
 
 
-class ParsingFailureException(HeraldicException):
+class MandatoryParsingFailureException(HeraldicException):
     def __init__(self, message: str='Erreur de parsing'):
         self.message = message
 
 
-class HTMLParsingFailureException(ParsingFailureException):
+class OptionalParsingFailureException(HeraldicException):
+    def __init__(self, message: str='Erreur de parsing'):
+        self.message = message
+
+
+class HTMLOptionalParsingFailureException(OptionalParsingFailureException):
     def __init__(self, message: str='HTML parsing error'):
         self.message = message
 
 
-class DateFormatFailureException(ParsingFailureException):
+class DateFormatOptionalFailureException(OptionalParsingFailureException):
     def __init__(self, message='Date format error'):
         self.message = message
 
