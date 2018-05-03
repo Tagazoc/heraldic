@@ -71,7 +71,7 @@ error_result_dict = {
 }
 
 errors_list = [
-    "explicit_sources"
+    "title"
 ]
 
 error_old_model_list = [

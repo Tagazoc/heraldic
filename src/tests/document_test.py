@@ -95,7 +95,7 @@ def test_document_gather_again():
 def test_document_error():
     """
     Test malformed document gathering from a slightly different file with parsing error. Event though document will be
-    update, rroneous attribute will not change. Error will be stored in specific index.
+    updated, erroneous attribute will not change. Error will be stored in specific index.
     """
     d = Document(url, doc_id=update_doc_dict['id'])
     d.gather(update=True, filepath='src/tests/media/article_liberation.htm')
