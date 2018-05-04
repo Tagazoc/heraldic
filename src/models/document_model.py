@@ -4,7 +4,6 @@
 Module which implements DocumentModel class.
 """
 
-import re
 from src.models.attribute import Attribute, StringListAttribute, StringAttribute,\
     DateAttribute, BooleanAttribute, IntegerAttribute
 from collections import OrderedDict

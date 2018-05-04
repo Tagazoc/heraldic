@@ -18,8 +18,8 @@ class Logger:
         'INFO_DOC_NOT_CHANGED': 'Document "%{doc_id}" with URL %{url} did not change after revision.',
         'WARN_ATTRIBUTE_PARSING_ERROR': 'Extraction of "%{attribute}" attribute for URL %{url} failed :'
                                         ' %{error_message}',
-        'WARN_MANDATORY_ATTRIBUTE_PARSING_ERROR': 'Extraction of mandatory "%{attribute}" attribute for URL'
-                                                  ' %{url} failed : %{error_message}',
+        'WARN_MANDATORY_PARSING_ERROR': 'Extraction of mandatory "%{attribute}" attribute for URL'
+                                        ' %{url} failed : %{error_message}',
         'INFO_FEED_STORE_SUCCESS': 'Feed %{feed_url} was successfully indexed.',
         'INFO_FEED_UPDATE_SUCCESS': 'Feed %{feed_url} was successfully updated.',
         'INFO_FEED_HARVEST_END': 'Feed %{feed_url} gathered %{gathered} documents on %{total} (%{existed} '

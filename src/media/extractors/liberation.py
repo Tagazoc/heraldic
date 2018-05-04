@@ -6,7 +6,7 @@ Le Monde website extractor implementation.
 
 from src.media.generic_media import GenericMedia, optional_parsing_function, mandatory_parsing_function
 import re
-from src.misc.exceptions import HTMLOptionalParsingFailureException
+from src.misc.exceptions import HTMLParsingException
 
 
 class Liberation(GenericMedia):
@@ -22,7 +22,7 @@ class Liberation(GenericMedia):
         try:
             body = self.html_soup.find('div', attrs={'class': 'article-body'}).text
         except AttributeError as err:
-            raise HTMLOptionalParsingFailureException from err
+            raise HTMLParsingException from err
         return body
 
     @optional_parsing_function

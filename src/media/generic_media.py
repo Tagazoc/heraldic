@@ -10,8 +10,7 @@ from src.models.document_model import DocumentModel
 from bs4 import BeautifulSoup
 from src.store import index_searcher
 from datetime import datetime
-from src.misc.exceptions import OptionalParsingFailureException, HTMLOptionalParsingFailureException,\
-    DateFormatOptionalFailureException, MandatoryParsingFailureException, InvalidUrlException
+import src.misc.exceptions as ex
 from src.misc.logging import logger
 from src.misc.functions import get_truncated_url
 import re
@@ -21,8 +20,8 @@ def optional_parsing_function(decorated):
     def wrapper(self, *args):
         try:
             result = decorated(self, *args)
-        except Exception:
-            raise HTMLOptionalParsingFailureException
+        except Exception as err:
+            raise ex.HTMLParsingException from err
         return result
 
     return wrapper
@@ -32,8 +31,8 @@ def mandatory_parsing_function(decorated):
     def wrapper(self, *args):
         try:
             result = decorated(self, *args)
-        except Exception:
-            raise MandatoryParsingFailureException
+        except Exception as err:
+            raise ex.MandatoryParsingException from err
         return result
 
     return wrapper
@@ -77,13 +76,13 @@ class GenericMedia(object):
                     except AttributeError:
                         pass
                     v.set_from_extraction(extracted_data)
-                except OptionalParsingFailureException as err:
+                except ex.OptionalParsingException as err:
                     logger.log('WARN_ATTRIBUTE_PARSING_ERROR', k, self.dm.urls.value[0], err.message)
                     v.parsing_error = err.message
                     if debug:
                         raise
-                except MandatoryParsingFailureException as err:
-                    logger.log('WARN_MANDATORY_ATTRIBUTE_PARSING_ERROR', k, self.dm.urls.value[0], err.message)
+                except ex.MandatoryParsingException as err:
+                    logger.log('WARN_MANDATORY_PARSING_ERROR', k, self.dm.urls.value[0], err.message)
                     raise
 
     def _extract_media(self) -> str:
@@ -135,7 +134,7 @@ class GenericMedia(object):
         try:
             pub_time = datetime.strptime(time_text[:19], '%Y-%m-%dT%H:%M:%S')
         except ValueError as err:
-            raise DateFormatOptionalFailureException(err.args[0])
+            raise ex.DateFormatParsingException from err
         return pub_time
 
     @optional_parsing_function
@@ -160,7 +159,7 @@ class GenericMedia(object):
         try:
             pub_time = datetime.strptime(time_text[:19], '%Y-%m-%dT%H:%M:%S')
         except ValueError as err:
-            raise DateFormatOptionalFailureException(err.args[0])
+            raise ex.DateFormatParsingException from err
         return pub_time
 
     @optional_parsing_function
@@ -186,7 +185,7 @@ class GenericMedia(object):
             # Use first defined domain, should work "almost" every time
             try:
                 url = get_truncated_url(re.sub(r'^/([^/])', self.domains[0] + r'/\1', href))
-            except InvalidUrlException:
+            except ex.InvalidUrlException:
                 continue
             result.append(url)
 
@@ -258,5 +257,5 @@ class GenericMedia(object):
         try:
             date = datetime.strptime(string, format_string)
         except ValueError as err:
-            raise DateFormatOptionalFailureException from err
+            raise ex.DateFormatParsingException from err
         return date

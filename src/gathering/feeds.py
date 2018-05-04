@@ -3,8 +3,7 @@
 
 import feedparser
 from src.models.document import Document
-from src.misc.exceptions import DocumentExistsException, DomainNotSupportedException, MandatoryParsingFailureException,\
-    DocumentNotChangedException, InvalidUrlException
+import src.misc.exceptions as ex
 from src.store import index_storer, index_searcher
 from typing import List
 from datetime import datetime, timedelta
@@ -79,7 +78,6 @@ class RssFeed:
 
             d = None
             try:
-                # TODO faire des gatherexceptions
                 url = get_truncated_url(url)
                 if url in self.gathered_urls:
                     continue
@@ -88,19 +86,13 @@ class RssFeed:
                 d.gather(update_time=update_time, update=update_entries)
                 self.gathered_urls = self.gathered_urls.union(d.model.urls.value)
                 counts['gathered'] += 1
-            except DocumentExistsException:
+            except ex.DocumentExistsException:
                 counts['exist'] += 1
                 continue
-            except DocumentNotChangedException:
-                counts['exist'] += 1
-                continue
-            except DomainNotSupportedException:
+            except ex.DomainNotSupportedException:
                 counts['not_supported'] += 1
                 continue
-            except MandatoryParsingFailureException:
-                counts['errors'] += 1
-                continue
-            except InvalidUrlException:
+            except ex.GatherError:
                 counts['errors'] += 1
                 continue
 
