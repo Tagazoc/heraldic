@@ -12,22 +12,15 @@ from copy import copy
 
 class MrMondialisation(GenericMedia):
     """
-    Class used for extracting items from french media "20 Minutes".
+    Class used for extracting items from french media "Mr Mondialisation".
     """
     domains = ['mrmondialisation.org']
     id = 'MrMondialisation'
     display_name = 'Mr Mondialisation'
 
-    @optional_parsing_function
     def _extract_body(self):
-        return self.html_soup.article.find('div', attrs={'class': 'td-post-content'}).text
+        return self.html_soup.article.find('div', attrs={'class': 'td-post-content'})
 
-    @optional_parsing_function
-    def _extract_href_sources(self):
-        html_as = self.html_soup.article.find('div', attrs={'class': 'td-post-content'}).find_all('a')
-        return [a['href'] for a in html_as if a.get('href') is not None]
-
-    @optional_parsing_function
     def _extract_category(self):
         html_category = self.html_soup.find_all('a', attrs={'class': 'entry-crumb'})[-1].span.text
         return html_category

@@ -5,8 +5,7 @@
 """
 
 from src.media.generic_media import GenericMedia, optional_parsing_function, mandatory_parsing_function
-import re
-from datetime import datetime
+from copy import copy
 
 
 class VingtMinutes(GenericMedia):
@@ -17,18 +16,24 @@ class VingtMinutes(GenericMedia):
     id = '20minutes'
     display_name = '20 Minutes'
 
-    @mandatory_parsing_function
     def _extract_body(self):
-        return self.html_soup.article.find('div', attrs={'class': 'content'}).text
+        content_div = copy(self.html_soup).article.find('div', attrs={'class': 'content'}).extract()
+        content_div.find('div', attrs={'class': 'tags'}).decompose()
+        content_div.find('div', attrs={'class': 'sharebar'}).decompose()
+        [lire_aussi.decompose() for lire_aussi in content_div.find_all('a', attrs={'class': 'highlight'})]
+        return content_div
 
-    @optional_parsing_function
+    def _extract_doc_publication_time(self):
+        return self.html_soup.find('time').get('datetime')
+
+    def _extract_doc_update_time(self):
+        try:
+            time_text = self.html_soup.find_all('time')[1].get('datetime')
+        except IndexError:
+            return None
+
     def _extract_href_sources(self):
-        html_as = self.html_soup.article.find('div', attrs={'class': 'content'}).find_all('a')
-
-        # Exclude tags & share buttons links
-        tags_as = self.html_soup.article.find('div', attrs={'class': 'tags'}).find_all('a')
-        sharebar_as = self.html_soup.article.find('div', attrs={'class': 'sharebar'}).find_all('a')
-        html_as = [a for a in html_as if a not in tags_as and a not in sharebar_as]
+        html_as = self._body_tag.find_all('a')
 
         # Also exclude internal links for groups of articles
         html_as = self._exclude_hrefs_by_regex(html_as, r'/dossier/')
@@ -36,9 +41,8 @@ class VingtMinutes(GenericMedia):
         # And "generic" links, which seem to end with "/" :
         html_as = self._exclude_hrefs_by_regex(html_as, r'/$')
 
-        return [a['href'] for a in html_as if a.get('href') is not None]
+        return html_as
 
-    @optional_parsing_function
     def _extract_category(self):
         html_category = self.html_soup.find('span', attrs={'class': 'teaser-headline'}).text
         return html_category

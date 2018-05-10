@@ -47,6 +47,9 @@ class Attribute(object):
         self.initialized: bool = kwargs['initialized'] if 'initialized' in kwargs else False
         """ Whether it is initialized or not (empty value does not suffice). """
 
+        self.mandatory: bool = kwargs['mandatory'] if 'mandatory' in kwargs else False
+        """ Whether it is mandatory to extract. """
+
         self.store_format = self.DEFAULT_STORE_FORMAT
         """ Store format """
 

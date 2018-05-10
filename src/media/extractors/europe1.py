@@ -1,30 +1,30 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """
-BFM TV website extractor implementation.
+Europe 1 website extractor implementation.
 """
 
 from src.media.generic_media import GenericMedia, optional_parsing_function, mandatory_parsing_function
 import re
 
 
-class BfmTv(GenericMedia):
+class Europe1(GenericMedia):
     """
-    Class used for extracting items from french media "BFM TV".
+    Class used for extracting items from french media "Europe 1".
     """
-    domains = ['www.bfmtv.com']
-    id = 'bfm_tv'
-    display_name = 'BFM TV'
+    domains = ['www.europe1.fr']
+    id = 'europe_1'
+    display_name = 'Europe 1'
 
     def _extract_body(self):
         return self.html_soup.find('div', attrs={'itemprop': 'articleBody'})
 
     def _extract_category(self):
-        text = self.html_soup.find('ul', attrs={'class': 'breadcrumb'}).find_all('a')[1].text
+        text = self.html_soup.find('ul', attrs={'class': 'breadcrumb'}).find_all('span')[-1].text
         return text
 
     def _extract_explicit_sources(self):
-        text = self.html_soup.find('strong', attrs={'rel': 'author'}).text
+        text = self.html_soup.find('div', attrs={'class': 'author'}).find('div', attrs={'class': 'titre'}).text
         source = re.search(r' avec (.*)', text)
         if source is not None:
             return [source.group(1)]

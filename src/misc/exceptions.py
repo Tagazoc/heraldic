@@ -47,9 +47,11 @@ class ParsingException(HeraldicException):
     BASE_MESSAGE = 'Generic parsing exception'
     LOGGING_TEMPLATE = ''
 
-    def __init__(self):
-        err_message = ",".join(self.__cause__.args) if self.__cause__ is not None else ''
+    def __init__(self, attribute, url, err):
+        super(ParsingException, self).__init__()
+        err_message = ",".join(err.args) if err is not None else ''
         self.message = self.BASE_MESSAGE + ': ' + err_message
+        logger.log(self.LOGGING_TEMPLATE, attribute, url, self.message)
 
 
 class MandatoryParsingException(ParsingException, GatherError):

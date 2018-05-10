@@ -2,7 +2,11 @@ http://rss.liberation.fr/rss/latest/
 http://www.lefigaro.fr/rss/figaro_actualites.xml
 http://www.lemonde.fr/rss/une.xml
 https://www.lexpress.fr/rss/alaune.xml
-http://www.20minutes.fr/feeds/rss-une.xml
+https://www.20minutes.fr/feeds/rss-une.xml
 https://mrmondialisation.org/feed/
-http://www.huffingtonpost.fr/feeds/index.xml
+https://www.huffingtonpost.fr/feeds/index.xml
 http://www.bfmtv.com/rss/info/flux-rss/flux-toutes-les-actualites/
+http://www.lepoint.fr/24h-infos/rss.xml
+http://www.leparisien.fr/actualites-a-la-une.rss.xml
+http://www.europe1.fr/var/export/rss/europe1/actus.xml
+https://www.francetvinfo.fr/titres.rss

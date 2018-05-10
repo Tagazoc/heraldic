@@ -11,22 +11,23 @@ from datetime import datetime
 
 class LExpress(GenericMedia):
     """
-    Class used for extracting items from french media "Le Monde".
+    Class used for extracting items from french media "L'Express".
     """
     domains = ['www.lexpress.fr', 'lexpansion.lexpress.fr']
     id = 'lexpress'
     display_name = 'L\'Express'
 
-    @mandatory_parsing_function
     def _extract_body(self):
-        return self.html_soup.article.find('div', attrs={'class': 'article_container'}).text
+        return self.html_soup.article.find('div', attrs={'class': 'article_container'})
 
-    @optional_parsing_function
-    def _extract_href_sources(self):
-        html_as = self.html_soup.article.find('div', attrs={'class': 'article_container'}).find_all('a')
-        return [a['href'] for a in html_as if a.get('href') is not None]
-
-    @optional_parsing_function
     def _extract_category(self):
         html_category = self.html_soup.find('div', attrs={'class': 'article_category'}).find('a').text
         return html_category
+
+    def _extract_explicit_sources(self):
+        text = self.html_soup.find('span', attrs={'itemprop': 'author'}).span.text
+        # Do not want the nominative author
+        source = re.search(r'(.*) pour l\'Express', text, re.IGNORECASE)
+        if source is None:
+            return [text]
+        return []

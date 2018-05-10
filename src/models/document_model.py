@@ -31,7 +31,7 @@ class DocumentModel(object):
             # Buffer data
             'content': StringAttribute(desc="Contenu", displayable=False, revisable=False, extractible=False,
                                        storable=False),
-            'body': StringAttribute(desc="Body", displayable=False, revisable=False, storable=False),
+            'body': StringAttribute(desc="Body", displayable=False, revisable=False, storable=False, mandatory=True),
 
             # Extracted data
             'category': StringAttribute(desc="Catégorie", revisable=False, storable='keyword'),
@@ -45,6 +45,7 @@ class DocumentModel(object):
             'explicit_sources': StringListAttribute(desc="Sources explicites"),
             'quoted_entities': StringListAttribute(desc="Entités citées", extractible=False),
             'contains_private_sources': BooleanAttribute(desc="Sources privées", extractible=False),
+            'subscribers_only': BooleanAttribute(desc="Réservé aux abonnés", revisable=False)
         })
 
         self.from_gathering = False

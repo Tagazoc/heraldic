@@ -128,11 +128,11 @@ class FeedHarvester:
         feeds_dicts = index_searcher.retrieve_feeds_dicts()
         self.feeds = [RssFeed(dic['_source']['url'], dic['_source']['update_time'], dic['_id']) for dic in feeds_dicts]
 
-    def harvest(self, override=False, delay=0):
+    def harvest(self, override=False, max_depth=5, delay=0):
         for feed in self.feeds:
             feed.gather()
             if feed.update_time >= feed.stored_update_time + timedelta(seconds=delay):
-                feed.harvest(update_entries=override)
+                feed.harvest(update_entries=override, max_depth=max_depth)
                 feed.update()
 
     def harvest_feed(self, feed_url, update_entries=True, max_depth=5):
