@@ -4,7 +4,7 @@
 Mr Mondialisation website extractor implementation.
 """
 
-from src.media.generic_media import GenericMedia, optional_parsing_function
+from src.media.generic_media import GenericMedia
 import re
 from datetime import datetime
 from copy import copy

@@ -18,28 +18,6 @@ import json
 import re
 
 
-def optional_parsing_function(decorated):
-    def wrapper(self, *args):
-        try:
-            result = decorated(self, *args)
-        except Exception as err:
-            raise ex.HTMLParsingException from err
-        return result
-
-    return wrapper
-
-
-def mandatory_parsing_function(decorated):
-    def wrapper(self, *args):
-        try:
-            result = decorated(self, *args)
-        except Exception as err:
-            raise ex.MandatoryParsingException from err
-        return result
-
-    return wrapper
-
-
 class GenericMedia(object):
     """
         Generic class for attribute extraction from a document, should not be directly instanciated.

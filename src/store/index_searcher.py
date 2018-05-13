@@ -12,9 +12,9 @@ from typing import List
 
 
 def handle_connection_errors(decorated):
-    def wrapper(self, *args, **kwargs):
+    def wrapper(*args, **kwargs):
         try:
-            result = decorated(self, *args, **kwargs)
+            result = decorated(*args, **kwargs)
         except ConnectionError as err:
             raise ex.IndexerConnectionError from err
         return result
