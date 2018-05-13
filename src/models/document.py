@@ -95,20 +95,20 @@ class Document(object):
         Retrieve document contents from a store.
         :param doc_id: ID of the document in the store
         """
-        self.model = index_searcher.retrieve(doc_id)
+        self.model = index_searcher.retrieve_model(doc_id)
         self.url = self.model.urls.value[0]
 
     def retrieve_from_url(self):
         """
         Retrieve a document from its URL.
         """
-        self.model = index_searcher.retrieve_from_url(self.url)
+        self.model = index_searcher.retrieve_model_from_url(self.url)
 
     def retrieve_old_versions(self):
         """
         Retrieve old versions of a document from its ID.
         """
-        self.old_versions = index_searcher.retrieve_old_versions(self.model.id.value)
+        self.old_versions = index_searcher.retrieve_old_version_models(self.model.id.value)
         self._set_attributes_versions()
 
     def update_from_model(self, new_model: DocumentModel):

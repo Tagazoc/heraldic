@@ -10,3 +10,6 @@ http://www.lepoint.fr/24h-infos/rss.xml
 http://www.leparisien.fr/actualites-a-la-une.rss.xml
 http://www.europe1.fr/var/export/rss/europe1/actus.xml
 https://www.francetvinfo.fr/titres.rss
+http://www.nouvelobs.com/atom.xml
+https://www.humanite.fr/rss/actu.rss
+https://www.lesechos.fr/rss/rss_une.xml

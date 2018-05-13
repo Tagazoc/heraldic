@@ -6,12 +6,16 @@ This file can be used as a script to validate parsing of an article.
 
 from src.models.document import Document
 import sys
+import src.misc.exceptions as ex
 
 
 def main(argv):
     url = input()
     d = Document(url, debug=True)
-    d.gather(update=True)
+    try:
+        d.gather(update=True)
+    except ex.DocumentNotChangedException:
+        pass
     for k, v in d.model.attributes.items():
         if v.extractible:
             if v.parsing_error:

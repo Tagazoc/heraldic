@@ -205,7 +205,7 @@ class DocumentModel(object):
         # Setting final URL (in case of redirection)
         urls: StringListAttribute = self.attributes['urls']
         urls.append(url)
-
+        r.encoding = 'utf-8'
         self.attributes['content'].value = r.text
 
         self._set_gather_attributes()

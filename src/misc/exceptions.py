@@ -11,6 +11,10 @@ class HeraldicException(Exception):
     pass
 
 
+class IndexerConnectionError(HeraldicException, ConnectionError):
+    pass
+
+
 class GatherException(HeraldicException):
     pass
 
@@ -20,8 +24,10 @@ class GatherError(GatherException):
 
 
 class InvalidUrlException(GatherError):
-    def __init__(self, url):
-        logger.log('WARN_URL_INVALID', url)
+    def __init__(self, url, do_not_log=False):
+        super(InvalidUrlException, self).__init__()
+        if not do_not_log:
+            logger.log('WARN_URL_INVALID', url)
 
 
 class DomainNotSupportedException(GatherException):

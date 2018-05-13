@@ -54,4 +54,4 @@ def get_truncated_url(url):
 
         return protocol_scheme + match.group(2) + match.group(3)
     except AttributeError:
-        raise InvalidUrlException
+        raise InvalidUrlException(url)

@@ -16,22 +16,18 @@ class MediaName(GenericMedia):
     id = ''
     display_name = ''
 
-    @mandatory_parsing_function
     def _extract_body(self):
-        return self.html_soup.find('div', attrs={'itemprop': 'articleBody'}).text
+        return self.html_soup.find('div', attrs={'itemprop': 'articleBody'})
 
-    @optional_parsing_function
     def _extract_href_sources(self):
-        html_as = self.html_soup.find('div', attrs={'itemprop': 'articleBody'}).find_all('a')
+        html_as = self._body_tag.find_all('a')
 
-        return [a['href'] for a in html_as if a.get('href') is not None]
+        return html_as
 
-    @optional_parsing_function
     def _extract_category(self):
         text = self.html_soup.find('ul', attrs={'class': 'breadcrumb'}).find_all('a')[1].text
         return text
 
-    @optional_parsing_function
     def _extract_explicit_sources(self):
         text = self.html_soup.find('strong', attrs={'rel': 'author'}).text
         source = re.search(r' avec (.*)', text)

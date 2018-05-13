@@ -3,15 +3,16 @@
 
 """
 
-from flask import Blueprint, request, render_template, flash, redirect, url_for
+from flask import Blueprint, request, render_template, flash, redirect, url_for, abort
 from flask_nav.elements import Navbar, View
 
-from src.misc.exceptions import DocumentNotFoundException, DocumentNotChangedException
+from src.misc.exceptions import DocumentNotChangedException
 from src.models.document import Document
 from src.rendering.flask.forms import UrlForm, ReviewForm, DisplayDocumentForm
 from src.rendering.flask.nav import nav
-from src.models import model_searcher
 from src.media.known_media import known_media
+from src.store import index_searcher
+
 
 bp = Blueprint('heraldic', __name__)
 
@@ -30,8 +31,9 @@ def home():
 @bp.route('/display_media', methods=['GET'])
 def display_media():
     media_id = request.args.get('media_id')
-
-    hits_models = model_searcher.search_by_media(media_id)
+    if not known_media.media_exists(media_id):
+        abort(401)
+    hits_models = index_searcher.search_by_media(media_id)
     return render_template('search.html', hits=hits_models)
 
 

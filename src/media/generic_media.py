@@ -13,6 +13,8 @@ from src.store import index_searcher
 from datetime import datetime
 import src.misc.exceptions as ex
 from src.misc.functions import get_truncated_url
+from copy import copy
+import json
 import re
 
 
@@ -54,7 +56,8 @@ class GenericMedia(object):
 
         :param dm: Document model which will contain all extracted items.
         """
-        self.html_soup = BeautifulSoup(dm.content.render_for_display(), "html.parser")
+        content = dm.content.render_for_display()
+        self.html_soup = BeautifulSoup(content, "html5lib")  # "html.parser")
         self.dm = dm
         self._body_tag = None
         """ Body backup, wich can be reused for other attributes. """
@@ -133,7 +136,9 @@ class GenericMedia(object):
         :param body:
         :return:
         """
-
+        # Copy body tag to avoid affecting global soup
+        body = copy(body)
+        [tag.decompose() for tag in body.find_all('script')]
         self._body_tag = body
         return body.text
 
@@ -233,6 +238,18 @@ class GenericMedia(object):
         for tag in keywords_tags:
             keywords = tag.get('content').split(',')
             keywords_set = keywords_set.union([word.strip() for word in keywords])
+        if not keywords_tags:
+            try:
+                data = json.loads(self.html_soup.find('script', type='application/ld+json').text)
+                keywords = data['keywords']
+                if isinstance(keywords, str):
+                    keywords = keywords.split(',')
+                    keywords = [word.strip() for word in keywords]
+                return keywords
+            except AttributeError:
+                pass
+            except KeyError:
+                pass
         return list(keywords_set)
 
     def _extract_subscribers_only(self) -> bool:

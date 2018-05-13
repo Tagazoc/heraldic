@@ -1,12 +1,9 @@
 [[source]]
-
 url = "https://pypi.python.org/simple"
 verify_ssl = true
 name = "pypi"
 
-
 [packages]
-
 requests = "*"
 uwsgi = "*"
 flask = "*"
@@ -25,7 +22,6 @@ feedparser = "*"
 networkx = "*"
 matplotlib = "*"
 mediacloud = "*"
-
+"html5lib" = "*"
 
 [dev-packages]
-

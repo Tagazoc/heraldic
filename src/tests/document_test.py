@@ -9,7 +9,7 @@ from src.models.document import Document
 import pytest
 from src.rendering.flask.factory import create_app
 from src.misc.exceptions import DocumentNotFoundException
-from src.store.index_searcher import retrieve_errors, retrieve_old_versions, retrieve_suggestions
+from src.store.index_searcher import retrieve_errors, retrieve_suggestions, retrieve_old_version_models
 
 
 # Flask test configuration
@@ -152,10 +152,10 @@ def test_document_deletion():
     d.delete()
 
     with pytest.raises(DocumentNotFoundException):
-        d = Document(doc_id=update_doc_dict['id'])
+        Document(doc_id=update_doc_dict['id'])
 
     assert (retrieve_errors(update_doc_dict['id']) == {})
 
     assert (retrieve_suggestions(update_doc_dict['id']) == {})
 
-    assert (retrieve_old_versions(update_doc_dict['id']) == [])
+    assert (retrieve_old_version_models(update_doc_dict['id']) == [])

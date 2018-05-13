@@ -34,27 +34,27 @@
 
 # TODO Vérifier les résultats des requêtes ES
 
-# T
-
 # TODO Voir les perfs
 
 # TODO Faire la sécurité
 
 # TODO Refaire les vues WTForms
 
-# TODO Faire la liste des médias à faire en priorité
+# TODO Faire la liste des médias à faire en priorité -> Osef on fait au fil de l'eau
 
 # TODO Sortir content du model
 
 # TODO Git sous github -> OK
 
-# TODO Faire des tests avec du POST sur l'interface Web
+# TODO Revoir l'arborescence
 
-# TODO Mettre la gestion des index dans elastic.py faire des constantes
+# TODO Faire des tests avec du POST sur l'interface Web -> OK
+
+# TODO Mettre la gestion des index dans elastic.py faire des constantes -> OK
 
 # TODO Implémenter les médias mainstream
 
-# TODO Faire le logo
+# TODO Faire le logo -> OK
 
 # TODO Récupérer les news de Google news API et automatiser ce qui peut l'être
 

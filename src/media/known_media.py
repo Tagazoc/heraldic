@@ -30,8 +30,8 @@ class KnownMedia(object):
                 return media_class
         raise DomainNotSupportedException(domain)
 
-    def media_exists(self, media_name: str) -> bool:
-        return media_name in self.names
+    def media_exists(self, media_id: str) -> bool:
+        return media_id in self.names
 
     def display_names(self):
         return {media.id: media.display_name for media in self.media_classes}
