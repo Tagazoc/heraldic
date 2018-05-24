@@ -13,7 +13,7 @@ class Liberation(GenericMedia):
     """
     Class used for extracting items from french media "Libération".
     """
-    domains = ['www.liberation.fr']
+    supported_domains = ['www.liberation.fr']
     id = 'liberation'
     display_name = 'Libération'
 

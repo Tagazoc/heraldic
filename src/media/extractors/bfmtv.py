@@ -12,7 +12,7 @@ class BfmTv(GenericMedia):
     """
     Class used for extracting items from french media "BFM TV".
     """
-    domains = ['www.bfmtv.com']
+    supported_domains = ['www.bfmtv.com']
     id = 'bfm_tv'
     display_name = 'BFM TV'
 

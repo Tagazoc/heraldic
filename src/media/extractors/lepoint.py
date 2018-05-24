@@ -12,7 +12,7 @@ class LePoint(GenericMedia):
     """
     Class used for extracting items from media "".
     """
-    domains = ['www.lepoint.fr']
+    supported_domains = ['www.lepoint.fr']
     id = 'le_point'
     display_name = 'Le Point'
 

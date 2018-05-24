@@ -12,7 +12,7 @@ class HuffingtonPost(GenericMedia):
     """
     Class used for extracting items from french media "Huffington Post".
     """
-    domains = ['www.huffingtonpost.fr']
+    supported_domains = ['www.huffingtonpost.fr']
     id = 'huffington_post'
     display_name = 'Huffington Post'
 

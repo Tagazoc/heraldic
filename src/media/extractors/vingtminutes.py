@@ -12,7 +12,7 @@ class VingtMinutes(GenericMedia):
     """
     Class used for extracting items from french media "20 Minutes".
     """
-    domains = ['www.20minutes.fr']
+    supported_domains = ['www.20minutes.fr']
     id = '20minutes'
     display_name = '20 Minutes'
 

@@ -13,7 +13,7 @@ class Marianne(GenericMedia):
     """
     Class used for extracting items from french media "Marianne".
     """
-    domains = ['www.marianne.net']
+    supported_domains = ['www.marianne.net']
     id = 'marianne'
     display_name = 'Marianne'
 

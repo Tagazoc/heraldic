@@ -13,7 +13,7 @@ class LesEchos(GenericMedia):
     """
     Class used for extracting items from french media "Les Echos".
     """
-    domains = ['www.lesechos.fr']
+    supported_domains = ['www.lesechos.fr']
     id = 'les_echos'
     display_name = 'Les Echos'
 

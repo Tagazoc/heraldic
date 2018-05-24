@@ -42,7 +42,7 @@ def get_domain(url):
         match = _match_url(url)
         return match.group(2)
     except AttributeError:
-        raise InvalidUrlException
+        raise InvalidUrlException(url)
 
 
 def get_truncated_url(url):

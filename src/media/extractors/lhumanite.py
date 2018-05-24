@@ -12,7 +12,7 @@ class LHumanite(GenericMedia):
     """
     Class used for extracting items from french media "L'Humanité".
     """
-    domains = ['www.humanite.fr']
+    supported_domains = ['www.humanite.fr']
     id = 'l_humanite'
     display_name = 'L\'Humanité'
 

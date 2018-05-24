@@ -13,7 +13,7 @@ class LExpress(GenericMedia):
     """
     Class used for extracting items from french media "L'Express".
     """
-    domains = ['www.lexpress.fr', 'lexpansion.lexpress.fr']
+    supported_domains = ['www.lexpress.fr', 'lexpansion.lexpress.fr']
     id = 'lexpress'
     display_name = 'L\'Express'
 

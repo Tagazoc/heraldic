@@ -12,7 +12,7 @@ class Europe1(GenericMedia):
     """
     Class used for extracting items from french media "Europe 1".
     """
-    domains = ['www.europe1.fr']
+    supported_domains = ['www.europe1.fr']
     id = 'europe_1'
     display_name = 'Europe 1'
 

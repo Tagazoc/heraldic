@@ -23,5 +23,10 @@ networkx = "*"
 matplotlib = "*"
 mediacloud = "*"
 "html5lib" = "*"
+pygraphviz = "*"
+boost = "*"
+scipy = "*"
+numpy = "*"
+pycairo = "*"
 
 [dev-packages]

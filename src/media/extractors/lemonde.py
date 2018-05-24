@@ -13,7 +13,7 @@ class LeMonde(GenericMedia):
     """
     Class used for extracting items from french media "Le Monde".
     """
-    domains = ['www.lemonde.fr']
+    supported_domains = ['www.lemonde.fr']
     id = 'le_monde'
     display_name = 'Le Monde'
 

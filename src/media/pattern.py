@@ -12,7 +12,7 @@ class MediaName(GenericMedia):
     """
     Class used for extracting items from media "".
     """
-    domains = ['']
+    supported_domains = ['']
     id = ''
     display_name = ''
 

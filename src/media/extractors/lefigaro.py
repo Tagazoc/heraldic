@@ -13,7 +13,7 @@ class LeFigaro(GenericMedia):
     """
     Class used for extracting items from french media "Le Figaro".
     """
-    domains = ['www.lefigaro.fr']
+    supported_domains = ['www.lefigaro.fr']
     id = 'le_figaro'
     display_name = 'Le Figaro'
 

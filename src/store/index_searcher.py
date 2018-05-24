@@ -63,7 +63,7 @@ def retrieve_old_version_models(doc_id: str) -> List[OldDocumentModel]:
 
 
 def search_by_media(media_id: str, limit: int=100):
-    return _search_docs(q="media:" + media_id, limit=limit)
+    return _generate_doc_models(_search_docs(q="media:" + media_id, limit=limit))
 
 
 def search_models(q=None, body_query=None, limit: int=0) -> List[DocumentModel]:

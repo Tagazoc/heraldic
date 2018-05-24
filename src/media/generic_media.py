@@ -22,11 +22,13 @@ class GenericMedia(object):
     """
         Generic class for attribute extraction from a document, should not be directly instanciated.
     """
-    domains = ['www.heraldic-project.org', 'hrldc.org']
+    supported_domains = ['www.heraldic-project.org', 'hrldc.org']
+
     """The domains used in URLs of the selected media"""
     id = 'generic'
     display_name = 'Generic'
     unwanted_extensions = ['jpg', 'png', 'gif']
+    parser = 'html.parser'
 
     def __init__(self, dm: DocumentModel) -> None:
         """
@@ -35,10 +37,14 @@ class GenericMedia(object):
         :param dm: Document model which will contain all extracted items.
         """
         content = dm.content.render_for_display()
-        self.html_soup = BeautifulSoup(content, "html5lib")  # "html.parser")
+        self.html_soup = BeautifulSoup(content, self.parser)
         self.dm = dm
         self._body_tag = None
         """ Body backup, wich can be reused for other attributes. """
+
+    @classmethod
+    def topmost_domains(cls):
+        return [re.match(r'(?:.*\.)?([^.]+\.[^.]+)', domain).group(1) for domain in cls.supported_domains]
 
     @classmethod
     def get_document_count(cls) -> int:
@@ -181,7 +187,7 @@ class GenericMedia(object):
                 continue
             # Use first defined domain, should work "almost" every time
             try:
-                url = get_truncated_url(re.sub(r'^/([^/])', self.domains[0] + r'/\1', href))
+                url = get_truncated_url(re.sub(r'^/([^/])', self.supported_domains[0] + r'/\1', href))
             except ex.InvalidUrlException:
                 continue
             result.append(url)

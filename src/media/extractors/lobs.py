@@ -14,7 +14,7 @@ class LObs(GenericMedia):
     """
     Class used for extracting items from french media "L'Obs".
     """
-    domains = ['www.nouvelobs.com']
+    supported_domains = ['www.nouvelobs.com']
     id = 'l_obs'
     display_name = 'L\'Obs'
 

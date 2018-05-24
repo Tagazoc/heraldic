@@ -12,7 +12,7 @@ class MediaName(GenericMedia):
     """
     Class used for extracting items from french media "Le Parisien".
     """
-    domains = ['www.leparisien.fr']
+    supported_domains = ['www.leparisien.fr']
     id = 'le_parisien'
     display_name = 'Le Parisien'
 

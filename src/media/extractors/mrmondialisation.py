@@ -14,7 +14,7 @@ class MrMondialisation(GenericMedia):
     """
     Class used for extracting items from french media "Mr Mondialisation".
     """
-    domains = ['mrmondialisation.org']
+    supported_domains = ['mrmondialisation.org']
     id = 'MrMondialisation'
     display_name = 'Mr Mondialisation'
 

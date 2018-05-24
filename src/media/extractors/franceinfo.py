@@ -13,7 +13,7 @@ class FranceInfo(GenericMedia):
     """
     Class used for extracting items from french media "France Info".
     """
-    domains = ['www.francetvinfo.fr']
+    supported_domains = ['www.francetvinfo.fr']
     id = 'france_info'
     display_name = 'France Info'
 
