@@ -24,7 +24,7 @@ class KnownMedia(object):
             if media.id == media_name:
                 return media
 
-    def get_media_by_domain(self, domain, is_subdomain=False) -> GenericMedia:
+    def get_media_by_domain(self, domain, is_subdomain=False, log_failure=True) -> GenericMedia:
         for media_class in self.media_classes:
             if domain in media_class.supported_domains:
                 return media_class
@@ -32,7 +32,7 @@ class KnownMedia(object):
                 for topmost_domain in media_class.topmost_domains():
                     if domain.endswith(topmost_domain):
                         return media_class
-        raise DomainNotSupportedException(domain)
+        raise DomainNotSupportedException(domain, log=log_failure)
 
     def media_exists(self, media_id: str) -> bool:
         return media_id in self.names

@@ -31,8 +31,9 @@ class InvalidUrlException(GatherError):
 
 
 class DomainNotSupportedException(GatherException):
-    def __init__(self, domain):
-        logger.log('WARN_DOMAIN_NOT_SUPPORTED', domain)
+    def __init__(self, domain, log=True):
+        if log:
+            logger.log('WARN_DOMAIN_NOT_SUPPORTED', domain)
 
 
 class DocumentNotFoundException(HeraldicException):

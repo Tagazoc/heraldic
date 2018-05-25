@@ -25,46 +25,59 @@ def graph_sources(media_ids: List[str], filename: str):
 
         pickle.dump(medias_sources, open("save.p", "wb"))
 
-    colors = ['red', 'blue', 'green', 'black', 'yellow', 'pink', 'brown', 'purple', 'grey', 'orange',
-              'darkblue', 'darkgreen', 'darkred', 'lightblue', 'lightgreen', 'aqua']
+    cmaps = [
+            'Greys', 'Purples', 'Blues', 'Greens', 'Oranges', 'Reds',
+            'Greys', 'Purples', 'Blues', 'Greens', 'Oranges', 'Reds',
+            'Greys', 'Purples', 'Blues', 'Greens', 'Oranges', 'Reds'
+    ]
+    colors = ['black', 'purple', 'blue', 'green', 'orange', 'red',
+              'black', 'purple', 'blue', 'green', 'orange', 'red',
+              'black', 'purple', 'blue', 'green', 'orange', 'red'
+              ]
 
     o = net.DiGraph()
     medias_counts = defaultdict(lambda: 0)
 
     color_index = 0
-    for media, sources in medias_sources.items():
-        o.add_node(media, color=colors[color_index])
+    max_sources = 0
+    for media, (sources, doc_count) in medias_sources.items():
+        o.add_node(media, color=color_index)
         source_count = 0
         for source, count in sources.items():
-            o.add_edge(media, source, count=count, color=colors[color_index])
+            o.add_edge(media, source, count=count, color=color_index)
             source_count += count
+            if source != media:
+                max_sources = max(max_sources, count)
         color_index += 1
-        medias_counts[media] = source_count
+        medias_counts[media] = (doc_count, source_count)
 
-    g = net.DiGraph(net.ego_graph(o, known_media[media_ids[0]].display_name, radius=100))
+    g = o
 
-    # g = _trim_edges(g, weight=1, min_count=1)
+    g = _trim_edges(g, min_count=5)
 
-    edge_labels = dict([((u, v,), d['count']) for u, v, d in g.edges(data=True)])
-    node_colors = [d['color'] for u, d in g.nodes(data=True)]
-    pos = net.spring_layout(g, k=1.5)
-    # _draw_network(g, pos, ax, edge_labels)
+    node_colors = [colors[d['color']] for u, d in g.nodes(data=True)]
+    # pos = net.spring_layout(g, k=1.5)
+    pos = net.circular_layout(g, 5)
+
     plt.figure(figsize=(18, 18))
-    ns = [math.log10(medias_counts[n] + 1) * 80 for n in g.nodes]
-    net.draw_networkx_nodes(g, pos, nodelist=g.nodes, node_size=ns, node_color=node_colors)
+    ns = [math.log10(medias_counts[n][0] + 1) * 80 for n in g.nodes]
+    net.draw_networkx_nodes(g, pos, nodelist=g.nodes, node_size=ns, node_color=node_colors, alpha=0.5)
 
     for node, d in g.nodes(data=True):
         node_edges = [(u, v,) for u, v in g.edges() if u == node]
+        edge_color_indexes = [d['count'] for (u, v, d) in g.edges(data=True) if u == node]
         node_edges_labels = dict([((u, v,), d['count']) for u, v, d in g.edges(data=True) if u == node])
-        net.draw_networkx_edges(g, pos, width=0.5, alpha=0.5, edgelist=node_edges, edge_color=d['color'])
-        net.draw_networkx_edge_labels(g, pos, edge_labels=node_edges_labels, label_pos=0.4, font_size=10, bbox=dict(alpha=0),
-                                      font_color=d['color'])
+        net.draw_networkx_edges(g, pos, width=3, alpha=0.5, edgelist=node_edges, edge_cmap=plt.get_cmap(cmaps[d['color']]),
+                                edge_color=edge_color_indexes, edge_vmin=0, edge_vmax=max_sources)
+        net.draw_networkx_edge_labels(g, pos, edge_labels=node_edges_labels, label_pos=0.7, font_size=10,
+                                      bbox=dict(boxstyle='round', alpha=0.3, fc='white', ec='white'),
+                                      font_color=colors[d['color']])
 
     plt.axis('off')
 
     for k in g.nodes:
         x, y = pos[k]
-        plt.text(x, y + 0.02, s=k, horizontalalignment='center', fontsize=9)
+        plt.text(x, y + 0.2, s=k + ' (' + str(medias_counts[k][0]) + ')', horizontalalignment='center', fontsize=9)
     plt.savefig(filename)
 
     plt.show()
@@ -109,7 +122,7 @@ def _get_media_sources(media_ids, include_other_domains=False) -> dict:
     """
     medias_sources = {}
     for media_id in media_ids:
-        models = index_searcher.search_by_media(media_id, limit=1000)
+        models = index_searcher.search_by_media(media_id, limit=5000)
         display_name = known_media[media_id].display_name
 
         media_dict = {}
@@ -121,7 +134,7 @@ def _get_media_sources(media_ids, include_other_domains=False) -> dict:
                     # Invalid URL
                     continue
                 try:
-                    source = known_media.get_media_by_domain(source, is_subdomain=True).display_name
+                    source = known_media.get_media_by_domain(source, is_subdomain=True, log_failure=False).display_name
                 except DomainNotSupportedException:
                     if not include_other_domains:
                         continue
@@ -130,13 +143,15 @@ def _get_media_sources(media_ids, include_other_domains=False) -> dict:
                 except KeyError:
                     media_dict[source] = 1
 
-        medias_sources[display_name] = media_dict
+        medias_sources[display_name] = (media_dict, len(models))
     return medias_sources
 
 
 def _trim_edges(g, weight=1, min_count=10):
     g2 = net.DiGraph()
+    for n, edata in g.nodes(data=True):
+        g2.add_node(n, **edata)
     for f, to, edata in g.edges(data=True):
         if edata['count'] >= min_count:
-            g2.add_edge(f, to, count=edata['count'])
+            g2.add_edge(f, to, **edata)
     return g2
