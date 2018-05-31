@@ -5,7 +5,7 @@ Module which implements DocumentModel class.
 """
 
 from src.models.attribute import Attribute, StringListAttribute, StringAttribute,\
-    DateAttribute, BooleanAttribute, IntegerAttribute
+    DateAttribute, BooleanAttribute, IntegerAttribute, WordListAttribute
 from collections import OrderedDict
 from copy import copy
 from typing import Dict, Optional
@@ -19,34 +19,37 @@ class DocumentModel(object):
     """
     def __init__(self) -> None:
         """ Ordered dict containing attributes """
-        self.attributes: Dict[str, Attribute] = OrderedDict({
-            'id': StringAttribute(desc="Identifiant", revisable=False, extractible=False, storable=False),
-            'media': StringAttribute(desc="Média", revisable=False, storable='keyword'),
-            'gather_time': DateAttribute(desc="Date de collecte de l'article", revisable=False, extractible=False),
-            'update_time': DateAttribute(desc="Date de révision", revisable=False, extractible=False),
-            'version_no': IntegerAttribute(desc="Numéro de version", revisable=False, extractible=False),
-            'urls': StringListAttribute(desc="URLs de l'article", extractible=False, revisable=False,
-                                        storable='keyword'),
+        self.attributes: Dict[str, Attribute] = OrderedDict([
+            ('id', StringAttribute(desc="Identifiant", revisable=False, extractible=False, storable=False)),
+            ('media', StringAttribute(desc="Média", revisable=False, storable={'type': 'keyword'})),
+            ('gather_time', DateAttribute(desc="Date de collecte de l'article", revisable=False, extractible=False)),
+            ('update_time', DateAttribute(desc="Date de révision", revisable=False, extractible=False)),
+            ('version_no', IntegerAttribute(desc="Numéro de version", revisable=False, extractible=False)),
+            ('urls', StringListAttribute(desc="URLs de l'article", extractible=False, revisable=False,
+                                         storable='keyword')),
 
             # Buffer data
-            'content': StringAttribute(desc="Contenu", displayable=False, revisable=False, extractible=False,
-                                       storable=False),
-            'body': StringAttribute(desc="Body", displayable=False, revisable=False, storable=False, mandatory=True),
+            ('content', StringAttribute(desc="Contenu", displayable=False, revisable=False, extractible=False,
+                                        storable=False)),
+            ('body', StringAttribute(desc="Body", displayable=False, revisable=False, storable=False, mandatory=True)),
+
+            # Words !
+            ('words', WordListAttribute(desc="Words", displayable=True, revisable=True, extractible=False)),
 
             # Extracted data
-            'category': StringAttribute(desc="Catégorie", revisable=False, storable='keyword'),
-            'title': StringAttribute(desc="Titre", revisable=False),
-            'description': StringAttribute(desc="Description", revisable=False),
-            'doc_publication_time': DateAttribute(desc="Date de publication de l'article", revisable=False),
-            'doc_update_time': DateAttribute(desc="Date de mise à jour de l'article", revisable=False),
+            ('category', StringAttribute(desc="Catégorie", revisable=False, storable={'type': 'keyword'})),
+            ('title', StringAttribute(desc="Titre", revisable=False)),
+            ('description', StringAttribute(desc="Description", revisable=False)),
+            ('doc_publication_time', DateAttribute(desc="Date de publication de l'article", revisable=False)),
+            ('doc_update_time', DateAttribute(desc="Date de mise à jour de l'article", revisable=False)),
 
-            'keywords': StringListAttribute(desc="Mots-clés de l'article", revisable=False),
-            'href_sources': StringListAttribute(desc="Sources en lien hypertexte", revisable=False),
-            'explicit_sources': StringListAttribute(desc="Sources explicites"),
-            'quoted_entities': StringListAttribute(desc="Entités citées", extractible=False),
-            'contains_private_sources': BooleanAttribute(desc="Sources privées", extractible=False),
-            'subscribers_only': BooleanAttribute(desc="Réservé aux abonnés", revisable=False)
-        })
+            ('keywords', StringListAttribute(desc="Mots-clés de l'article", revisable=False)),
+            ('href_sources', StringListAttribute(desc="Sources en lien hypertexte", revisable=False)),
+            ('explicit_sources', StringListAttribute(desc="Sources explicites")),
+            ('quoted_entities', StringListAttribute(desc="Entités citées", extractible=False)),
+            ('contains_private_sources', BooleanAttribute(desc="Sources privées", extractible=False)),
+            ('subscribers_only', BooleanAttribute(desc="Réservé aux abonnés", revisable=False))
+        ])
 
         self.from_gathering = False
         """ Whether this model comes from document gathering (or revision). """
@@ -239,7 +242,7 @@ class OldDocumentModel(DocumentModel):
         super(OldDocumentModel, self).__init__()
 
         self.attributes['doc_id'] = StringAttribute(desc="Identifiant du document", displayable=False,
-                                                    revisable=False, extractible=False, storable='keyword',
+                                                    revisable=False, extractible=False, storable={'type': 'keyword'},
                                                     initialized=True, value=doc_id)
         """ Associated up-to-date document identifier. """
 

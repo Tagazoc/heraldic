@@ -5,27 +5,21 @@ Class used to analyze document text.
 """
 
 import spacy
+from collections import Counter
 
 
 class TextAnalyzer(object):
+    KEPT_TAGS = ['ADJ', 'ADV', 'INTJ', 'NOUN', 'PROPN', 'VERB']
+    KEPT_TAGS_MAP = {v: k for k, v in enumerate(KEPT_TAGS)}
+
     def __init__(self):
-        self.nlp = spacy.load('fr_core_news_sm')
+        self.nlp = spacy.load('fr_core_news_sm', disable=['parser', 'ner', 'textcat'])
 
-    def analyze(self, text):
-        self._tokenize(text)
-        self._pos_tag()
-        self._lemmatize()
-
-    def _tokenize(self, text):
-        self.doc = self.nlp(text)
-
-    def _pos_tag(self):
-        for word in self.doc:
-            print(word.text, word.lemma, word.lemma_, word.tag, word.tag_, word.pos, word.pos_)
-
-    def _lemmatize(self):
-        pass
-        # l = Lemmatizer('/home/f/PycharmProjects/heraldic/lemmatization-fr.txt')
+    def extract_words(self, text) -> list:
+        doc = self.nlp(text)
+        word_list = [(word.text.lower(), self.KEPT_TAGS_MAP[word.pos_]) for word in doc if word.pos_ in self.KEPT_TAGS]
+        counter = Counter(word_list)
+        return [(w, p, c) for (w, p), c in counter.items()]
 
 
 ta = TextAnalyzer()

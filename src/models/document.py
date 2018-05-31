@@ -8,9 +8,10 @@ from src.media.known_media import known_media
 from src.store import index_storer, index_searcher
 from src.models.document_model import DocumentModel
 from typing import List
-from src.misc.exceptions import DocumentExistsException, DocumentNotFoundException
+import src.misc.exceptions as ex
 from src.misc.logging import logger
 from src.misc.functions import get_domain, get_truncated_url
+from src.analysis.text_analyzer import ta
 
 
 class Document(object):
@@ -28,7 +29,7 @@ class Document(object):
             self.url = self._check_and_truncate_url(url)
             try:
                 self.retrieve_from_url()
-            except DocumentNotFoundException:
+            except ex.DocumentNotFoundException:
                 pass
         self.debug = debug
         self.extractor = None
@@ -50,7 +51,7 @@ class Document(object):
         if self.model.initialized:
             # It is an update, is it already up-to-date ? Unless override flag
             if not update and (not update_time or self._is_uptodate(update_time)):
-                raise DocumentExistsException(self.url)
+                raise ex.DocumentExistsException(self.url)
             updated_model = DocumentModel()
             if filepath:
                 updated_model.gather_from_file(self.url, filepath)
@@ -58,6 +59,7 @@ class Document(object):
                 final_url = updated_model.gather_from_url(self.url)
                 self.model.urls.append(self._check_and_truncate_url(final_url))
             self._extract_fields(updated_model)
+            updated_model.words.update(ta.extract_words(updated_model.body.value))
             self.update_from_model(updated_model)
             logger.log('INFO_DOC_UPDATE_SUCCESS', self.url)
         else:
@@ -68,6 +70,7 @@ class Document(object):
                 self.model.urls.append(self._check_and_truncate_url(final_url))
 
             self._extract_fields()
+            self.model.words.update(ta.extract_words(self.model.body.value))
             self._store()
             logger.log('INFO_DOC_STORE_SUCCESS', self.url)
 
@@ -131,9 +134,6 @@ class Document(object):
         new_model = DocumentModel()
         new_model.set_from_revision(attribute_dict)
         self.update_from_model(new_model)
-
-    def analyze(self):
-        pass  # ta.analyze(self.model.content.value)
 
     def _set_attributes_versions(self):
         """

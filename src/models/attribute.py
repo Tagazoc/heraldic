@@ -8,6 +8,8 @@ from datetime import datetime
 from re import match
 from typing import List, Optional
 from copy import copy
+from collections import OrderedDict
+from copy import copy
 
 
 def uninitialized_display_wrapper(func):
@@ -20,8 +22,7 @@ def uninitialized_display_wrapper(func):
 
 
 class Attribute(object):
-    DEFAULT_STORE_TYPE = 'text'
-    DEFAULT_STORE_FORMAT = ''
+    DEFAULT_STORE_MAPPING = {'type': 'text'}
     DEFAULT_VALUE = ""
     DEFAULT_INVALIDATION_TEXT = "Valeur incorrecte."
 
@@ -41,17 +42,14 @@ class Attribute(object):
         self.extractible: bool = kwargs['extractible'] if 'extractible' in kwargs else True
         """ Whether it can be automatically extracted with parsing. """
 
-        self.storable: str = kwargs['storable'] if 'storable' in kwargs else self.DEFAULT_STORE_TYPE
-        """ Whether it will be stored. """
+        self.storable: dict = kwargs['storable'] if 'storable' in kwargs else copy(self.DEFAULT_STORE_MAPPING)
+        """ A dict containing mapping parameters. If it is empty, attribute is not storable. """
 
         self.initialized: bool = kwargs['initialized'] if 'initialized' in kwargs else False
         """ Whether it is initialized or not (empty value does not suffice). """
 
         self.mandatory: bool = kwargs['mandatory'] if 'mandatory' in kwargs else False
         """ Whether it is mandatory to extract. """
-
-        self.store_format = self.DEFAULT_STORE_FORMAT
-        """ Store format """
 
         self.parsing_error: Optional[str] = None
         """ Parsing error (if any) for this attribute. """
@@ -116,7 +114,7 @@ class Attribute(object):
 
 
 class IntegerAttribute(Attribute):
-    DEFAULT_STORE_TYPE = 'short'
+    DEFAULT_STORE_MAPPING = {'type': 'short'}
     DEFAULT_VALUE = 0
 
     def __init__(self, **kwargs):
@@ -153,8 +151,7 @@ class StringListAttribute(Attribute):
 
 class DateAttribute(Attribute):
     DATE_FORMAT = "%d/%m/%Y à %H:%M"
-    DEFAULT_STORE_TYPE = 'date'
-    DEFAULT_STORE_FORMAT = 'epoch_millis'
+    DEFAULT_STORE_MAPPING = {'type': 'date', 'format': 'epoch_millis'}
     DEFAULT_VALUE = datetime.fromtimestamp(0)
     DEFAULT_INVALIDATION_TEXT = 'Le format doit être le suivant : 18/07/2019 à 12:27'
 
@@ -194,3 +191,47 @@ class BooleanAttribute(Attribute):
 
     def set_from_store(self, value: bool):
         self.update(value)
+
+
+class NestedListAttribute(Attribute):
+    DEFAULT_STORE_MAPPING = {'type': 'nested'}
+    DEFAULT_VALUE = []
+
+    def __init__(self, field_map: OrderedDict, **kwargs):
+        super(NestedListAttribute, self).__init__(**kwargs)
+        self.storable['properties'] = field_map
+
+    @property
+    def fields(self):
+        return self.storable['properties'].keys()
+
+    @uninitialized_display_wrapper
+    def render_for_display(self):
+        return ",".join(':'.join(s) for s in self.value)
+
+    def render_for_store(self):
+        return [dict(zip(self.fields, s)) for s in self.value]
+
+    def set_from_display(self, value: str):
+        # arg1:toto,arg2:titi
+        self.value = [(v.split(':')) for v in value.split(',')]
+
+    def set_from_store(self, value):
+        val = []
+        for d in value:
+            try:
+                val.append(tuple(d[k] for k in self.fields))
+            except KeyError:
+                pass
+        return val
+
+
+class WordListAttribute(NestedListAttribute):
+    def __init__(self, **kwargs):
+        word_field_map = OrderedDict([
+            ('word', {'type': 'keyword'}),
+            ('pos', {'type': 'byte'}),
+            ('count', {'type': 'short', 'index': False, 'null_value': 0})
+        ])
+        super(WordListAttribute, self).__init__(word_field_map, **kwargs)
+

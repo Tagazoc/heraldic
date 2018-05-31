@@ -18,22 +18,19 @@ class ElasticIndex:
     TYPE_NAME = ''
 
     @classmethod
-    def render_mapping_body(cls) -> str:
-        docs_mapping = '''{
-                    "mappings": {
-                        "''' + cls.TYPE_NAME + '''": {
-                            "properties": {
-                            '''
-        docs_mapping += cls._render_mapping_body()
-        docs_mapping += '''                    }
+    def render_mapping_body(cls) -> dict:
+        docs_mapping = {
+            'mappings': {
+                cls.TYPE_NAME: {
+                    "properties": cls._render_mapping_body()
                 }
             }
-        }'''
+        }
         return docs_mapping
 
     @classmethod
-    def _render_mapping_body(cls) -> str:
-        return ""
+    def _render_mapping_body(cls) -> dict:
+        return {}
 
     @classmethod
     def create(cls):
@@ -45,6 +42,7 @@ class ElasticIndex:
         ic = IndicesClient(es)
         try:
             ic.delete(cls.INDEX_NAME)
+            ic.put_mapping()
         except NotFoundError:
             pass
 
@@ -54,20 +52,9 @@ class DocumentIndex(ElasticIndex):
     TYPE_NAME = 'doc'
 
     @classmethod
-    def _render_mapping_body(cls):
+    def _render_mapping_body(cls) -> dict:
         model = DocumentModel()
-        properties_mapping = ''
-
-        for k, v in model.attributes.items():
-            if v.storable:
-                properties_mapping += '"' + k + '": {\n"type": "' + v.storable + '"'
-                if v.store_format:
-                    properties_mapping += ', "format": "' + v.store_format + '"\n'
-                properties_mapping += '},\n'
-        # Removing last comma
-        properties_mapping = properties_mapping[:-2] + '\n'
-
-        return properties_mapping
+        return {k: v.storable for k, v in model.attributes.items() if v.storable}
 
 
 class OldVersionIndex(ElasticIndex):
@@ -76,19 +63,8 @@ class OldVersionIndex(ElasticIndex):
 
     @classmethod
     def _render_mapping_body(cls):
-        model = OldDocumentModel(1)
-        properties_mapping = ''
-
-        for k, v in model.attributes.items():
-            if v.storable:
-                properties_mapping += '"' + k + '": {\n"type": "' + v.storable + '"'
-                if v.store_format:
-                    properties_mapping += ', "format": "' + v.store_format + '"\n'
-                properties_mapping += '},\n'
-        # Removing last comma
-        properties_mapping = properties_mapping[:-2] + '\n'
-
-        return properties_mapping
+        model = OldDocumentModel(doc_id=1)
+        return {k: v.storable for k, v in model.attributes.items() if v.storable}
 
 
 class ErrorIndex(ElasticIndex):
@@ -98,16 +74,7 @@ class ErrorIndex(ElasticIndex):
     @classmethod
     def _render_mapping_body(cls):
         model = DocumentModel()
-        properties_mapping = ''
-
-        for k, v in model.attributes.items():
-            if v.extractible and v.storable:
-                properties_mapping += '"' + k + '": {\n"type": "text"'
-                properties_mapping += '},\n'
-        # Removing last comma
-        properties_mapping = properties_mapping[:-2] + '\n'
-
-        return properties_mapping
+        return {k: {'type': 'text'} for k, v in model.attributes.items() if v.storable and v.extractible}
 
 
 class SuggestionIndex(ElasticIndex):
@@ -117,17 +84,7 @@ class SuggestionIndex(ElasticIndex):
     @classmethod
     def _render_mapping_body(cls):
         model = DocumentModel()
-        properties_mapping = ''
-        for k, v in model.attributes.items():
-            if v.storable and v.extractible and v.revisable:
-                properties_mapping += '"' + k + '": {\n"type": "' + v.storable + '"'
-                if v.store_format:
-                    properties_mapping += ', "format": "' + v.store_format + '"\n'
-                properties_mapping += '},\n'
-        # Removing last comma
-        properties_mapping = properties_mapping[:-2] + '\n'
-
-        return properties_mapping
+        return {k: v.storable for k, v in model.attributes.items() if v.storable and v.extractible and v.revisable}
 
 
 class FeedsIndex(ElasticIndex):
@@ -136,12 +93,9 @@ class FeedsIndex(ElasticIndex):
 
     @classmethod
     def _render_mapping_body(cls):
-        properties_mapping = ''
-        attributes = ['url', 'title', 'link']
-        for k in attributes:
-            properties_mapping += '"' + k + '": {\n"type": "keyword"},\n'
-        properties_mapping += '"update_time": {\n"type": "date", "format": "epoch_millis"},\n'
-        # Removing last comma
-        properties_mapping = properties_mapping[:-2] + '\n'
-
-        return properties_mapping
+        return {
+            'url': {'type': 'keyword'},
+            'title': {'type': 'keyword'},
+            'link': {'type': 'keyword'},
+            'update_time': {'type': 'date', 'format': 'epoch_millis'}
+        }
