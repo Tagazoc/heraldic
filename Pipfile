@@ -28,5 +28,6 @@ boost = "*"
 scipy = "*"
 numpy = "*"
 pycairo = "*"
+wordcloud = "*"
 
 [dev-packages]
