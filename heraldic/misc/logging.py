@@ -27,7 +27,8 @@ class Logger:
                                  ' whose parsing failed), and recursively gathered %{i_gathered} links on '
                                  '%{i_total} (%{i_existed} already up-to-date, %{i_unsupported} which domain '
                                  'was not supported, %{i_errors} whose parsing failed)',
-        'WARN_URL_INVALID': 'URL %{url} is invalid.'
+        'WARN_URL_INVALID': 'URL %{url} is invalid.',
+        'WARN_FEED_UNAVAILABLE': 'Feed %{url} is unavailable with error code %{status}.'
     }
     LOG_TYPES = LOG_TYPES_DICT.keys()
 

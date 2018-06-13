@@ -40,7 +40,8 @@ class RssFeed:
 
     def gather(self):
         feed = feedparser.parse(self.url)
-
+        if feed['status'] >= 400:
+            raise ex.FeedUnavailable(self.url, feed['status'])
         self.url = feed['href']
         try:
             self.update_time = datetime.fromtimestamp(mktime(feed['feed']['updated_parsed']))
@@ -130,10 +131,13 @@ class FeedHarvester:
 
     def harvest(self, override=False, max_depth=5, delay=0):
         for feed in self.feeds:
-            feed.gather()
-            if feed.update_time >= feed.stored_update_time + timedelta(seconds=delay):
-                feed.harvest(update_entries=override, max_depth=max_depth)
-                feed.update()
+            try:
+                feed.gather()
+                if feed.update_time >= feed.stored_update_time + timedelta(seconds=delay):
+                    feed.harvest(update_entries=override, max_depth=max_depth)
+                    feed.update()
+            except ex.FeedUnavailable:
+                continue
 
     def harvest_feed(self, feed_url, update_entries=True, max_depth=5):
         for feed in self.feeds:

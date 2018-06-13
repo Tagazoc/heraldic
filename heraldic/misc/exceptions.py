@@ -75,3 +75,8 @@ class HTMLParsingException(OptionalParsingException):
 
 class DateFormatParsingException(OptionalParsingException):
     BASE_MESSAGE = 'Date format error'
+
+
+class FeedUnavailable(HeraldicException):
+    def __init__(self, url, status):
+        logger.log('WARN_FEED_UNAVAILABLE', url, status)
