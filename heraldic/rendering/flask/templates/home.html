@@ -6,7 +6,7 @@
       </div>
         <div class="list-group">
         {% for media in media_classes %}
-          <a href="{{url_for('heraldic.display_media')}}?media_id={{media.id}}" class="list-group-item">{{media.display_name}} <span class="badge">{{media.get_document_count()}}</span></a>
+          <a href="{{url_for('heraldicapp.display_media')}}?media_id={{media.id}}" class="list-group-item">{{media.display_name}} <span class="badge">{{media.get_document_count()}}</span></a>
           {% endfor %}
         </div>
    </div>

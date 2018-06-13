@@ -207,7 +207,7 @@ class NestedListAttribute(Attribute):
 
     @uninitialized_display_wrapper
     def render_for_display(self):
-        return ",".join(':'.join(s) for s in self.value)
+        return ",".join(':'.join(map(str, s)) for s in self.value)
 
     def render_for_store(self):
         return [dict(zip(self.fields, s)) for s in self.value]

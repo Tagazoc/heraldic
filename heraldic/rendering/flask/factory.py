@@ -11,7 +11,7 @@ from werkzeug.utils import find_modules, import_string
 
 
 def create_app(config=None):
-    app = Flask('heraldic', template_folder='src/rendering/flask/templates', static_folder='src/rendering/flask/static')
+    app = Flask('heraldicapp', template_folder='heraldic/rendering/flask/templates', static_folder='heraldic/rendering/flask/static')
 
     app.config.update(dict(
         DEBUG=True,
@@ -35,7 +35,7 @@ def register_blueprints(app):
 
     Reference: Armin Ronacher, "Flask for Fun and for Profit" PyBay 2016.
     """
-    for name in find_modules('src.rendering.flask.blueprints'):
+    for name in find_modules('heraldic.rendering.flask.blueprints'):
         mod = import_string(name)
         if hasattr(mod, 'bp'):
             app.register_blueprint(mod.bp)

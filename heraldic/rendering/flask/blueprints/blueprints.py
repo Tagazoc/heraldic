@@ -14,7 +14,7 @@ from heraldic.media.known_media import known_media
 from heraldic.store import index_searcher
 
 
-bp = Blueprint('heraldic', __name__)
+bp = Blueprint('heraldicapp', __name__)
 
 nav.register_element('heraldic_top', Navbar(
     View('Liste', '.home'),
@@ -63,7 +63,7 @@ def submit_document():
             d.gather()
             flash("L'article a été récupéré", "info")
 
-        return redirect(url_for('heraldic.review_document', id=d.model.id))
+        return redirect(url_for('heraldicapp.review_document', id=d.model.id))
 
     return render_template('url_form.html', form=form)
 
