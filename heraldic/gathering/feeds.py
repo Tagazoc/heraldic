@@ -12,16 +12,11 @@ from heraldic.misc.logging import logger
 from heraldic.misc.functions import get_truncated_url
 
 
-class RssFeed:
-    def __init__(self, feed_url, update_time=None, feed_id=None):
-        self.id = feed_id
-        self.url = feed_url
-        self.stored_update_time: datetime = datetime.fromtimestamp(update_time) if update_time else None
-        self.update_time = None
-        self.title = None
-        self.link = None
-        self.entries = []
+class UrlList:
+    def __init__(self):
+        
         self.gathered_urls = set()
+        self.entries = []
 
         self._counts = {
             'gathered': 0,
@@ -38,28 +33,8 @@ class RssFeed:
             'errors': 0
         }
 
-    def gather(self):
-        feed = feedparser.parse(self.url)
-        if feed['status'] >= 400:
-            raise ex.FeedUnavailable(self.url, feed['status'])
-        self.url = feed['href']
-        try:
-            self.update_time = datetime.fromtimestamp(mktime(feed['feed']['updated_parsed']))
-        except KeyError:
-            # Sometimes...
-            self.update_time = datetime.now()
-        self.title = feed['feed']['title']
-        self.link = feed['feed']['link']
-        self.entries = feed['entries']
-
-    def harvest(self, update_entries: bool=True, max_depth=100):
-
+    def harvest(self, update_entries=True, max_depth=10):
         self._gather_links(self.entries, update_entries=update_entries, max_depth=max_depth)
-
-        logger.log('INFO_FEED_HARVEST_END', self.url, self._counts['gathered'], len(self.entries), self._counts['exist'],
-                   self._counts['not_supported'], self._counts['errors'], self._inside_counts['gathered'],
-                   self._inside_counts['total'], self._inside_counts['exist'], self._inside_counts['not_supported'],
-                   self._inside_counts['errors'])
 
     def _gather_links(self, items: List, update_entries=False, max_depth=100, depth=0):
         counts = self._counts if depth == 0 else self._inside_counts
@@ -96,12 +71,49 @@ class RssFeed:
             except ex.GatherError:
                 counts['errors'] += 1
                 continue
+            except ConnectionError:
+                counts['errors'] += 1
+                continue
 
             if max_depth > depth:
                 inside_links = d.model.href_sources.value
                 self._inside_counts['total'] += len(inside_links)
                 # Gather internal links, but without updating existing documents
                 self._gather_links(inside_links, update_entries=False, max_depth=max_depth, depth=depth + 1)
+
+
+class RssFeed(UrlList):
+    def __init__(self, feed_url, update_time=None, feed_id=None):
+        super(RssFeed, self).__init__()
+        self.id = feed_id
+        self.url = feed_url
+        self.stored_update_time: datetime = datetime.fromtimestamp(update_time) if update_time else None
+        self.update_time = None
+        self.title = None
+        self.link = None
+
+    def gather(self):
+        feed = feedparser.parse(self.url)
+        if feed['status'] >= 400:
+            raise ex.FeedUnavailable(self.url, feed['status'])
+        self.url = feed['href']
+        try:
+            self.update_time = datetime.fromtimestamp(mktime(feed['feed']['updated_parsed']))
+        except KeyError:
+            # Sometimes...
+            self.update_time = datetime.now()
+        self.title = feed['feed']['title']
+        self.link = feed['feed']['link']
+        self.entries = feed['entries']
+
+    def harvest(self, update_entries: bool = True, max_depth=100):
+        super(RssFeed, self).harvest()
+        
+        logger.log('INFO_FEED_HARVEST_END', self.url, self._counts['gathered'], len(self.entries),
+                   self._counts['exist'],
+                   self._counts['not_supported'], self._counts['errors'], self._inside_counts['gathered'],
+                   self._inside_counts['total'], self._inside_counts['exist'], self._inside_counts['not_supported'],
+                   self._inside_counts['errors'])
 
     def render_for_store(self):
         body = {
@@ -119,6 +131,13 @@ class RssFeed:
     def store(self):
         index_storer.store_feed(self.render_for_store())
         logger.log('INFO_FEED_STORE_SUCCESS', self.url)
+
+
+class UrlFile(UrlList):
+    def __init__(self, file_name):
+        super(UrlFile, self).__init__()
+        with open(file_name, 'r') as f:
+            self.entries = f.readlines()
 
 
 class FeedHarvester:

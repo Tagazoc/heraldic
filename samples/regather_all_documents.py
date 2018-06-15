@@ -7,7 +7,7 @@ from heraldic.models.document import Document
 from heraldic.misc.exceptions import DocumentNotChangedException, DomainNotSupportedException
 
 
-models = index_searcher.search_by_media("le_monde")
+models = index_searcher.search_by_media("le_monde", limit=10000)
 for model in models:
     print(model.id.value + " : " + model.urls.value[0])
     d = Document.from_model(model)

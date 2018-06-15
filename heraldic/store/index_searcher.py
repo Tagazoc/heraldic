@@ -9,6 +9,7 @@ import heraldic.misc.exceptions as ex
 from elasticsearch.exceptions import NotFoundError
 from heraldic.models.document_model import DocumentModel, OldDocumentModel
 from typing import List
+import elasticsearch.helpers
 
 
 def handle_connection_errors(decorated):
@@ -60,6 +61,11 @@ def retrieve_old_version_models(doc_id: str) -> List[OldDocumentModel]:
         dm.set_from_store(hit)
         models.append(dm)
     return models
+
+
+def retrieve_all_urls() -> List[str]:
+    results = elasticsearch.helpers.scan(es, index=DocumentIndex.INDEX_NAME, doc_type=DocumentIndex.TYPE_NAME, _source=['urls'])
+    return [hit['_source']['urls'][0] for hit in results if 'urls' in hit['_source'].keys()]
 
 
 def search_by_media(media_id: str, limit: int=100):
