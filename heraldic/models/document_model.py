@@ -26,7 +26,7 @@ class DocumentModel(object):
             ('update_time', DateAttribute(desc="Date de révision", revisable=False, extractible=False)),
             ('version_no', IntegerAttribute(desc="Numéro de version", revisable=False, extractible=False)),
             ('urls', StringListAttribute(desc="URLs de l'article", extractible=False, revisable=False,
-                                         storable='keyword')),
+                                         storable={'type': 'keyword'})),
 
             # Buffer data
             ('content', StringAttribute(desc="Contenu", displayable=False, revisable=False, extractible=False,

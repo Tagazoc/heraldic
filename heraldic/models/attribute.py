@@ -163,13 +163,13 @@ class DateAttribute(Attribute):
         return self.value.strftime(self.DATE_FORMAT)
 
     def render_for_store(self):
-        return round(self.value.timestamp())
+        return round(self.value.timestamp() * 1000)
 
     def set_from_display(self, value: str):
         self.update(datetime.strptime(value, self.DATE_FORMAT))
 
     def set_from_store(self, value: float):
-        self.update(datetime.fromtimestamp(value))
+        self.update(datetime.fromtimestamp(value / 1000))
 
     def validate_value(self, field):
         return True if match(r'\d{2}/\d{2}/\d{4} à \d{2}:\d{2}', field) else False

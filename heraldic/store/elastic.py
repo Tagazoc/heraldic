@@ -42,7 +42,6 @@ class ElasticIndex:
         ic = IndicesClient(es)
         try:
             ic.delete(cls.INDEX_NAME)
-            ic.put_mapping()
         except NotFoundError:
             pass
 

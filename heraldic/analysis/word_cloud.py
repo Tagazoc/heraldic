@@ -9,6 +9,7 @@ from heraldic.models.document_model import DocumentModel
 from typing import List
 import heraldic.store.index_searcher as i_s
 from wordcloud import WordCloud
+from heraldic.media.known_media import known_media
 
 
 def generate_media_word_cloud(media_id):
@@ -46,3 +47,5 @@ def _generate_text_from_models(models: List[DocumentModel]):
         text += (word + ' ') * count
     return text
 
+
+generate_multiple_media_word_cloud(known_media.names)

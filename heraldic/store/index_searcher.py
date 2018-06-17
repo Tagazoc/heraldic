@@ -135,19 +135,8 @@ def check_url_uptodate(url: str, update_time) -> bool:
 
 
 def _search_docs(q=None, body_query=None, limit: int=0) -> List:
-    from_ = 0
-    total_hits = []
-    size = 100
-
-    hits = _search_query(query=body_query, q=q, from_=from_, size=size, terminate_after=limit)
-    total_hits.extend(hits['hits'])
-    from_ += size
-    while hits['total'] > from_:
-        hits = _search_query(query=body_query, q=q, from_=from_, size=size, terminate_after=limit)
-        total_hits.extend(hits['hits'])
-        from_ += size
-
-    return total_hits
+    hits = elasticsearch.helpers.scan(es, query=body_query, q=q, terminate_after=limit)
+    return hits
 
 
 @handle_connection_errors
