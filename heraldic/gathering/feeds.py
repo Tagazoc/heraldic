@@ -10,6 +10,7 @@ from datetime import datetime, timedelta
 from time import mktime
 from heraldic.misc.logging import logger
 from heraldic.misc.functions import get_truncated_url
+from requests.exceptions import RequestException
 
 
 class UrlList:
@@ -72,6 +73,9 @@ class UrlList:
                 counts['errors'] += 1
                 continue
             except ConnectionError:
+                counts['errors'] += 1
+                continue
+            except RequestException:
                 counts['errors'] += 1
                 continue
 
