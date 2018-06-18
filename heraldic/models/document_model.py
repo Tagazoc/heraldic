@@ -21,7 +21,7 @@ class DocumentModel(object):
         """ Ordered dict containing attributes """
         self.attributes: Dict[str, Attribute] = OrderedDict([
             ('id', StringAttribute(desc="Identifiant", revisable=False, extractible=False, storable=False)),
-            ('media', StringAttribute(desc="Média", revisable=False, storable={'type': 'keyword'})),
+            ('media', StringAttribute(desc="Média", mandatory=True, revisable=False, storable={'type': 'keyword'})),
             ('gather_time', DateAttribute(desc="Date de collecte de l'article", revisable=False, extractible=False)),
             ('update_time', DateAttribute(desc="Date de révision", revisable=False, extractible=False)),
             ('version_no', IntegerAttribute(desc="Numéro de version", revisable=False, extractible=False)),
@@ -181,14 +181,18 @@ class DocumentModel(object):
         return not self.errors == {}
 
     def render_errors_for_store(self):
-        return self.errors
+        errors_body = self.errors
+        errors_body['media'] = self.attributes['media'].render_for_store()
+        errors_body['urls'] = self.attributes['urls'].render_for_store()
+        errors_body['gather_time'] = DateAttribute(value=datetime.now()).render_for_store()
+        return errors_body
 
     def render_suggestions_for_store(self):
         return self.suggestions
 
     def set_errors_from_store(self, error_dict: dict):
         for k, v in self.attributes.items():
-            if k in error_dict.keys():
+            if k in error_dict.keys() and k != 'urls' and k != 'media' and k != 'gather_time':
                 v.parsing_error = error_dict[k]
 
     def set_suggestions_from_store(self, suggestions_dict: dict):

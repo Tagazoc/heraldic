@@ -6,7 +6,6 @@ Le Monde website extractor implementation.
 
 from heraldic.media.generic_media import GenericMedia
 import re
-from datetime import datetime
 
 
 class LeMonde(GenericMedia):

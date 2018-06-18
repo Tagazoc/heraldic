@@ -18,19 +18,19 @@ class Document(object):
     """
     Class representing a Document through its way through Heraldic.
     """
-    def __init__(self, url: str='', doc_id: str='', debug=False):
+    def __init__(self, url: str='', doc_id: str=None, debug=False):
         self.model: DocumentModel = DocumentModel()
         self.old_versions: List[DocumentModel] = []
-        self.url = ''
-
+        self.url = self._check_and_truncate_url(url) if url else ''
+        self.doc_id = doc_id
+        # TODO sortir l'id du model ?
         if doc_id:
-            self._retrieve(doc_id)
+            self._retrieve()
         elif url:
-            self.url = self._check_and_truncate_url(url)
             try:
                 self.retrieve_from_url()
             except ex.DocumentNotFoundException:
-                pass
+                self.retrieve_id_from_parse_error()
         self.debug = debug
         self.extractor = None
 
@@ -69,7 +69,11 @@ class Document(object):
                 final_url = self.model.gather_from_url(self.url)
                 self.model.urls.append(self._check_and_truncate_url(final_url))
 
-            self._extract_fields()
+            try:
+                self._extract_fields()
+            except ex.MandatoryParsingException:
+                self._store_failed_parsing_error()
+                raise
             self.model.words.update(ta.extract_words(self.model.body.value))
             self._store()
             logger.log('INFO_DOC_STORE_SUCCESS', self.url)
@@ -85,20 +89,18 @@ class Document(object):
             self.extractor = extractor(model)
         self.extractor.extract_fields(debug=self.debug)
 
-    def _store(self, doc_id: str=None):
+    def _store(self):
         """
         Store document contents.
-        :param doc_id: ID of the document in the store
         :return:
         """
-        self.model.id = index_storer.store(self.model, doc_id)
+        self.model.id = index_storer.store(self.model, self.doc_id)
 
-    def _retrieve(self, doc_id: str):
+    def _retrieve(self):
         """
         Retrieve document contents from a store.
-        :param doc_id: ID of the document in the store
         """
-        self.model = index_searcher.retrieve_model(doc_id)
+        self.model = index_searcher.retrieve_model(self.doc_id)
         self.url = self.model.urls.value[0]
 
     def retrieve_from_url(self):
@@ -113,6 +115,13 @@ class Document(object):
         """
         self.old_versions = index_searcher.retrieve_old_version_models(self.model.id.value)
         self._set_attributes_versions()
+
+    def retrieve_id_from_parse_error(self):
+        """
+        Retrieve the ID of a parse error from the document's URL.
+        :return:
+        """
+        self.doc_id = index_searcher.search_errors_by_url(self.url)
 
     def update_from_model(self, new_model: DocumentModel):
         """
@@ -154,6 +163,9 @@ class Document(object):
                         v.version_no = counter_dict[k]
                     # Next model version will be used as next occurrence of this attribute
                     counter_dict[k] = model.version_no.value + 1
+
+    def _store_failed_parsing_error(self):
+        index_storer.store_failed_parsing_error(self.model, self.doc_id)
 
     def delete(self):
         """

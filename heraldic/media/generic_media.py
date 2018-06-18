@@ -75,7 +75,12 @@ class GenericMedia(object):
                     v.set_from_extraction(extracted_data)
                 except Exception as err:
                     if v.mandatory:
-                        raise ex.MandatoryParsingException(k, self.dm.urls.value[0], err)
+                        # Handle raised exception immediately set parsing error to attribute, but raise it
+                        try:
+                            raise ex.MandatoryParsingException(k, self.dm.urls.value[0], err)
+                        except ex.MandatoryParsingException as parsing_exc:
+                            v.parsing_error = parsing_exc.message
+                            raise
                     else:
                         # Handle raised exception immediately to log
                         try:

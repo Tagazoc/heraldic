@@ -5,7 +5,6 @@
 """
 
 from heraldic.media.generic_media import GenericMedia
-import re
 
 
 class LHumanite(GenericMedia):

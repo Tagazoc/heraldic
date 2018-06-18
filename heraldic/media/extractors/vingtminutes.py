@@ -28,7 +28,7 @@ class VingtMinutes(GenericMedia):
 
     def _extract_doc_update_time(self):
         try:
-            time_text = self.html_soup.find_all('time')[1].get('datetime')
+            return self.html_soup.find_all('time')[1].get('datetime')
         except IndexError:
             return None
 

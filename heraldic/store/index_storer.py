@@ -29,6 +29,12 @@ def store(dm: DocumentModel, doc_id=None):
 
         es.index(ErrorIndex.INDEX_NAME, doc_type=ErrorIndex.TYPE_NAME, body=errors_body, id=doc_id)
         es.indices.refresh(index=ErrorIndex.INDEX_NAME)
+    elif doc_id is not None:
+        # If doc_id is not None, it may be because a parsing error already exists
+        try:
+            es.delete(ErrorIndex.INDEX_NAME, doc_type=ErrorIndex.TYPE_NAME, id=doc_id)
+        except NotFoundError:
+            pass
 
     if dm.has_suggestions:
         suggestions_body = dm.render_suggestions_for_store()
@@ -37,6 +43,12 @@ def store(dm: DocumentModel, doc_id=None):
         es.indices.refresh(index=SuggestionIndex.INDEX_NAME)
 
     return doc_id
+
+
+def store_failed_parsing_error(dm: DocumentModel, doc_id=None):
+    errors_body = dm.render_errors_for_store()
+    es.index(ErrorIndex.INDEX_NAME, doc_type=ErrorIndex.TYPE_NAME, body=errors_body, id=doc_id)
+    es.indices.refresh(index=ErrorIndex.INDEX_NAME)
 
 
 def update(dm: DocumentModel, om: OldDocumentModel):

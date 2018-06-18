@@ -56,6 +56,7 @@ class ParsingException(HeraldicException):
 
     def __init__(self, attribute, url, err):
         super(ParsingException, self).__init__()
+        self.attribute = attribute
         err_message = ",".join(err.args) if err is not None else ''
         self.message = self.BASE_MESSAGE + ': ' + err_message
         logger.log(self.LOGGING_TEMPLATE, attribute, url, self.message)

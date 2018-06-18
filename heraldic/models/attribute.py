@@ -7,7 +7,6 @@ Class used for document attributes.
 from datetime import datetime
 from re import match
 from typing import List, Optional
-from copy import copy
 from collections import OrderedDict
 from copy import copy
 
@@ -234,4 +233,3 @@ class WordListAttribute(NestedListAttribute):
             ('count', {'type': 'short', 'index': False, 'null_value': 0})
         ])
         super(WordListAttribute, self).__init__(word_field_map, **kwargs)
-

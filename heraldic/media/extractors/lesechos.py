@@ -5,7 +5,6 @@ Les Echos website extractor implementation.
 """
 
 from heraldic.media.generic_media import GenericMedia
-import re
 from copy import copy
 
 

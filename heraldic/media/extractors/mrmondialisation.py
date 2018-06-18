@@ -5,9 +5,6 @@ Mr Mondialisation website extractor implementation.
 """
 
 from heraldic.media.generic_media import GenericMedia
-import re
-from datetime import datetime
-from copy import copy
 
 
 class MrMondialisation(GenericMedia):
