@@ -274,6 +274,22 @@ class GenericMedia(object):
         return filtered_as
 
     @staticmethod
+    def _exclude_hrefs_by_parent_tag(html_as: List, tags: List[str]):
+        """
+        Exclude local additional links (which are not really sources) from their parent tag.
+        :param html_as: As to be filtered
+        :return:
+        """
+        filtered_as = []
+        for a in html_as:
+            tag = a.parent
+            if tag.name in tags:
+                continue
+            filtered_as.append(a)
+
+        return filtered_as
+
+    @staticmethod
     def _exclude_hrefs_by_regex(html_as: List, regex: str):
         reg = re.compile(regex)
         return [a for a in html_as if not reg.search(a['href'])]

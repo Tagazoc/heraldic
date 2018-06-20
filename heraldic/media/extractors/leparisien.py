@@ -8,7 +8,7 @@ from heraldic.media.generic_media import GenericMedia
 import re
 
 
-class MediaName(GenericMedia):
+class LeParisien(GenericMedia):
     """
     Class used for extracting items from french media "Le Parisien".
     """

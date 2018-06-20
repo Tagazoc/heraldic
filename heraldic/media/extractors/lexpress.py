@@ -23,6 +23,11 @@ class LExpress(GenericMedia):
         html_category = self.html_soup.find('div', attrs={'class': 'article_category'}).find('a').text
         return html_category
 
+    def _extract_href_sources(self):
+        html_as = self._body_tag.find_all('a')
+        html_as = self._exclude_hrefs_by_parent_tag(html_as, ['em', 'strong'])
+        return html_as
+
     def _extract_explicit_sources(self):
         text = self.html_soup.find('span', attrs={'itemprop': 'author'}).span.text
         # Do not want the nominative author
