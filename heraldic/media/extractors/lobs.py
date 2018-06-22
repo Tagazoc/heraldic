@@ -49,8 +49,8 @@ class LObs(GenericMedia):
         text = self.html_soup.find_all('strong')[-1].text
         source = re.search(r' avec (.*)', text)
         if source is not None:
-            return [source.group(1)]
-        return []
+            return source.group(1)
+        return ''
 
     def _extract_subscribers_only(self):
         return self.html_soup.find('div', attrs={'class': 'ObsPaywall'}) is not None

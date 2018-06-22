@@ -14,15 +14,12 @@ doc_dict = {
     "doc_publication_time": "31/08/2017 à 13:03",
     "doc_update_time": "31/08/2017 à 14:20",
     "href_sources": "https://www.marianne.net/politique/le-responsable-ps-agresse-par-un-depute-lrem-est-en-soins-intensifs",
-    "explicit_sources": "",
+    "news_agency": "AFP",
     "quoted_entities": "",
     "contains_private_sources": ""
 }
 
 suggestion_dict = {
-    "explicit_sources": [
-        "AFP"
-    ]
 }
 
 update_doc_dict = {
@@ -42,6 +39,7 @@ update_result_dict = {
     "doc_update_time": "31/08/2017 à 14:20",
     "href_sources": "https://www.marianne.net/politique/le-responsable-ps-agresse-par-un-depute-lrem-est-en-soins-intensifs",
     "explicit_sources": "Agence France Presse\nToto",
+    "news_agency": "AFP",
     "contains_private_sources": "yes",
     "quoted_entities": "François Fillon\nJean-Marc Morandini"
 }
@@ -66,6 +64,7 @@ error_result_dict = {
     "doc_update_time": "31/08/2017 à 14:21",
     "href_sources": "https://www.marianne.net/politique/le-responsable-ps-agresse-par-un-depute-lrem-est-en-soins-intensifs",
     "explicit_sources": "Agence France Presse\nToto",
+    "news_agency": "",
     "contains_private_sources": "yes",
     "quoted_entities": "François Fillon\nJean-Marc Morandini"
 }
@@ -98,6 +97,7 @@ final_gather_dict = {
     "doc_update_time": "31/08/2017 à 14:20",
     "href_sources": "https://www.marianne.net/politique/le-responsable-ps-agresse-par-un-depute-lrem-est-en-soins-intensifs",
     "explicit_sources": "Agence France Presse\nToto",
+    "news_agency": "AFP",
     "contains_private_sources": "yes",
     "quoted_entities": "François Fillon\nJean-Marc Morandini"
 }

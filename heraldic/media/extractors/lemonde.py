@@ -36,8 +36,7 @@ class LeMonde(GenericMedia):
         try:
             sources = source.group(1)
         except AttributeError:
-            return []
-        sources = sources.split(' et ')
+            return ''
         return sources
 
     def _extract_subscribers_only(self):

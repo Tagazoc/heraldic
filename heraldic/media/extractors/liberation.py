@@ -36,5 +36,5 @@ class Liberation(GenericMedia):
         a_text = self.html_soup.find('span', attrs={'class': 'author'}).a.text
         source = re.search(r', avec (.*)', a_text)
         if source is not None:
-            return [source.group(1)]
-        return []
+            return source.group(1)
+        return ''

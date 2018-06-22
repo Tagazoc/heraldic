@@ -33,5 +33,5 @@ class LExpress(GenericMedia):
         # Do not want the nominative author
         source = re.match(r'(.*) pour l\'Express', text, re.IGNORECASE) or re.match(r'Par (.*)', text, re.IGNORECASE)
         if source is None:
-            return [text]
-        return []
+            return text
+        return ''

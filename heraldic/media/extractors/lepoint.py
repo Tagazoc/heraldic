@@ -36,8 +36,8 @@ class LePoint(GenericMedia):
         # Do not want the nominative author
         source = re.search(r'par (.*)', text, re.IGNORECASE)
         if source is None:
-            return [text]
-        return []
+            return text
+        return ''
 
     def _extract_subscribers_only(self):
         return self.html_soup.find('aside', attrs={'id': 'article-reserve-aux-abonnes'}) is not None

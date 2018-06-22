@@ -206,12 +206,12 @@ class GenericMedia(object):
         """
         return ''
 
-    def _extract_news_agency(self) -> List[str]:
+    def _extract_news_agency(self) -> str:
         """
-        Extract sources explicitly given in the document
-        :return: list of explicit sources
+        Extract news agency explicitly given in the document
+        :return: news agency name
         """
-        return []
+        return ''
 
     def _extract_keywords(self) -> List[str]:
         """

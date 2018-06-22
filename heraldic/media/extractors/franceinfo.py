@@ -33,5 +33,5 @@ class FranceInfo(GenericMedia):
             return []
         source = re.search(r' avec (.*)', text)
         if source is not None:
-            return [source.group(1)]
-        return []
+            return source.group(1)
+        return ''
