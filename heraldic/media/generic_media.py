@@ -12,7 +12,7 @@ from bs4.element import Tag
 from heraldic.store import index_searcher
 from datetime import datetime
 import heraldic.misc.exceptions as ex
-from heraldic.misc.functions import get_truncated_url
+from heraldic.misc.functions import get_truncated_url, get_domain, get_resource
 from copy import copy
 import json
 import re
@@ -206,7 +206,7 @@ class GenericMedia(object):
         """
         return ''
 
-    def _extract_explicit_sources(self) -> List[str]:
+    def _extract_news_agency(self) -> List[str]:
         """
         Extract sources explicitly given in the document
         :return: list of explicit sources
@@ -289,10 +289,30 @@ class GenericMedia(object):
 
         return filtered_as
 
-    @staticmethod
-    def _exclude_hrefs_by_regex(html_as: List, regex: str):
+    @classmethod
+    def _exclude_hrefs_by_regex(cls, html_as: List, regex: str, only_internal_links=True):
         reg = re.compile(regex)
-        return [a for a in html_as if not reg.search(a['href'])]
+        filtered_as = []
+        for a in html_as:
+            if only_internal_links and not cls._is_internal_link(a['href']):
+                continue
+            if not (reg.match(a['href']) or reg.match(get_resource(a['href']))):
+                filtered_as.append(a)
+
+        return filtered_as
+
+    @classmethod
+    def _is_internal_link(cls, url):
+        # Local links
+        if re.match(r'/', url):
+            return True
+        try:
+            if get_domain(url) in cls.supported_domains:
+                return True
+            else:
+                return False
+        except ex.InvalidUrlException:
+            return False
 
     def _format_time(self, text: str, attribute_name: str) -> datetime:
         match = re.match(r'(\d{4}-\d{2}-\d{2})(?:CES)?T(\d{2}:\d{2})((?::\d{2})?)', text[:19])

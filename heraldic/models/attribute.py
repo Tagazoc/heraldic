@@ -5,7 +5,7 @@ Class used for document attributes.
 """
 
 from datetime import datetime
-from re import match
+import re
 from typing import List, Optional
 from collections import OrderedDict
 from copy import copy
@@ -148,6 +148,17 @@ class StringListAttribute(Attribute):
         self.update(splitted_values)
 
 
+class UrlListAttribute(StringListAttribute):
+    UNIQUE_URL_REGEX = re.compile(r'^https?://(.*?)/?$')
+
+    def append(self, value):
+        unique_url = self.UNIQUE_URL_REGEX.sub('\1', value)
+        url_exists = [existing_url for existing_url in self.value
+                      if self.UNIQUE_URL_REGEX.sub('\1', existing_url) == unique_url]
+        if not url_exists:
+            super(UrlListAttribute, self).append(value)
+
+
 class DateAttribute(Attribute):
     DATE_FORMAT = "%d/%m/%Y à %H:%M"
     DEFAULT_STORE_MAPPING = {'type': 'date', 'format': 'epoch_millis'}
@@ -171,10 +182,11 @@ class DateAttribute(Attribute):
         self.update(datetime.fromtimestamp(value / 1000))
 
     def validate_value(self, field):
-        return True if match(r'\d{2}/\d{2}/\d{4} à \d{2}:\d{2}', field) else False
+        return True if re.match(r'\d{2}/\d{2}/\d{4} à \d{2}:\d{2}', field) else False
 
 
 class BooleanAttribute(Attribute):
+    DEFAULT_STORE_MAPPING = {'type': 'boolean'}
     DEFAULT_VALUE = False
 
     def __init__(self, **kwargs):

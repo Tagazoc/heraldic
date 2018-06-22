@@ -23,7 +23,7 @@ class BfmTv(GenericMedia):
         text = self.html_soup.find('ul', attrs={'class': 'breadcrumb'}).find_all('a')[1].text
         return text
 
-    def _extract_explicit_sources(self):
+    def _extract_news_agency(self):
         text = self.html_soup.find('strong', attrs={'rel': 'author'}).text
         source = re.search(r' avec (.*)', text)
         if source is not None:

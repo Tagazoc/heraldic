@@ -5,7 +5,7 @@ Module which implements DocumentModel class.
 """
 
 from heraldic.models.attribute import Attribute, StringListAttribute, StringAttribute,\
-    DateAttribute, BooleanAttribute, IntegerAttribute, WordListAttribute
+    DateAttribute, BooleanAttribute, IntegerAttribute, WordListAttribute, UrlListAttribute
 from collections import OrderedDict
 from copy import copy
 from typing import Dict, Optional
@@ -25,8 +25,8 @@ class DocumentModel(object):
             ('gather_time', DateAttribute(desc="Date de collecte de l'article", revisable=False, extractible=False)),
             ('update_time', DateAttribute(desc="Date de révision", revisable=False, extractible=False)),
             ('version_no', IntegerAttribute(desc="Numéro de version", revisable=False, extractible=False)),
-            ('urls', StringListAttribute(desc="URLs de l'article", extractible=False, revisable=False,
-                                         storable={'type': 'keyword'})),
+            ('urls', UrlListAttribute(desc="URLs de l'article", extractible=False, revisable=False,
+                                      storable={'type': 'keyword'})),
 
             # Buffer data
             ('content', StringAttribute(desc="Contenu", displayable=False, revisable=False, extractible=False,
@@ -44,8 +44,10 @@ class DocumentModel(object):
             ('doc_update_time', DateAttribute(desc="Date de mise à jour de l'article", revisable=False)),
 
             ('keywords', StringListAttribute(desc="Mots-clés de l'article", revisable=False)),
-            ('href_sources', StringListAttribute(desc="Sources en lien hypertexte", revisable=False)),
+            ('href_sources', UrlListAttribute(desc="Sources en lien hypertexte", revisable=False)),
             ('explicit_sources', StringListAttribute(desc="Sources explicites")),
+            ('news_agency', StringAttribute(desc="Agence de presse source", revisable=False,
+                                            storable={'type': 'keyword'})),
             ('quoted_entities', StringListAttribute(desc="Entités citées", extractible=False)),
             ('contains_private_sources', BooleanAttribute(desc="Sources privées", extractible=False)),
             ('subscribers_only', BooleanAttribute(desc="Réservé aux abonnés", revisable=False))

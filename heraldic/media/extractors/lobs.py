@@ -38,14 +38,14 @@ class LObs(GenericMedia):
 
     def _extract_href_sources(self):
         html_as = self._body_tag.find_all('a')
-        html_as = self._exclude_hrefs_by_regex(html_as, r'https?://www\.nouvelobs\.com.*/$')
+        html_as = self._exclude_hrefs_by_regex(html_as, r'.*/$')
         return html_as
 
     def _extract_category(self):
         text = self.html_soup.find('nav', attrs={'class': 'breadcrumb'}).find_all('a')[-1].text
         return text
 
-    def _extract_explicit_sources(self):
+    def _extract_news_agency(self):
         text = self.html_soup.find_all('strong')[-1].text
         source = re.search(r' avec (.*)', text)
         if source is not None:

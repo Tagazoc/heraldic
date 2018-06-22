@@ -28,7 +28,7 @@ class LeParisien(GenericMedia):
         text = self.html_soup.find('span', attrs={'class': 'article-full__breadcrumb'}).find_all('span')[-1].text
         return text
 
-    def _extract_explicit_sources(self):
+    def _extract_news_agency(self):
         try:
             text = self.html_soup.find('span', attrs={'class': 'article-full__author-label'}).text
         except AttributeError:

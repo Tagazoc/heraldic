@@ -28,10 +28,10 @@ class LExpress(GenericMedia):
         html_as = self._exclude_hrefs_by_parent_tag(html_as, ['em', 'strong'])
         return html_as
 
-    def _extract_explicit_sources(self):
+    def _extract_news_agency(self):
         text = self.html_soup.find('span', attrs={'itemprop': 'author'}).span.text
         # Do not want the nominative author
-        source = re.search(r'(.*) pour l\'Express', text, re.IGNORECASE)
+        source = re.match(r'(.*) pour l\'Express', text, re.IGNORECASE) or re.match(r'Par (.*)', text, re.IGNORECASE)
         if source is None:
             return [text]
         return []

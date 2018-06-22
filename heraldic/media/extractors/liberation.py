@@ -32,7 +32,7 @@ class Liberation(GenericMedia):
         category = self.html_soup.find('div', attrs={'class': 'article-subhead'}).text
         return category
 
-    def _extract_explicit_sources(self):
+    def _extract_news_agency(self):
         a_text = self.html_soup.find('span', attrs={'class': 'author'}).a.text
         source = re.search(r', avec (.*)', a_text)
         if source is not None:

@@ -23,7 +23,7 @@ class Europe1(GenericMedia):
         text = self.html_soup.find('ul', attrs={'class': 'breadcrumb'}).find_all('span')[-1].text
         return text
 
-    def _extract_explicit_sources(self):
+    def _extract_news_agency(self):
         text = self.html_soup.find('div', attrs={'class': 'author'}).find('div', attrs={'class': 'titre'}).text
         source = re.search(r' avec (.*)', text)
         if source is not None:

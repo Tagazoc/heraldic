@@ -29,7 +29,7 @@ class LeMonde(GenericMedia):
         html_title = self.html_soup.find('div', attrs={'class': 'tt_rubrique_ombrelle'}).contents[1].text
         return html_title
 
-    def _extract_explicit_sources(self):
+    def _extract_news_agency(self):
         html_span = self.html_soup.find('span', attrs={'id': 'publisher'})
         data_source = html_span['data-source']
         source = re.search(r' avec (.*)', data_source)

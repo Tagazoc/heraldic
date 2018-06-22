@@ -34,7 +34,9 @@
 
 # TODO Vérifier les résultats des requêtes ES
 
-# TODO Voir les perfs
+# TODO Voir les perfs -> Faire des générateurs
+
+# Remplacer explicit_sources par from_afp (pas en suggestion)
 
 # TODO Faire la sécurité
 
@@ -42,11 +44,11 @@
 
 # TODO Faire la liste des médias à faire en priorité -> Osef on fait au fil de l'eau
 
-# TODO Sortir content du model
+# TODO Sortir content du model, et id
 
 # TODO Git sous github -> OK
 
-# TODO Revoir l'arborescence
+# TODO Revoir l'arborescence -> OK
 
 # TODO Faire des tests avec du POST sur l'interface Web -> OK
 
@@ -58,13 +60,13 @@
 
 # TODO Récupérer les news de Google news API et automatiser ce qui peut l'être
 
-# TODO Faire les médias de la fachosphère & de gauche
+# TODO Faire les médias de la fachosphère & les gauchistes
 
 # TODO Faire des premières analyses rapides
 
 # TODO Faire un site Web avec accès à la base
 
-# TODO Faire un système d'auth pour soumettre & corriger des documents
+# TODO Faire un système d'auth pour soumettre & corriger des documents ?
 
 # TODO Faire un blog pour les résultats
 
@@ -72,6 +74,6 @@
 
 # TODO Mettre à disposition quotidiennement un dump de la base
 
-# TODO Faire un compte twitter
+# TODO Faire un compte twitter -> OK
 
-# TODO Faire le parsing et la lemmatisation des mots (https://github.com/ClaudeCoulombe/FrenchLefffLemmatizer ?)
+# TODO Faire le parsing et la lemmatisation des mots -> parsing OK on attend spacy 2.1.0

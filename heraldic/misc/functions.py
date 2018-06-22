@@ -32,7 +32,7 @@ url_regex = re.compile(
         )
 
 
-@lru_cache(maxsize=100)
+@lru_cache(maxsize=1000)
 def _match_url(url):
     return url_regex.match(url)
 
@@ -41,6 +41,14 @@ def get_domain(url):
     try:
         match = _match_url(url)
         return match.group(2)
+    except AttributeError:
+        raise InvalidUrlException(url)
+
+
+def get_resource(url):
+    try:
+        match = _match_url(url)
+        return match.group(3)
     except AttributeError:
         raise InvalidUrlException(url)
 

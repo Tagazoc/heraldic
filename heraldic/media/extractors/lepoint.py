@@ -31,7 +31,7 @@ class LePoint(GenericMedia):
         text = self.html_soup.find('nav', attrs={'class': 'breadcrumb'}).find_all('span')[-1].text
         return text
 
-    def _extract_explicit_sources(self):
+    def _extract_news_agency(self):
         text = self.html_soup.find('span', attrs={'rel': 'author'}).text
         # Do not want the nominative author
         source = re.search(r'par (.*)', text, re.IGNORECASE)

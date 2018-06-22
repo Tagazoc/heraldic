@@ -26,7 +26,7 @@ class FranceInfo(GenericMedia):
         text = self.html_soup.find('nav', attrs={'class': 'breadcrumb'}).find_all('a')[-1].text
         return text
 
-    def _extract_explicit_sources(self):
+    def _extract_news_agency(self):
         try:
             text = self.html_soup.find('span', attrs={'class': 'author'}).text
         except AttributeError:
