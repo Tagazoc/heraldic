@@ -213,6 +213,9 @@ class GenericMedia(object):
         """
         return ''
 
+    def _extract_explicit_sources(self) -> List[str]:
+        return []
+
     def _extract_keywords(self) -> List[str]:
         """
         Extract keywords displayed on the webpage
