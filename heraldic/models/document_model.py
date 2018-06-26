@@ -207,8 +207,16 @@ class DocumentModel(object):
         Gather document from an URL.
         :return: Final URL of the document.
         """
+        headers = {'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101 Firefox/60.0',
+                   'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+                   'Accept-Language': 'en-US,en;q=0.5',
+                   'Connection': 'keep-alive',
+                   'Upgrade-Insecure-Requests': '1',
+                   'Pragma': 'no-cache',
+                   'Cache-Control': 'no-cache'
+                   }
         try:
-            r = requests.get(url)
+            r = requests.get(url, headers=headers)
         except (ValueError, ConnectionError):
             raise
         # Setting final URL (in case of redirection)
