@@ -34,10 +34,10 @@ class UrlList:
             'errors': 0
         }
 
-    def harvest(self, update_entries=True, max_depth=10):
+    def harvest(self, update_entries=True, max_depth=0):
         self._gather_links(self.entries, update_entries=update_entries, max_depth=max_depth)
 
-    def _gather_links(self, items: List, update_entries=False, max_depth=100, depth=0):
+    def _gather_links(self, items: List, update_entries=False, max_depth=0, depth=0):
         counts = self._counts if depth == 0 else self._inside_counts
         for item in items:
 
@@ -110,8 +110,8 @@ class RssFeed(UrlList):
         self.link = feed['feed']['link']
         self.entries = feed['entries']
 
-    def harvest(self, update_entries: bool = True, max_depth=100):
-        super(RssFeed, self).harvest()
+    def harvest(self, update_entries: bool = True, max_depth=0):
+        super(RssFeed, self).harvest(update_entries=update_entries, max_depth=max_depth)
         
         logger.log('INFO_FEED_HARVEST_END', self.url, self._counts['gathered'], len(self.entries),
                    self._counts['exist'],
@@ -152,7 +152,7 @@ class FeedHarvester:
         feeds_dicts = index_searcher.retrieve_feeds_dicts()
         self.feeds = [RssFeed(dic['_source']['url'], dic['_source']['update_time'], dic['_id']) for dic in feeds_dicts]
 
-    def harvest(self, override=False, max_depth=5, delay=0):
+    def harvest(self, override=False, max_depth=0, delay=0):
         for feed in self.feeds:
             try:
                 feed.gather()
