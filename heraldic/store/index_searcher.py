@@ -84,10 +84,19 @@ def search_model_by_url(url: str) -> DocumentModel:
         raise ex.DocumentNotFoundException
 
 
-def search_errors_by_url(url: str) -> str:
+def search_error_id_by_url(url: str) -> str:
     hits = _search_query({'match': {'urls': url}}, index=ErrorIndex.INDEX_NAME, doc_type=ErrorIndex.TYPE_NAME,
                          terminate_after=1)
     return hits['hits'][0]['_id'] if hits['hits'] else None
+
+
+def retrieve_error_url(doc_id: str) -> str:
+    try:
+        res = es.get(ErrorIndex.INDEX_NAME, id=doc_id, doc_type=ErrorIndex.TYPE_NAME)
+    except NotFoundError:
+        raise ex.DocumentNotFoundException
+
+    return res['_source']['urls'][0]
 
 
 def _generate_doc_models(hits) -> List[DocumentModel]:

@@ -25,7 +25,10 @@ class Document(object):
         self.doc_id = doc_id
         # TODO sortir l'id du model ?
         if doc_id:
-            self._retrieve()
+            try:
+                self._retrieve()
+            except ex.DocumentNotFoundException:
+                self.retrieve_url_from_parse_error()
         elif url:
             try:
                 self.retrieve_from_url()
@@ -46,7 +49,7 @@ class Document(object):
         Gather a document contents from an url, parse it and store or update it.
         :param update_time: Update time (in rss feed) to avoid gathering if up-to-date
         :param update: disable existence check, in order to override document
-        :param filepath: Whether url is instead a file path.
+        :param filepath: If document is gathered from a file, file path.
         """
         if self.model.initialized:
             # It is an update, is it already up-to-date ? Unless override flag
@@ -121,7 +124,14 @@ class Document(object):
         Retrieve the ID of a parse error from the document's URL.
         :return:
         """
-        self.doc_id = index_searcher.search_errors_by_url(self.url)
+        self.doc_id = index_searcher.search_error_id_by_url(self.url)
+
+    def retrieve_url_from_parse_error(self):
+        """
+        Retrieve the ID of a parse error from the document's URL.
+        :return:
+        """
+        self.url = index_searcher.retrieve_error_url(self.doc_id)
 
     def update_from_model(self, new_model: DocumentModel):
         """

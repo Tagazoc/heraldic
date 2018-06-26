@@ -94,3 +94,19 @@ def review_document():
 
     form.process()
     return render_template('review_document.html', form=form)
+
+
+@bp.route("/regather_document", methods=['GET'])
+def regather_document():
+    doc_id = request.args['id']
+    d = Document(doc_id=doc_id)
+    try:
+        d.gather(update=True)
+    except DocumentNotChangedException:
+        flash("Aucune mise à jour constatée", "danger")
+    d.retrieve_old_versions()
+
+    form = DisplayDocumentForm(data={'id': d.model.id.value})
+
+    return render_template('display_document.html', document=d, form=form)
+
