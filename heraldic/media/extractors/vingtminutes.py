@@ -38,8 +38,8 @@ class VingtMinutes(GenericMedia):
         # Also exclude internal links for groups of articles
         html_as = self._exclude_hrefs_by_regex(html_as, r'/dossier/')
 
-        # And "generic" links, which seem to end with "/" :
-        html_as = self._exclude_hrefs_by_regex(html_as, r'/$')
+        # And "generic" links, which seem to be used within one or two separators :
+        html_as = self._exclude_hrefs_by_regex(html_as, r'/(?:[^/]+/)?[^/]+/?$')
 
         return html_as
 
