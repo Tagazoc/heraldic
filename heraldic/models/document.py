@@ -12,6 +12,7 @@ import heraldic.misc.exceptions as ex
 from heraldic.misc.logging import logger
 from heraldic.misc.functions import get_domain, get_truncated_url
 from heraldic.analysis.text_analyzer import ta
+from heraldic.misc.config import config
 
 
 class Document(object):
@@ -62,7 +63,8 @@ class Document(object):
                 final_url = updated_model.gather_from_url(self.url)
                 self.model.urls.append(self._check_and_truncate_url(final_url))
             self._extract_fields(updated_model)
-            updated_model.words.update(ta.extract_words(updated_model.body.value))
+            if config['DEFAULT'].getboolean('extract_words'):
+                updated_model.words.update(ta.extract_words(updated_model.body.value))
             self.update_from_model(updated_model)
             logger.log('INFO_DOC_UPDATE_SUCCESS', self.url)
         else:
@@ -77,7 +79,8 @@ class Document(object):
             except ex.MandatoryParsingException:
                 self._store_failed_parsing_error()
                 raise
-            self.model.words.update(ta.extract_words(self.model.body.value))
+            if config['DEFAULT'].getboolean('extract_words'):
+                self.model.words.update(ta.extract_words(self.model.body.value))
             self._store()
             logger.log('INFO_DOC_STORE_SUCCESS', self.url)
 
