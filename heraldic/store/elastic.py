@@ -8,9 +8,11 @@ from elasticsearch import Elasticsearch
 from elasticsearch.client.indices import IndicesClient
 from heraldic.models.document_model import DocumentModel, OldDocumentModel
 from elasticsearch.exceptions import NotFoundError
+from heraldic.misc.config import config
 
-ELASTICSEARCH_HOST = {'host': '127.0.0.1', 'port': 1080}
-es = Elasticsearch([ELASTICSEARCH_HOST])
+
+es_host = {'host': config['DEFAULT'].get('elasticsearch_host'), 'port': config['DEFAULT'].getint('elasticsearch_port')}
+es = Elasticsearch([es_host])
 
 
 class ElasticIndex:
