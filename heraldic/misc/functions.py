@@ -8,10 +8,12 @@ from functools import lru_cache
 from heraldic.misc.exceptions import InvalidUrlException
 
 
-# Regex made from dperini's https://gist.github.com/dperini/729294
+# Regex based on dperini's https://gist.github.com/dperini/729294
 url_regex = re.compile(
+            # Sometimes there are spaces before the url, browsers accept them
+            r'^\s*' +
             # Protocol, sometimes only double slash or nothing
-            r'^((?:(?:https?:)?//)?)' +
+            r'((?:(?:https?:)?//)?)' +
             # domain name construction
             r'(' +
             # host name

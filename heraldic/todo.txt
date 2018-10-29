@@ -36,7 +36,7 @@
 
 # TODO Voir les perfs -> Faire des générateurs
 
-# Remplacer explicit_sources par from_afp (pas en suggestion)
+# TODO Remplacer explicit_sources par from_afp (pas en suggestion) -> OK
 
 # TODO Faire la sécurité
 

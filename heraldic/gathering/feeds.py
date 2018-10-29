@@ -98,7 +98,8 @@ class RssFeed(UrlList):
 
     def gather(self):
         feed = feedparser.parse(self.url)
-        if feed['bozo'] or feed['status'] >= 400:
+        if feed['bozo'] and not isinstance(feed['bozo_exception'], feedparser.ThingsNobodyCaresAboutButMe)\
+                or feed['status'] >= 400:
             raise ex.FeedUnavailable(self.url, feed['status'])
         self.url = feed['href']
         try:

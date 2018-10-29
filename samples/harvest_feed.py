@@ -5,7 +5,7 @@
 from heraldic.gathering.feeds import FeedHarvester
 
 OVERRIDE = True
-FEED_URL = 'http://www.leparisien.fr/actualites-a-la-une.rss.xml'
+FEED_URL = 'http://www.fdesouche.com/feed'
 
 harvester = FeedHarvester()
 harvester.retrieve_feeds()

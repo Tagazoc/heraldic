@@ -187,7 +187,7 @@ def retrieve_suggestions(doc_id) -> dict:
 
 
 def retrieve_feeds_dicts() -> List[dict]:
-    hits = _search_query(index=FeedsIndex.INDEX_NAME, doc_type=FeedsIndex.TYPE_NAME)
+    hits = _search_query(index=FeedsIndex.INDEX_NAME, doc_type=FeedsIndex.TYPE_NAME, size=1000)
 
     return hits['hits']
 

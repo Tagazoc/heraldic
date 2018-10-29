@@ -174,18 +174,19 @@ class GenericMedia(object):
         """
         return self._body_tag.find_all('a')
 
-    def _post_extract_href_sources(self, a_tags: List[Tag]) -> List[str]:
+    def _post_extract_href_sources(self, source_tags: List[Tag]) -> List[str]:
         """
         Change local links in fully qualified links, and discard local hash links, and unwanted extensions such as
         images.
 
-        :param a_tags: Previously extracted <a> tags
+        :param source_tags: Previously extracted <a> tags
         :return:
         """
-        hrefs = [a['href'] for a in a_tags if a.get('href') is not None]
+        hrefs = [a['href'] for a in source_tags if a.get('href') is not None]
+        iframe_hrefs = [iframe['src'] for iframe in source_tags if iframe.get('src') is not None]
         result = []
         extension_pattern = re.compile(r'(?:' + r'|'.join(self.unwanted_extensions) + r')(?:\?|#|$)', re.IGNORECASE)
-        for href in hrefs:
+        for href in hrefs + iframe_hrefs:
             if re.match(r'^#', href):
                 continue
             if extension_pattern.search(href):
