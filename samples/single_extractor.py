@@ -10,7 +10,10 @@ import heraldic.misc.exceptions as ex
 
 
 def main(argv):
-    url = input()
+    try:
+        url = argv[0]
+    except IndexError:
+        url = input()
     d = Document(url, debug=True)
     try:
         d.gather(update=True)

@@ -163,11 +163,8 @@ class FeedHarvester:
             except ex.FeedUnavailable:
                 continue
 
-    def harvest_feed(self, feed_url, update_entries=True, max_depth=5):
-        for feed in self.feeds:
-            if feed.url == feed_url:
-                feed.gather()
-                feed.harvest(update_entries=update_entries, max_depth=max_depth)
-                feed.update()
-                return
-        raise ValueError
+    @staticmethod
+    def harvest_feed(feed_url, update_entries=True, max_depth=5):
+        feed = RssFeed(feed_url)
+        feed.gather()
+        feed.harvest(update_entries=update_entries, max_depth=max_depth)
