@@ -293,6 +293,7 @@ class GenericMedia(object):
 
         return filtered_as
 
+    # TODO invalidurl qui ne print pas
     @classmethod
     def _exclude_hrefs_by_regex(cls, html_as: List, regex: str, only_internal_links=True):
         reg = re.compile(regex)
@@ -300,8 +301,12 @@ class GenericMedia(object):
         for a in html_as:
             if only_internal_links and not cls._is_internal_link(a['href']):
                 continue
-            if not (reg.match(a['href']) or reg.match(get_resource(a['href']))):
-                filtered_as.append(a)
+            if not reg.match(a['href']):
+                try:
+                    if not reg.match(get_resource(a['href'])):
+                        filtered_as.append(a)
+                except ex.InvalidUrlException:
+                    filtered_as.append(a)
 
         return filtered_as
 

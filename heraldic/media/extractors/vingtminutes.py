@@ -18,8 +18,14 @@ class VingtMinutes(GenericMedia):
 
     def _extract_body(self):
         content_div = copy(self.html_soup).article.find('div', attrs={'class': 'content'}).extract()
-        content_div.find('div', attrs={'class': 'tags'}).decompose()
-        content_div.find('div', attrs={'class': 'sharebar'}).decompose()
+        try:
+            content_div.find('div', attrs={'class': 'tags'}).decompose()
+        except AttributeError:
+            pass
+        try:
+            content_div.find('div', attrs={'class': 'sharebar'}).decompose()
+        except AttributeError:
+            pass
         [lire_aussi.decompose() for lire_aussi in content_div.find_all('a', attrs={'class': 'highlight'})]
         return content_div
 
