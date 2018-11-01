@@ -18,7 +18,10 @@ class HuffingtonPost(GenericMedia):
 
     def _extract_body(self):
         content_div = copy(self.html_soup).find('div', attrs={'class': 'post-contents'})
-        content_div.blockquote.decompose()
+        try:
+            content_div.blockquote.decompose()
+        except AttributeError:
+            pass
         return content_div
 
     def _extract_href_sources(self):
