@@ -11,6 +11,8 @@ from heraldic.models.document_model import DocumentModel, OldDocumentModel
 from typing import List
 import elasticsearch.helpers
 
+# TODO Remplacer index_name et type_name par la classe index
+# Utiliser le scan quand c'est nécessaire
 
 def handle_connection_errors(decorated):
     def wrapper(*args, **kwargs):
@@ -97,6 +99,25 @@ def retrieve_error_url(doc_id: str) -> str:
         raise ex.DocumentNotFoundException
 
     return res['_source']['urls'][0]
+
+
+def get_similar_errors_urls(error_body: str, media: str) -> List[str]:
+    query = {
+        'bool': {
+            'must': [{
+                'term': {
+                    'body.keyword': error_body
+                }
+            }, {
+                'term': {
+                    'media': media
+                }
+            }]
+        }
+    }
+    hits = _search_query(query, index=ErrorIndex.INDEX_NAME, doc_type=ErrorIndex.TYPE_NAME, size=10000,
+                         sort='gather_time:desc')
+    return [hit['_source']['urls'][0] for hit in hits['hits']]
 
 
 def _generate_doc_models(hits) -> List[DocumentModel]:
