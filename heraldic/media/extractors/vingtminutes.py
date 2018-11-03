@@ -29,15 +29,6 @@ class VingtMinutes(GenericMedia):
         [lire_aussi.decompose() for lire_aussi in content_div.find_all('a', attrs={'class': 'highlight'})]
         return content_div
 
-    def _extract_doc_publication_time(self):
-        return self.html_soup.find('time').get('datetime')
-
-    def _extract_doc_update_time(self):
-        try:
-            return self.html_soup.find_all('time')[1].get('datetime')
-        except IndexError:
-            return None
-
     def _extract_href_sources(self):
         html_as = self._body_tag.find_all('a')
 

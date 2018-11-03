@@ -139,7 +139,10 @@ class GenericMedia(object):
         try:
             time_text = self.html_soup.find('meta', attrs={'property': "article:published_time"}).get('content')
         except AttributeError:
-            time_text = self.html_soup.find('time', attrs={'itemprop': 'datePublished'}).get('datetime')
+            try:
+                time_text = self.html_soup.find('time', attrs={'itemprop': 'datePublished'}).get('datetime')
+            except AttributeError:
+                time_text = self.html_soup.find('time').get('datetime')
 
         return time_text
 
@@ -156,8 +159,11 @@ class GenericMedia(object):
             try:
                 time_text = self.html_soup.find('meta', attrs={'property': "article:modified_time"}).get('content')
             except AttributeError:
-                time_text = self.html_soup.find('time', attrs={'itemprop': 'dateModified'}).get('datetime')
-        except AttributeError:
+                try:
+                    time_text = self.html_soup.find('time', attrs={'itemprop': 'dateModified'}).get('datetime')
+                except AttributeError:
+                    time_text = self.html_soup.find_all('time')[1].get('datetime')
+        except IndexError:
             # Should all fail, return None
             return None
         return time_text
@@ -198,6 +204,8 @@ class GenericMedia(object):
                 continue
             result.append(url)
 
+        # Only keep distinct values
+        result = list(set(result))
         return result
 
     def _extract_category(self) -> str:
