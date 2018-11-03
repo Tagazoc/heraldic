@@ -75,7 +75,7 @@ class ErrorIndex(ElasticIndex):
     @classmethod
     def _render_mapping_body(cls):
         model = DocumentModel()
-        body = {k: {'type': 'text'} for k, v in model.attributes.items() if v.storable and v.extractible
+        body = {k: {'type': 'keyword'} for k, v in model.attributes.items() if v.storable and v.extractible
                 or k == 'urls'}
         body['gather_time'] = {'type': 'date', 'format': 'epoch_millis'}
         body['media'] = {'type': 'keyword'}
