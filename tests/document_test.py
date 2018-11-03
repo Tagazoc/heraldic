@@ -10,6 +10,7 @@ import pytest
 from heraldic.rendering.flask.factory import create_app
 from heraldic.misc.exceptions import DocumentNotFoundException
 from heraldic.store.index_searcher import retrieve_errors, retrieve_suggestions, retrieve_old_version_models
+import itertools
 
 
 # Flask test configuration
@@ -158,4 +159,4 @@ def test_document_deletion():
 
     assert (retrieve_suggestions(update_doc_dict['id']) == {})
 
-    assert (retrieve_old_version_models(update_doc_dict['id']) == [])
+    assert (list(retrieve_old_version_models(update_doc_dict['id'])) == [])

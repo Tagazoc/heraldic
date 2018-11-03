@@ -13,6 +13,7 @@ from heraldic.misc.logging import logger
 from heraldic.misc.functions import get_domain, get_truncated_url
 from heraldic.analysis.text_analyzer import ta
 from heraldic.misc.config import config
+import itertools
 
 
 class Document(object):
@@ -119,7 +120,7 @@ class Document(object):
         """
         Retrieve old versions of a document from its ID.
         """
-        self.old_versions = index_searcher.retrieve_old_version_models(self.model.id.value)
+        self.old_versions = list(index_searcher.retrieve_old_version_models(self.model.id.value))
         self._set_attributes_versions()
 
     def retrieve_id_from_parse_error(self):
@@ -164,7 +165,7 @@ class Document(object):
         :return:
         """
         counter_dict = {}
-        for model in self.old_versions + [self.model]:
+        for model in itertools.chain(self.old_versions, [self.model]):
             for (k, v) in model.attributes.items():
                 # Take only initialized attributes into account
                 if v.initialized:

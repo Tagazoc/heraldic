@@ -8,11 +8,9 @@ from heraldic.store.elastic import es, DocumentIndex, OldVersionIndex, ErrorInde
 import heraldic.misc.exceptions as ex
 from elasticsearch.exceptions import NotFoundError
 from heraldic.models.document_model import DocumentModel, OldDocumentModel
-from typing import List
+from typing import List, Generator
 import elasticsearch.helpers
 
-# TODO Remplacer index_name et type_name par la classe index
-# Utiliser le scan quand c'est nécessaire
 
 def handle_connection_errors(decorated):
     def wrapper(*args, **kwargs):
@@ -54,42 +52,47 @@ def retrieve_model_from_url(url: str) -> DocumentModel:
     return dm
 
 
-def retrieve_old_version_models(doc_id: str) -> List[OldDocumentModel]:
-    models = []
+def retrieve_old_version_models(doc_id: str) -> Generator[OldDocumentModel, None, None]:
     for hit in _retrieve_old_versions(doc_id):
         dm = OldDocumentModel(doc_id)
 
         dm.id.value = hit['_id']
         dm.set_from_store(hit)
-        models.append(dm)
-    return models
+        yield dm
 
 
-def retrieve_all_urls() -> List[str]:
-    results = elasticsearch.helpers.scan(es, index=DocumentIndex.INDEX_NAME, doc_type=DocumentIndex.TYPE_NAME, _source=['urls'])
-    return [hit['_source']['urls'][0] for hit in results if 'urls' in hit['_source'].keys()]
+def retrieve_all_urls() -> Generator[str, None, None]:
+    results = elasticsearch.helpers.scan(es, index=DocumentIndex.INDEX_NAME, doc_type=DocumentIndex.TYPE_NAME,
+                                         _source=['urls'])
+    for result in results:
+        if 'urls' in result['_source'].keys():
+            yield result['_source']['urls'][0]
 
 
-def search_by_media(media_id: str, limit: int=100):
-    return _generate_doc_models(_search_docs(q="media:" + media_id, limit=limit))
+def search_by_media(media_id: str, limit: int=100) -> Generator[DocumentModel, None, None]:
+    return _generate_doc_models(_search_query(q="media:" + media_id, limit=limit))
 
 
-def search_models(q=None, body_query=None, limit: int=0) -> List[DocumentModel]:
-    return _generate_doc_models(_search_docs(q=q, body_query=body_query, limit=limit))
+def search_models(q=None, body_query=None, limit: int=0) -> Generator[DocumentModel, None, None]:
+    return _generate_doc_models(_search_query(q=q, body_query=body_query, limit=limit))
 
 
 def search_model_by_url(url: str) -> DocumentModel:
     hits = _search_query({'match': {'urls': url}}, terminate_after=1)
-    try:
-        return _generate_doc_models(hits['hits'])[0]
-    except IndexError:
-        raise ex.DocumentNotFoundException
+    for hit in _generate_doc_models(hits):
+        return hit
+    raise ex.DocumentNotFoundException
 
 
 def search_error_id_by_url(url: str) -> str:
-    hits = _search_query({'match': {'urls': url}}, index=ErrorIndex.INDEX_NAME, doc_type=ErrorIndex.TYPE_NAME,
+    hits = _search_query({'match': {'urls': url}}, index_class=ErrorIndex,
                          terminate_after=1)
-    return hits['hits'][0]['_id'] if hits['hits'] else None
+    # Return first element's id, if no element return None
+    try:
+        hit = next(hits)
+        return hit['_id']
+    except StopIteration:
+        return None
 
 
 def retrieve_error_url(doc_id: str) -> str:
@@ -101,7 +104,7 @@ def retrieve_error_url(doc_id: str) -> str:
     return res['_source']['urls'][0]
 
 
-def get_similar_errors_urls(error_body: str, media: str) -> List[str]:
+def get_similar_errors_urls(error_body: str, media: str) -> Generator[str, None, None]:
     query = {
         'bool': {
             'must': [{
@@ -115,20 +118,18 @@ def get_similar_errors_urls(error_body: str, media: str) -> List[str]:
             }]
         }
     }
-    hits = _search_query(query, index=ErrorIndex.INDEX_NAME, doc_type=ErrorIndex.TYPE_NAME, size=10000,
-                         sort='gather_time:desc')
-    return [hit['_source']['urls'][0] for hit in hits['hits']]
+    hits = _search_query(query, index_class=ErrorIndex, sort='gather_time:desc')
+    for hit in hits:
+        yield hit['_source']['urls'][0]
 
 
-def _generate_doc_models(hits) -> List[DocumentModel]:
-    models = []
+def _generate_doc_models(hits) -> Generator[DocumentModel, None, None]:
     for hit in hits:
         dm = DocumentModel()
 
         dm.id.value = hit['_id']
         dm.set_from_store(hit['_source'])
-        models.append(dm)
-    return models
+        yield dm
 
 
 @handle_connection_errors
@@ -153,7 +154,11 @@ def check_url_existence(url: str) -> bool:
     :return: True if a document with this url exists in 'docs' index, else False
     """
     hits = _search_query({'match': {'urls': url}}, terminate_after=1, _source=False)
-    return len(hits) > 0
+    try:
+        next(hits)
+        return True
+    except StopIteration:
+        return False
 
 
 def check_url_uptodate(url: str, update_time) -> bool:
@@ -166,27 +171,24 @@ def check_url_uptodate(url: str, update_time) -> bool:
         }
     }
     hits = _search_query(query, terminate_after=1, _source=False)
-
-    return len(hits) > 0
-
-
-def _search_docs(q=None, body_query=None, limit: int=0) -> List:
-    hits = elasticsearch.helpers.scan(es, query=body_query, q=q, terminate_after=limit)
-    return hits
+    try:
+        next(hits)
+        return True
+    except StopIteration:
+        return False
 
 
 @handle_connection_errors
-def count(q=None, body_query=None, index=DocumentIndex.INDEX_NAME, doc_type=DocumentIndex.TYPE_NAME) -> int:
-    return es.count(index=index, doc_type=doc_type, q=q, body=body_query)['count']
+def count(q=None, body_query=None, index_class=DocumentIndex) -> int:
+    return es.count(index=index_class.INDEX_NAME, doc_type=index_class.TYPE_NAME, q=q, body=body_query)['count']
 
 
-def _retrieve_old_versions(doc_id) -> List:
-    hits = _search_query({'term': {'doc_id': doc_id}}, index=OldVersionIndex.INDEX_NAME, sort=['version_no'])
+def _retrieve_old_versions(doc_id) -> Generator[dict, None, None]:
+    hits = _search_query({'term': {'doc_id': doc_id}}, index_class=OldVersionIndex, sort=['version_no'])
 
-    for hit in hits['hits']:
+    for hit in hits:
         hit['_source']['_id'] = hit['_id']
-
-    return [hit['_source'] for hit in hits['hits']]
+        yield hit['_source']
 
 
 @handle_connection_errors
@@ -208,17 +210,16 @@ def retrieve_suggestions(doc_id) -> dict:
 
 
 def retrieve_feeds_dicts() -> List[dict]:
-    hits = _search_query(index=FeedsIndex.INDEX_NAME, doc_type=FeedsIndex.TYPE_NAME, size=1000)
+    hits = _search_query(index_class=FeedsIndex)
 
-    return hits['hits']
+    return hits
 
 
 @handle_connection_errors
-def _search_query(query: dict=None, index=DocumentIndex.INDEX_NAME, doc_type=DocumentIndex.TYPE_NAME,
-                  **kwargs) -> dict:
+def _search_query(query: dict=None, index_class=DocumentIndex, **kwargs) -> Generator[dict, None, None]:
     body = {}
     if query is not None:
         body = {'query': query}
-    res = es.search(index, doc_type=doc_type, body=body, **kwargs)
-
-    return res['hits']
+    results = elasticsearch.helpers.scan(es, query=body, index=index_class.INDEX_NAME, doc_type=index_class.TYPE_NAME,
+                                         **kwargs)
+    return results
