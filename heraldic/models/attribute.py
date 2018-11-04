@@ -130,6 +130,7 @@ class StringAttribute(Attribute):
 
 class StringListAttribute(Attribute):
     DEFAULT_VALUE = []
+    DEFAULT_STORE_MAPPING = 'keyword'
 
     def __init__(self, **kwargs):
         super(StringListAttribute, self).__init__(**kwargs)
