@@ -21,7 +21,15 @@ def uninitialized_display_wrapper(func):
 
 
 class Attribute(object):
-    DEFAULT_STORE_MAPPING = {'type': 'text'}
+    DEFAULT_STORE_MAPPING = {
+        "type": "text",
+        "fields": {
+            "keyword": {
+                "type": "keyword",
+                "ignore_above": 256
+            }
+         }
+                             }
     DEFAULT_VALUE = ""
     DEFAULT_INVALIDATION_TEXT = "Valeur incorrecte."
 
@@ -123,17 +131,23 @@ class IntegerAttribute(Attribute):
         self.update(int(value))
 
 
-class StringAttribute(Attribute):
+class TextAttribute(Attribute):
     def __init__(self, **kwargs):
-        super(StringAttribute, self).__init__(**kwargs)
+        super(TextAttribute, self).__init__(**kwargs)
 
 
-class StringListAttribute(Attribute):
-    DEFAULT_VALUE = []
+class KeywordAttribute(Attribute):
     DEFAULT_STORE_MAPPING = 'keyword'
 
     def __init__(self, **kwargs):
-        super(StringListAttribute, self).__init__(**kwargs)
+        super(KeywordAttribute, self).__init__(**kwargs)
+
+
+class KeywordListAttribute(KeywordAttribute):
+    DEFAULT_VALUE = []
+
+    def __init__(self, **kwargs):
+        super(KeywordListAttribute, self).__init__(**kwargs)
 
     def append(self, value):
         if value not in self.value:
@@ -149,7 +163,7 @@ class StringListAttribute(Attribute):
         self.update(splitted_values)
 
 
-class UrlListAttribute(StringListAttribute):
+class UrlListAttribute(KeywordListAttribute):
     UNIQUE_URL_REGEX = re.compile(r'^https?://(.*?)/?$')
 
     def append(self, value):

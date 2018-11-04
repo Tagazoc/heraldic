@@ -4,7 +4,7 @@
 Module which implements DocumentModel class.
 """
 
-from heraldic.models.attribute import Attribute, StringListAttribute, StringAttribute,\
+from heraldic.models.attribute import Attribute, TextAttribute, KeywordListAttribute, KeywordAttribute,\
     DateAttribute, BooleanAttribute, IntegerAttribute, WordListAttribute, UrlListAttribute
 from collections import OrderedDict
 from copy import copy
@@ -20,8 +20,8 @@ class DocumentModel(object):
     def __init__(self) -> None:
         """ Ordered dict containing attributes """
         self.attributes: Dict[str, Attribute] = OrderedDict([
-            ('id', StringAttribute(desc="Identifiant", revisable=False, extractible=False, storable=False)),
-            ('media', StringAttribute(desc="Média", mandatory=True, revisable=False, storable={'type': 'keyword'})),
+            ('id', KeywordAttribute(desc="Identifiant", revisable=False, extractible=False, storable=False)),
+            ('media', KeywordAttribute(desc="Média", mandatory=True, revisable=False, storable={'type': 'keyword'})),
             ('gather_time', DateAttribute(desc="Date de collecte de l'article", revisable=False, extractible=False)),
             ('update_time', DateAttribute(desc="Date de révision", revisable=False, extractible=False)),
             ('version_no', IntegerAttribute(desc="Numéro de version", revisable=False, extractible=False)),
@@ -29,28 +29,29 @@ class DocumentModel(object):
                                       storable={'type': 'keyword'})),
 
             # Buffer data
-            ('content', StringAttribute(desc="Contenu", displayable=False, revisable=False, extractible=False,
-                                        storable=False)),
-            ('body', StringAttribute(desc="Body", displayable=False, revisable=False, storable=False, mandatory=True)),
+            ('content', TextAttribute(desc="Contenu", displayable=False, revisable=False, extractible=False,
+                                          storable=False)),
+            ('body', TextAttribute(desc="Body", displayable=False, revisable=False, storable=False, mandatory=True)),
 
             # Words !
             ('words', WordListAttribute(desc="Words", displayable=True, revisable=True, extractible=False)),
 
             # Extracted data
-            ('category', StringAttribute(desc="Catégorie", revisable=False, storable={'type': 'keyword'})),
-            ('title', StringAttribute(desc="Titre", revisable=False)),
-            ('description', StringAttribute(desc="Description", revisable=False)),
+            ('category', KeywordAttribute(desc="Catégorie", revisable=False, storable={'type': 'keyword'})),
+            ('title', TextAttribute(desc="Titre", revisable=False)),
+            ('description', TextAttribute(desc="Description", revisable=False)),
             ('doc_publication_time', DateAttribute(desc="Date de publication de l'article", revisable=False)),
             ('doc_update_time', DateAttribute(desc="Date de mise à jour de l'article", revisable=False)),
 
-            ('keywords', StringListAttribute(desc="Mots-clés de l'article", revisable=False)),
+            ('keywords', KeywordListAttribute(desc="Mots-clés de l'article", revisable=False)),
             ('href_sources', UrlListAttribute(desc="Sources en lien hypertexte", revisable=False)),
-            ('explicit_sources', StringListAttribute(desc="Sources explicites")),
-            ('news_agency', StringAttribute(desc="Agence de presse source", revisable=False,
-                                            storable={'type': 'keyword'})),
-            ('quoted_entities', StringListAttribute(desc="Entités citées", extractible=False)),
+            ('explicit_sources', KeywordListAttribute(desc="Sources explicites")),
+            ('news_agency', KeywordAttribute(desc="Agence de presse source", revisable=False,
+                                             storable={'type': 'keyword'})),
+            ('quoted_entities', KeywordListAttribute(desc="Entités citées", extractible=False)),
             ('contains_private_sources', BooleanAttribute(desc="Sources privées", extractible=False)),
-            ('subscribers_only', BooleanAttribute(desc="Réservé aux abonnés", revisable=False))
+            ('subscribers_only', BooleanAttribute(desc="Réservé aux abonnés", revisable=False)),
+            ('document_type', KeywordAttribute(desc="Type d'article", revisable=False, storable={'type': 'keyword'}))
         ])
 
         self.from_gathering = False
@@ -220,7 +221,7 @@ class DocumentModel(object):
         except (ValueError, ConnectionError):
             raise
         # Setting final URL (in case of redirection)
-        urls: StringListAttribute = self.attributes['urls']
+        urls: KeywordListAttribute = self.attributes['urls']
         urls.append(url)
         r.encoding = 'utf-8'
         self.attributes['content'].value = r.text
@@ -229,7 +230,7 @@ class DocumentModel(object):
         return r.url
 
     def gather_from_file(self, url: str, filepath: str):
-        urls: StringListAttribute = self.attributes['urls']
+        urls: KeywordListAttribute = self.attributes['urls']
         urls.append(url)
 
         with open(filepath, 'r') as f:
@@ -255,7 +256,7 @@ class OldDocumentModel(DocumentModel):
     def __init__(self, doc_id) -> None:
         super(OldDocumentModel, self).__init__()
 
-        self.attributes['doc_id'] = StringAttribute(desc="Identifiant du document", displayable=False,
+        self.attributes['doc_id'] = TextAttribute(desc="Identifiant du document", displayable=False,
                                                     revisable=False, extractible=False, storable={'type': 'keyword'},
                                                     initialized=True, value=doc_id)
         """ Associated up-to-date document identifier. """

@@ -28,9 +28,9 @@ class ReviewForm(FlaskForm):
             kwargs = {'label': v.desc}
             if k == 'id':
                 field_class = HiddenField
-            elif isinstance(v, StringAttribute) or isinstance(v, DateAttribute):
+            elif isinstance(v, KeywordAttribute) or isinstance(v, DateAttribute) or isinstance(v, TextAttribute):
                 field_class = StringField
-            elif isinstance(v, StringListAttribute):
+            elif isinstance(v, KeywordListAttribute):
                 field_class = TextAreaField
             elif isinstance(v, BooleanAttribute):
                 field_class = SelectField

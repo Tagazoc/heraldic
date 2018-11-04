@@ -40,6 +40,7 @@ class GenericMedia(object):
         self.html_soup = BeautifulSoup(content, self.parser)
         self.dm = dm
         self._body_tag = None
+        self._document_type = 'article'
         """ Body backup, wich can be reused for other attributes. """
 
     @classmethod
@@ -252,6 +253,14 @@ class GenericMedia(object):
             except KeyError:
                 pass
         return list(keywords_set)
+
+    def _extract_document_type(self) -> str:
+        """
+        "Extract" document type : article, video, panorama. Actually, this attribute is defined in body extraction and
+        placed in "_document_type" attribute.
+        :return:
+        """
+        return self._document_type
 
     def _extract_subscribers_only(self) -> bool:
         """
