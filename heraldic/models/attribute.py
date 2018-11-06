@@ -137,7 +137,7 @@ class TextAttribute(Attribute):
 
 
 class KeywordAttribute(Attribute):
-    DEFAULT_STORE_MAPPING = 'keyword'
+    DEFAULT_STORE_MAPPING = {'type': 'keyword'}
 
     def __init__(self, **kwargs):
         super(KeywordAttribute, self).__init__(**kwargs)
