@@ -63,7 +63,7 @@ curator_cmd = "curator %s"
 
 
 def main(argv):
-    for index in [OldVersionIndex, ErrorIndex, SuggestionIndex, FeedsIndex]:
+    for index in [DocumentIndex, OldVersionIndex, ErrorIndex, SuggestionIndex, FeedsIndex]:
         old_name = index.INDEX_NAME
         new_name = old_name + argv[0]
         index.INDEX_NAME = new_name
