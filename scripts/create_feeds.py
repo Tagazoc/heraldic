@@ -16,9 +16,10 @@ def main(argv):
     FeedsIndex.create()
 
     with open(argv[0], 'r') as f:
-        for url in f.readlines():
+        for line in f.readlines():
+            media_id, url = line.split(':', 1)
             if url not in feed_urls:
-                feed = RssFeed(url)
+                feed = RssFeed(url, media_id)
                 feed.gather()
                 feed.store()
 

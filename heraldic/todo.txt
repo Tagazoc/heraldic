@@ -34,7 +34,7 @@
 
 # TODO Vérifier les résultats des requêtes ES
 
-# TODO Voir les perfs -> Faire des générateurs
+# TODO Voir les perfs -> Faire des générateurs -> OK
 
 # TODO Remplacer explicit_sources par from_afp (pas en suggestion) -> OK
 
@@ -72,7 +72,7 @@
 
 # TODO Faire des analyses plus poussées et graphiques
 
-# TODO Mettre à disposition quotidiennement un dump de la base
+# TODO Mettre à disposition quotidiennement un dump de la base -> Plus qu'à publier et gérer la sync
 
 # TODO Faire un compte twitter -> OK
 

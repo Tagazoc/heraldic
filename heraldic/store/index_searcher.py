@@ -209,8 +209,10 @@ def retrieve_suggestions(doc_id) -> dict:
         return {}
 
 
-def retrieve_feeds_dicts() -> List[dict]:
-    hits = _search_query(index_class=FeedsIndex)
+@handle_connection_errors
+def retrieve_feeds_dicts(media_id=None) -> List[dict]:
+    query = {'match': {'media_id': media_id}} if media_id else None
+    hits = _search_query(query=query, index_class=FeedsIndex)
 
     return hits
 

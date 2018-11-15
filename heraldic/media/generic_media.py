@@ -51,7 +51,7 @@ class GenericMedia(object):
     def get_document_count(cls) -> int:
         return index_searcher.count(q='media:' + cls.id)
 
-    def extract_fields(self, debug=False):
+    def extract_fields(self, raise_on_optional=False):
         """
         This function calls every extraction function supported by the media.
         """
@@ -88,7 +88,7 @@ class GenericMedia(object):
                             raise ex.OptionalParsingException(k, self.dm.urls.value[0], err)
                         except ex.OptionalParsingException as parsing_exc:
                             v.parsing_error = parsing_exc.message
-                            if debug:
+                            if raise_on_optional:
                                 raise
 
     def _extract_media(self) -> str:

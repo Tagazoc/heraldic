@@ -103,5 +103,6 @@ class FeedsIndex(ElasticIndex):
             'url': {'type': 'keyword'},
             'title': {'type': 'keyword'},
             'link': {'type': 'keyword'},
+            'media_id': {'type': 'keyword'},
             'update_time': {'type': 'date', 'format': 'epoch_millis'}
         }

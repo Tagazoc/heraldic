@@ -14,10 +14,10 @@ from requests.exceptions import RequestException
 
 
 class UrlList:
-    def __init__(self):
+    def __init__(self, entries=None):
         
         self.gathered_urls = set()
-        self.entries = []
+        self.entries = entries if entries is not None else []
 
         self._counts = {
             'gathered': 0,
@@ -34,10 +34,12 @@ class UrlList:
             'errors': 0
         }
 
-    def harvest(self, update_entries=True, max_depth=0):
-        self._gather_links(self.entries, update_entries=update_entries, max_depth=max_depth)
+    def harvest(self, update_entries=True, max_depth=0, raise_on_optional=False, dump_result=False):
+        self._gather_links(self.entries, update_entries=update_entries, max_depth=max_depth,
+                           raise_on_optional=raise_on_optional, dump_result=dump_result)
 
-    def _gather_links(self, items: List, update_entries=False, max_depth=0, depth=0):
+    def _gather_links(self, items: List, update_entries=False, max_depth=0, depth=0, raise_on_optional=False,
+                      dump_result=False):
         counts = self._counts if depth == 0 else self._inside_counts
         for item in items:
 
@@ -60,7 +62,9 @@ class UrlList:
                     continue
                 self.gathered_urls = self.gathered_urls.union([url])
                 d = Document(url)
-                d.gather(update_time=update_time, update=update_entries)
+                d.gather(update_time=update_time, update=update_entries, raise_on_optional=raise_on_optional)
+                if dump_result:
+                    print(str(d))
                 self.gathered_urls = self.gathered_urls.union(d.model.urls.value)
                 counts['gathered'] += 1
             except ex.DocumentExistsException:
@@ -87,7 +91,7 @@ class UrlList:
 
 
 class RssFeed(UrlList):
-    def __init__(self, feed_url, update_time=None, feed_id=None):
+    def __init__(self, feed_url, media_id=None, update_time=None, feed_id=None):
         super(RssFeed, self).__init__()
         self.id = feed_id
         self.url = feed_url
@@ -95,6 +99,7 @@ class RssFeed(UrlList):
         self.update_time = None
         self.title = None
         self.link = None
+        self.media_id = media_id
 
     def gather(self):
         feed = feedparser.parse(self.url)
@@ -111,9 +116,9 @@ class RssFeed(UrlList):
         self.link = feed['feed']['link']
         self.entries = feed['entries']
 
-    def harvest(self, update_entries: bool = True, max_depth=0):
+    def harvest(self, update_entries: bool = True, max_depth=0, raise_on_optional=False, dump_result=False):
         super(RssFeed, self).harvest(update_entries=update_entries, max_depth=max_depth)
-        
+
         logger.log('INFO_FEED_HARVEST_END', self.url, self._counts['gathered'], len(self.entries),
                    self._counts['exist'],
                    self._counts['not_supported'], self._counts['errors'], self._inside_counts['gathered'],
@@ -126,6 +131,7 @@ class RssFeed(UrlList):
             'title': self.title,
             'update_time': self.update_time.timestamp(),
             'link': self.link,
+            'media_id': self.media_id
         }
         return body
 
@@ -140,18 +146,18 @@ class RssFeed(UrlList):
 
 class UrlFile(UrlList):
     def __init__(self, file_name):
-        super(UrlFile, self).__init__()
         with open(file_name, 'r') as f:
-            self.entries = f.readlines()
+            super(UrlFile, self).__init__(f.readlines())
 
 
 class FeedHarvester:
     def __init__(self):
         self.feeds: List[RssFeed] = []
 
-    def retrieve_feeds(self):
+    def retrieve_feeds(self, media_id=None):
         feeds_dicts = index_searcher.retrieve_feeds_dicts()
-        self.feeds = [RssFeed(dic['_source']['url'], dic['_source']['update_time'], dic['_id']) for dic in feeds_dicts]
+        self.feeds = [RssFeed(dic['_source']['url'], dic['_source']['media_id'],
+                              dic['_source']['update_time'], dic['_id']) for dic in feeds_dicts]
 
     def harvest(self, override=False, max_depth=0, delay=0):
         for feed in self.feeds:

@@ -20,7 +20,7 @@ class Document(object):
     """
     Class representing a Document through its way through Heraldic.
     """
-    def __init__(self, url: str='', doc_id: str=None, debug=False):
+    def __init__(self, url: str='', doc_id: str=None):
         self.model: DocumentModel = DocumentModel()
         self.old_versions: List[DocumentModel] = []
         self.url = self._check_and_truncate_url(url) if url else ''
@@ -36,7 +36,6 @@ class Document(object):
                 self.retrieve_from_url()
             except ex.DocumentNotFoundException:
                 self.retrieve_id_from_parse_error()
-        self.debug = debug
         self.extractor = None
 
     @classmethod
@@ -46,12 +45,13 @@ class Document(object):
         doc.url = model.urls.value[0]
         return doc
 
-    def gather(self, update_time=None, update: bool=False, filepath: str= ''):
+    def gather(self, update_time=None, update: bool=False, filepath: str= '', raise_on_optional=False):
         """
         Gather a document contents from an url, parse it and store or update it.
         :param update_time: Update time (in rss feed) to avoid gathering if up-to-date
         :param update: disable existence check, in order to override document
         :param filepath: If document is gathered from a file, file path.
+        :param raise_on_optional: Raise exception on optional parsing if encountered
         """
         if self.model.initialized:
             # It is an update, is it already up-to-date ? Unless override flag
@@ -63,7 +63,7 @@ class Document(object):
             else:
                 final_url = updated_model.gather_from_url(self.url)
                 self.model.urls.append(self._check_and_truncate_url(final_url))
-            self._extract_fields(updated_model)
+            self._extract_fields(updated_model, raise_on_optional)
             if config['DEFAULT'].getboolean('extract_words'):
                 updated_model.words.update(ta.extract_words(updated_model.body.value))
             self.update_from_model(updated_model)
@@ -76,7 +76,7 @@ class Document(object):
                 self.model.urls.append(self._check_and_truncate_url(final_url))
 
             try:
-                self._extract_fields()
+                self._extract_fields(raise_on_optional=raise_on_optional)
             except ex.MandatoryParsingException:
                 self._store_failed_parsing_error()
                 raise
@@ -85,7 +85,7 @@ class Document(object):
             self._store()
             logger.log('INFO_DOC_STORE_SUCCESS', self.url)
 
-    def _extract_fields(self, model=None):
+    def _extract_fields(self, model=None, raise_on_optional=False):
         """
         Find document media and extract document fields according to it.
         :return:
@@ -94,7 +94,7 @@ class Document(object):
         if not self.extractor:
             extractor = known_media.get_media_by_domain(get_domain(self.url))
             self.extractor = extractor(model)
-        self.extractor.extract_fields(debug=self.debug)
+        self.extractor.extract_fields(raise_on_optional=raise_on_optional)
 
     def _store(self):
         """
@@ -193,6 +193,18 @@ class Document(object):
         date = self.model.doc_update_time.value if self.model.doc_update_time.initialized \
             else self.model.doc_publication_time.value
         return date >= update_time
+
+    def __str__(self):
+        display_str = ''
+        for k, v in self.model.attributes.items():
+            if v.extractible:
+                if v.parsing_error:
+                    display_str += k + ' - ' + v.parsing_error + "\n"
+                else:
+                    display_str += k + ' : ' + v.render_for_display() + "\n"
+                if v.suggestions:
+                    display_str += k + ' : suggestions : ' + ",".join(v.render_suggestions_for_display()) + "\n"
+        return display_str
 
     @staticmethod
     def _check_and_truncate_url(url) -> str:
