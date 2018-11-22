@@ -47,12 +47,12 @@ def get_domain(url):
         raise InvalidUrlException(url)
 
 
-def get_resource(url):
+def get_resource(url, do_not_log_on_error=False):
     try:
         match = _match_url(url)
         return match.group(3)
     except AttributeError:
-        raise InvalidUrlException(url)
+        raise InvalidUrlException(url, do_not_log=do_not_log_on_error)
 
 
 def get_truncated_url(url):
