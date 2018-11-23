@@ -62,7 +62,7 @@ class Document(object):
                 updated_model.gather_from_file(self.url, filepath)
             else:
                 final_url = updated_model.gather_from_url(self.url)
-                self.model.urls.append(self._check_and_truncate_url(final_url))
+                self.model.urls.insert(self._check_and_truncate_url(final_url))
             self._extract_fields(updated_model, raise_on_optional)
             if config['DEFAULT'].getboolean('extract_words'):
                 updated_model.words.update(ta.extract_words(updated_model.body.value))
@@ -73,7 +73,7 @@ class Document(object):
                 self.model.gather_from_file(self.url, filepath)
             else:
                 final_url = self.model.gather_from_url(self.url)
-                self.model.urls.append(self._check_and_truncate_url(final_url))
+                self.model.urls.insert(self._check_and_truncate_url(final_url))
 
             try:
                 self._extract_fields(raise_on_optional=raise_on_optional)
@@ -94,6 +94,7 @@ class Document(object):
         if not self.extractor:
             extractor = known_media.get_media_by_domain(get_domain(self.url))
             self.extractor = extractor(model)
+        self.extractor.check_article_url()
         self.extractor.extract_fields(raise_on_optional=raise_on_optional)
 
     def _store(self):

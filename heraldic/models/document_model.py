@@ -30,7 +30,7 @@ class DocumentModel(object):
 
             # Buffer data
             ('content', TextAttribute(desc="Contenu", displayable=False, revisable=False, extractible=False,
-                                          storable=False)),
+                                      storable=False)),
             ('body', TextAttribute(desc="Body", displayable=False, revisable=False, storable=False, mandatory=True)),
 
             # Words !
@@ -51,7 +51,9 @@ class DocumentModel(object):
             ('quoted_entities', KeywordListAttribute(desc="Entités citées", extractible=False)),
             ('contains_private_sources', BooleanAttribute(desc="Sources privées", extractible=False)),
             ('subscribers_only', BooleanAttribute(desc="Réservé aux abonnés", revisable=False)),
-            ('document_type', KeywordAttribute(desc="Type d'article", revisable=False, storable={'type': 'keyword'}))
+            ('document_type', KeywordAttribute(desc="Type d'article", revisable=False, storable={'type': 'keyword'})),
+            ('side_links', UrlListAttribute(desc="Liens vers d'autres articles", storable=False, displayable=False,
+                                            revisable=False))
         ])
 
         self.from_gathering = False
@@ -257,8 +259,8 @@ class OldDocumentModel(DocumentModel):
         super(OldDocumentModel, self).__init__()
 
         self.attributes['doc_id'] = TextAttribute(desc="Identifiant du document", displayable=False,
-                                                    revisable=False, extractible=False, storable={'type': 'keyword'},
-                                                    initialized=True, value=doc_id)
+                                                  revisable=False, extractible=False, storable={'type': 'keyword'},
+                                                  initialized=True, value=doc_id)
         """ Associated up-to-date document identifier. """
 
     def render_for_store(self) -> dict:

@@ -153,7 +153,7 @@ def _retrieve_recursive_sources(model, include_other_domains=False, depth=0, ini
             continue
         url_dict = {}
         try:
-            source = known_media.get_media_by_domain(source, is_subdomain=True, log_failure=False).display_name
+            source = known_media.get_media_by_domain(source, is_subdomain=True, do_not_log=True).display_name
 
             if initial_media_name == source:
                 continue

@@ -11,32 +11,34 @@ from time import mktime
 from heraldic.misc.logging import logger
 from heraldic.misc.functions import get_truncated_url
 from requests.exceptions import RequestException
+from copy import copy
 
 
 class UrlList:
     def __init__(self, entries=None):
         
         self.gathered_urls = set()
-        self.entries = entries if entries is not None else []
+        self.entries = list(entries) if entries is not None else []
 
         self._counts = {
             'gathered': 0,
             'exist': 0,
-            'not_supported': 0,
+            'domain_not_supported': 0,
+            'url_not_supported': 0,
             'errors': 0
         }
 
-        self._inside_counts = {
-            'gathered': 0,
-            'total': 0,
-            'exist': 0,
-            'not_supported': 0,
-            'errors': 0
-        }
+        self._inside_counts = copy(self._counts)
 
     def harvest(self, update_entries=True, max_depth=0, raise_on_optional=False, dump_result=False):
         self._gather_links(self.entries, update_entries=update_entries, max_depth=max_depth,
                            raise_on_optional=raise_on_optional, dump_result=dump_result)
+
+        logger.log('INFO_LIST_HARVEST_END', self._counts['gathered'], len(self.entries),
+                   self._counts['exist'], self._counts['url_not_supported'],
+                   self._counts['domain_not_supported'], self._counts['errors'], self._inside_counts['gathered'],
+                   self._inside_counts['total'], self._inside_counts['exist'], self._inside_counts['domain_not_supported'],
+                   self._inside_counts['url_not_supported'], self._inside_counts['errors'])
 
     def _gather_links(self, items: List, update_entries=False, max_depth=0, depth=0, raise_on_optional=False,
                       dump_result=False):
@@ -49,7 +51,10 @@ class UrlList:
                 update_time = datetime.fromtimestamp(mktime(item['updated_parsed']))
             except KeyError:
                 url = item['link']
-                update_time = datetime.fromtimestamp(mktime(item['published_parsed']))
+                try:
+                    update_time = datetime.fromtimestamp(mktime(item['published_parsed']))
+                except KeyError:
+                    update_time = None
             except TypeError:
                 # items are only links
                 url = item
@@ -70,11 +75,16 @@ class UrlList:
             except ex.DocumentExistsException:
                 counts['exist'] += 1
                 continue
+            except ex.UrlNotSupportedException:
+                counts['url_not_supported'] += 1
+                continue
             except ex.DomainNotSupportedException:
-                counts['not_supported'] += 1
+                counts['domain_not_supported'] += 1
                 continue
             except ex.GatherError:
                 counts['errors'] += 1
+                if raise_on_optional:
+                    raise
                 continue
             except ConnectionError:
                 counts['errors'] += 1
@@ -84,7 +94,7 @@ class UrlList:
                 continue
 
             if max_depth > depth:
-                inside_links = d.model.href_sources.value
+                inside_links = d.model.href_sources.value + d.model.side_links.value
                 self._inside_counts['total'] += len(inside_links)
                 # Gather internal links, but without updating existing documents
                 self._gather_links(inside_links, update_entries=False, max_depth=max_depth, depth=depth + 1)
@@ -117,13 +127,15 @@ class RssFeed(UrlList):
         self.entries = feed['entries']
 
     def harvest(self, update_entries: bool = True, max_depth=0, raise_on_optional=False, dump_result=False):
-        super(RssFeed, self).harvest(update_entries=update_entries, max_depth=max_depth)
+        self._gather_links(self.entries, update_entries=update_entries, max_depth=max_depth,
+                           raise_on_optional=raise_on_optional, dump_result=dump_result)
 
         logger.log('INFO_FEED_HARVEST_END', self.url, self._counts['gathered'], len(self.entries),
                    self._counts['exist'],
-                   self._counts['not_supported'], self._counts['errors'], self._inside_counts['gathered'],
-                   self._inside_counts['total'], self._inside_counts['exist'], self._inside_counts['not_supported'],
-                   self._inside_counts['errors'])
+                   self._counts['domain_not_supported'], self._counts['url_not_supported'],
+                   self._counts['errors'], self._inside_counts['gathered'],
+                   self._inside_counts['total'], self._inside_counts['exist'], self._inside_counts['domain_not_supported'],
+                   self._inside_counts['domain_not_supported'], self._inside_counts['errors'])
 
     def render_for_store(self):
         body = {

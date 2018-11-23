@@ -15,6 +15,7 @@ class Logger:
         'WARN_DOC_DELETED': 'Document "%{doc_id}" with URL %{url} is deleted.',
         'WARN_DOMAIN_MALFORMED': 'Domain of URL %{url} is malformed.',
         'WARN_DOMAIN_NOT_SUPPORTED': 'Domain %{domain} is currently not supported.',
+        'WARN_URL_NOT_ARTICLE': 'URL %{url} does not correspond to article format for this website.',
         'INFO_DOC_NOT_CHANGED': 'Document "%{doc_id}" with URL %{url} did not change after revision.',
         'WARN_ATTRIBUTE_PARSING_ERROR': 'Extraction of "%{attribute}" attribute for URL %{url} failed :'
                                         ' %{error_message}',
@@ -23,9 +24,18 @@ class Logger:
         'INFO_FEED_STORE_SUCCESS': 'Feed %{feed_url} was successfully indexed.',
         'INFO_FEED_UPDATE_SUCCESS': 'Feed %{feed_url} was successfully updated.',
         'INFO_FEED_HARVEST_END': 'Feed %{feed_url} gathered %{gathered} documents on %{total} (%{existed} '
-                                 'already up-to-date, %{unsupported} which domain was not supported, %{errors}'
+                                 'already up-to-date, %{domain_unsupported} which domain was not supported, '
+                                 '%{url_unsupported} which URL was not supported, %{errors}'
                                  ' whose parsing failed), and recursively gathered %{i_gathered} links on '
-                                 '%{i_total} (%{i_existed} already up-to-date, %{i_unsupported} which domain '
+                                 '%{i_total} (%{i_existed} already up-to-date, %{i_d_unsupported} which domain '
+                                 'was not supported, %{i_a_unsupported} which URL '
+                                 'was not supported, %{i_errors} whose parsing failed)',
+        'INFO_LIST_HARVEST_END': 'Provided URL list gathered %{gathered} documents on %{total} (%{existed} '
+                                 'already up-to-date, %{domain_unsupported} which domain was not supported, '
+                                 '%{url_unsupported} which URL was not supported, %{errors}'
+                                 ' whose parsing failed), and recursively gathered %{i_gathered} links on '
+                                 '%{i_total} (%{i_existed} already up-to-date, %{i_d_unsupported} which domain '
+                                 'was not supported, %{i_a_unsupported} which URL '
                                  'was not supported, %{i_errors} whose parsing failed)',
         'WARN_URL_INVALID': 'URL %{url} is invalid.',
         'WARN_FEED_UNAVAILABLE': 'Feed %{url} is unavailable with error code %{status}.'

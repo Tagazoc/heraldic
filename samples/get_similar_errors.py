@@ -9,13 +9,10 @@ import sys
 
 def main(argv):
     errors = i_s.get_similar_errors_urls(argv[0], argv[1])
-    print(len(errors))
-    urllist = UrlList()
-    urllist.entries = errors
-    urllist.harvest()
+    urllist = UrlList(errors)
+    urllist.harvest(dump_result=True)
 
 
 if __name__ == "__main__":
     main(sys.argv[1:])
-
 

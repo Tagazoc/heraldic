@@ -31,9 +31,15 @@ class InvalidUrlException(GatherError):
 
 
 class DomainNotSupportedException(GatherException):
-    def __init__(self, domain, log=True):
-        if log:
+    def __init__(self, domain, do_not_log=False):
+        if not do_not_log:
             logger.log('WARN_DOMAIN_NOT_SUPPORTED', domain)
+
+
+class UrlNotSupportedException(GatherException):
+    def __init__(self, url, do_not_log=False):
+        if not do_not_log:
+            logger.log('WARN_URL_NOT_ARTICLE', url)
 
 
 class DocumentNotFoundException(HeraldicException):
@@ -66,7 +72,7 @@ class MandatoryParsingException(ParsingException, GatherError):
     LOGGING_TEMPLATE = 'WARN_MANDATORY_PARSING_ERROR'
 
 
-class OptionalParsingException(ParsingException):
+class OptionalParsingException(ParsingException, GatherError):
     LOGGING_TEMPLATE = 'WARN_ATTRIBUTE_PARSING_ERROR'
 
 

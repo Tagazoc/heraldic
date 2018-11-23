@@ -6,6 +6,7 @@ Module implementing generic DocumentExtractor class.
 
 from typing import List, Optional
 import html
+import inspect
 from heraldic.models.document_model import DocumentModel
 from bs4 import BeautifulSoup
 from bs4.element import Tag
@@ -23,8 +24,8 @@ class GenericMedia(object):
         Generic class for attribute extraction from a document, should not be directly instanciated.
     """
     supported_domains = ['www.heraldic-project.org', 'hrldc.org']
-
     """The domains used in URLs of the selected media"""
+
     id = 'generic'
     display_name = 'Generic'
     unwanted_extensions = ['jpg', 'png', 'gif']
@@ -39,9 +40,30 @@ class GenericMedia(object):
         content = dm.content.render_for_display()
         self.html_soup = BeautifulSoup(content, self.parser)
         self.dm = dm
+
+        self._side_links = []
+        """ This list is used for extraction of 'side_links' attribute, which help to harvest plenty of articles 
+        without being real sources for an article. It is usually extracted in extract_href_sources function. """
+
         self._body_tag = None
+        """ Body backup, which can be reused for other attributes. """
+
         self._document_type = 'article'
-        """ Body backup, wich can be reused for other attributes. """
+        """ Document type : article, video, panorama... """
+
+    def check_article_url(self) -> bool:
+        # First URL is the final one
+        url = self.dm.urls.value[0]
+        if not self._check_article_url(url):
+            raise ex.UrlNotSupportedException(url)
+
+    @staticmethod
+    def _check_article_url(url: str) -> bool:
+        """
+        Check whether an URL may be associated with an article, based on its format.
+        :return: Whether its format fits the website usage of URLs for articles.
+        """
+        return True
 
     @classmethod
     def topmost_domains(cls):
@@ -143,7 +165,10 @@ class GenericMedia(object):
             try:
                 time_text = self.html_soup.find('time', attrs={'itemprop': 'datePublished'}).get('datetime')
             except AttributeError:
-                time_text = self.html_soup.find('time').get('datetime')
+                try:
+                    time_text = self.html_soup.find('time').get('datetime')
+                except AttributeError:
+                    time_text = self.html_soup.find('meta', attrs={'property': "og:article:published_time"}).get('content')
 
         return time_text
 
@@ -163,7 +188,11 @@ class GenericMedia(object):
                 try:
                     time_text = self.html_soup.find('time', attrs={'itemprop': 'dateModified'}).get('datetime')
                 except AttributeError:
-                    time_text = self.html_soup.find_all('time')[1].get('datetime')
+                    try:
+                        time_text = self.html_soup.find_all('time')[1].get('datetime')
+                    except AttributeError:
+                        time_text = self.html_soup.find('meta', attrs={'property': "og:article:modified_time"}).get(
+                            'content')
         except IndexError:
             # Should all fail, return None
             return None
@@ -269,6 +298,62 @@ class GenericMedia(object):
         """
         return False
 
+    def _extract_side_links(self) -> List[str]:
+        """
+        Use _side_links attribute, which is usually extracted in href_sources attribute, and compare its content with
+        URL format used for articles on the media website
+        :return:
+        """
+        return [url for url in self._side_links if self._check_article_url(url)]
+
+    def _exclude_hrefs(self, html_as: List, side_links=True, attribute_name: str='', attribute_value: str='',
+                       is_parent_attribute=False, tags: List[str]=None, regex: str='', only_internal_links=False):
+        """
+        Exclude local additional links (which are not really sources)
+        :param html_as: As to be filtered
+        :param attribute_name: Attribute of A which is targeted
+        :param attribute_value: Value targeted
+        :param is_parent_attribute: Test attribute and value on parent of A
+        :return:
+        """
+        removed_as = []
+        reg = re.compile(regex) if regex else None
+
+        for a in html_as:
+            if attribute_name:
+                try:
+                    tag = a
+                    if is_parent_attribute:
+                        tag = a.parent
+                    if attribute_value in tag[attribute_name]:
+                        removed_as.append(a)
+                        html_as.remove(a)
+                except KeyError:
+                    # No such attribute for <a> tag
+                    pass
+            if tags is not None:
+                tag = a.parent
+                if tag.name in tags:
+                    removed_as.append(a)
+                    html_as.remove(a)
+            if only_internal_links and not self._is_internal_link(a['href']):
+                removed_as.append(a)
+                html_as.remove(a)
+            if regex:
+                # If we only want internal links, throw away external ones
+
+                if not reg.match(a['href']):
+                    try:
+                        if reg.match(get_resource(a['href'])):
+                            removed_as.append(a)
+                            html_as.remove(a)
+                    except ex.InvalidUrlException:
+                        removed_as.append(a)
+                        html_as.remove(a)
+
+        if side_links:
+            self._side_links.extend(removed_as)
+
     @staticmethod
     def _exclude_hrefs_by_attribute(html_as: List, attribute: str, value: str, parent=False):
         """
@@ -350,3 +435,27 @@ class GenericMedia(object):
             raise ex.DateFormatParsingException(attribute_name, self.dm.urls.value[0], err)
         time = datetime.strptime(time_text, '%Y-%m-%dT%H:%M:%S')
         return time
+
+    def _try_multiple_implementations(self):
+        caller_func_name = inspect.stack()[1][3]
+        current_exc = None
+
+        i = 1
+        while True:
+            try:
+                func = getattr(self, caller_func_name + "_" + str(i))
+                i += 1
+            except AttributeError:
+
+                break
+            try:
+                result = func()
+            except Exception as err:
+                if current_exc:
+                    err.__cause__ = current_exc
+                current_exc = err
+                continue
+            if result is not None:
+                return result
+
+        raise current_exc

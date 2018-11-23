@@ -43,14 +43,14 @@ def query_yes_no(question, default: Optional[str]="yes"):
 
 
 if query_yes_no("You will lose all documents stored in elasticsearch. Continue?", None):
-    DocumentIndex.delete()
-    OldVersionIndex.delete()
-    ErrorIndex.delete()
-    SuggestionIndex.delete()
-    FeedsIndex.delete()
+    # DocumentIndex.delete()
+    # OldVersionIndex.delete()
+    # ErrorIndex.delete()
+    # SuggestionIndex.delete()
+    # FeedsIndex.delete()
 
-    DocumentIndex.create()
-    OldVersionIndex.create()
-    ErrorIndex.create()
-    SuggestionIndex.create()
+    # DocumentIndex.create()
+    # OldVersionIndex.create()
+    # ErrorIndex.create()
+    # SuggestionIndex.create()
     FeedsIndex.create()

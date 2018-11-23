@@ -154,6 +154,13 @@ class KeywordListAttribute(KeywordAttribute):
             self.value.append(value)
         self.initialized = True
 
+    def insert(self, value):
+        if value in self.value:
+            # If it exists, remove it to ensure it is the first item
+            self.value.remove(value)
+        self.value.insert(0, value)
+        self.initialized = True
+
     @uninitialized_display_wrapper
     def render_for_display(self):
         return "\n".join(self.value)
@@ -166,12 +173,19 @@ class KeywordListAttribute(KeywordAttribute):
 class UrlListAttribute(KeywordListAttribute):
     UNIQUE_URL_REGEX = re.compile(r'^https?://(.*?)/?$')
 
-    def append(self, value):
+    def _url_exists(self, value):
         unique_url = self.UNIQUE_URL_REGEX.sub('\1', value)
         url_exists = [existing_url for existing_url in self.value
                       if self.UNIQUE_URL_REGEX.sub('\1', existing_url) == unique_url]
-        if not url_exists:
+        return url_exists
+
+    def append(self, value):
+        if not self._url_exists(value) :
             super(UrlListAttribute, self).append(value)
+
+    def insert(self, value):
+        if not self._url_exists(value) :
+            super(UrlListAttribute, self).insert(value)
 
 
 class DateAttribute(Attribute):
