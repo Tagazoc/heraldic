@@ -11,7 +11,6 @@ from time import mktime
 from heraldic.misc.logging import logger
 from heraldic.misc.functions import get_truncated_url
 from requests.exceptions import RequestException
-from copy import copy
 
 
 class UrlList:
@@ -28,7 +27,14 @@ class UrlList:
             'errors': 0
         }
 
-        self._inside_counts = copy(self._counts)
+        self._inside_counts = {
+            'gathered': 0,
+            'total': 0,
+            'exist': 0,
+            'domain_not_supported': 0,
+            'url_not_supported': 0,
+            'errors': 0
+        }
 
     def harvest(self, update_entries=True, max_depth=0, raise_on_optional=False, dump_result=False):
         self._gather_links(self.entries, update_entries=update_entries, max_depth=max_depth,
@@ -159,7 +165,7 @@ class RssFeed(UrlList):
 class UrlFile(UrlList):
     def __init__(self, file_name):
         with open(file_name, 'r') as f:
-            super(UrlFile, self).__init__(f.readlines())
+            super(UrlFile, self).__init__(f.read().splitlines())
 
 
 class FeedHarvester:
