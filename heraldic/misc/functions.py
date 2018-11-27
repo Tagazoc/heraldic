@@ -65,3 +65,12 @@ def get_truncated_url(url):
         return protocol_scheme + match.group(2) + match.group(3)
     except AttributeError:
         raise InvalidUrlException(url)
+
+
+def get_minimal_url_regex(url):
+    try:
+        match = _match_url(url)
+
+        return 'https?://' + re.escape(match.group(2)) + re.escape(match.group(3))
+    except AttributeError:
+        raise InvalidUrlException(url, do_not_log=True)
