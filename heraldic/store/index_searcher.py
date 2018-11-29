@@ -10,7 +10,6 @@ from elasticsearch.exceptions import NotFoundError
 from heraldic.models.document_model import DocumentModel, OldDocumentModel
 from typing import List, Generator
 import elasticsearch.helpers
-from heraldic.misc.functions import get_minimal_url_regex
 
 
 def handle_connection_errors(decorated):
@@ -79,16 +78,14 @@ def search_models(q=None, body_query=None, limit: int=0) -> Generator[DocumentMo
 
 
 def search_model_by_url(url: str) -> DocumentModel:
-    minimal_url_regex = get_minimal_url_regex(url)
-    hits = _search_query({'regexp': {'urls': minimal_url_regex}}, terminate_after=1)
+    hits = _search_query({'match': {'urls': url}}, terminate_after=1)
     for hit in _generate_doc_models(hits):
         return hit
     raise ex.DocumentNotFoundException
 
 
 def search_error_id_by_url(url: str) -> str:
-    minimal_url_regex = get_minimal_url_regex(url)
-    hits = _search_query({'regexp': {'urls': minimal_url_regex}}, index_class=ErrorIndex,
+    hits = _search_query({'match': {'urls': url}}, index_class=ErrorIndex,
                          terminate_after=1)
     # Return first element's id, if no element return None
     try:
