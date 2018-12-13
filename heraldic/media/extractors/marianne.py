@@ -4,18 +4,23 @@
 Marianne website extractor implementation.
 """
 
-from heraldic.media.generic_media import GenericMedia
+from heraldic.media.generic_media import GenericMedia, GenericMediaExtractor
 from copy import copy
 
 
 class Marianne(GenericMedia):
     """
-    Class used for extracting items from french media "Marianne".
+    Class used for french media "Marianne".
     """
     supported_domains = ['www.marianne.net']
     id = 'marianne'
     display_name = 'Marianne'
 
+
+class MarianneExtractor(GenericMediaExtractor):
+    """
+    Class used for extracting items from french media "Marianne".
+    """
     def _extract_body(self):
         content_div = copy(self.html_soup).find('div', attrs={'class': 'chapo_body_wrapper'})
         [div.decompose() for div in content_div.find_all('div', attrs={'class': 'read-more-wysiwyg'})]

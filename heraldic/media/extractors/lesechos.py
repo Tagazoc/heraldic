@@ -4,17 +4,23 @@
 Les Echos website extractor implementation.
 """
 
-from heraldic.media.generic_media import GenericMedia
+from heraldic.media.generic_media import GenericMedia, GenericMediaExtractor
 from copy import copy
 
 
 class LesEchos(GenericMedia):
     """
-    Class used for extracting items from french media "Les Echos".
+    Class used for french media "Les Echos".
     """
     supported_domains = ['www.lesechos.fr']
     id = 'les_echos'
     display_name = 'Les Echos'
+
+
+class LesEchosExtractor(GenericMediaExtractor):
+    """
+    Class used for extracting items from french media "Les Echos".
+    """
 
     def _extract_body(self):
         soup_copy = copy(self.html_soup)

@@ -4,18 +4,23 @@
 Fdesouche website extractor implementation.
 """
 
-from heraldic.media.generic_media import GenericMedia
+from heraldic.media.generic_media import GenericMedia, GenericMediaExtractor
 from copy import copy
 
 
 class Fdesouche(GenericMedia):
     """
-    Class used for extracting items from french media "fdesouche".
+    Class used for french media "fdesouche".
     """
     supported_domains = ['www.fdesouche.com']
     id = 'fdesouche'
     display_name = 'Fdesouche'
 
+
+class FdesoucheExtractor(GenericMediaExtractor):
+    """
+    Class used for extracting items from french media "fdesouche".
+    """
     def _extract_body(self):
         content_div = copy(self.html_soup).find('div', attrs={'id': 'content-area'})
 

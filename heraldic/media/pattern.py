@@ -4,17 +4,25 @@
  website extractor implementation.
 """
 
-from heraldic.media.generic_media import GenericMedia
+from heraldic.media.generic_media import GenericMedia, GenericMediaExtractor
 import re
 
 
 class MediaName(GenericMedia):
     """
-    Class used for extracting items from media "".
+    Class used for media "".
     """
     supported_domains = ['']
     id = ''
     display_name = ''
+
+
+class MediaNameExtractor(GenericMediaExtractor):
+    """
+    Class used for extracting items from media "".
+    """
+    def check_extraction(self):
+        return self.html_soup.find('div', attrs={'itemprop': 'articleBody'}) is not None
 
     def _extract_body(self):
         return self.html_soup.find('div', attrs={'itemprop': 'articleBody'})

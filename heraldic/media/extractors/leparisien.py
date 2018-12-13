@@ -4,18 +4,23 @@
 Le Parisien's website extractor implementation.
 """
 
-from heraldic.media.generic_media import GenericMedia
+from heraldic.media.generic_media import GenericMedia, GenericMediaExtractor
 import re
 
 
 class LeParisien(GenericMedia):
     """
-    Class used for extracting items from french media "Le Parisien".
+    Class used for french media "Le Parisien".
     """
     supported_domains = ['www.leparisien.fr']
     id = 'le_parisien'
     display_name = 'Le Parisien'
 
+
+class LeParisienExtractor(GenericMediaExtractor):
+    """
+    Class used for extracting items from french media "Le Parisien".
+    """
     def _extract_body(self):
         return self.html_soup.find('div', attrs={'class': 'article-full__body-content'})
 

@@ -4,19 +4,24 @@
 Le Figaro website extractor implementation.
 """
 
-from heraldic.media.generic_media import GenericMedia
+from heraldic.media.generic_media import GenericMedia, GenericMediaExtractor
 from copy import copy
 import re
 
 
 class LeFigaro(GenericMedia):
     """
-    Class used for extracting items from french media "Le Figaro".
+    Class used for french media "Le Figaro".
     """
     supported_domains = ['www.lefigaro.fr']
     id = 'le_figaro'
     display_name = 'Le Figaro'
 
+
+class LeFigaroExtractor(GenericMediaExtractor):
+    """
+    Class used for extracting items from french media "Le Figaro".
+    """
     def _extract_body(self):
         content_div = copy(self.html_soup).find('div', attrs={'class': 'fig-content__body'}).extract()
         bs = content_div.find_all('b')

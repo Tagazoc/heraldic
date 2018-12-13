@@ -6,6 +6,7 @@
 import re
 from functools import lru_cache
 from heraldic.misc.exceptions import InvalidUrlException
+from typing import Tuple
 
 
 # Regex based on dperini's https://gist.github.com/dperini/729294
@@ -55,13 +56,12 @@ def get_resource(url, do_not_log_on_error=False):
         raise InvalidUrlException(url, do_not_log=do_not_log_on_error)
 
 
-def get_truncated_url(url):
+def get_truncated_url(url) -> Tuple[str, str]:
     try:
         match = _match_url(url)
 
         # Replace protocol scheme if not specified
         protocol_scheme = 'http://' if len(match.group(1)) < 6 else match.group(1)
-
-        return protocol_scheme + match.group(2) + match.group(3)
+        return protocol_scheme, match.group(2) + match.group(3)
     except AttributeError:
         raise InvalidUrlException(url)

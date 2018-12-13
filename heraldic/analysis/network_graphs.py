@@ -153,7 +153,7 @@ def _retrieve_recursive_sources(model, include_other_domains=False, depth=0, ini
             continue
         url_dict = {}
         try:
-            source = known_media.get_media_by_domain(source, is_subdomain=True, do_not_log=True).display_name
+            source = known_media.get_media_class_by_domain(source, is_subdomain=True, do_not_log=True)[0].display_name
 
             if initial_media_name == source:
                 continue
@@ -219,7 +219,7 @@ def _get_media_sources(media_ids, include_other_domains=False) -> dict:
                     # Invalid URL
                     continue
                 try:
-                    source = known_media.get_media_by_domain(source, is_subdomain=True, log_failure=False).display_name
+                    source = known_media.get_media_class_by_domain(source, is_subdomain=True, log_failure=False).display_name
                 except ex.DomainNotSupportedException:
                     if not include_other_domains:
                         continue

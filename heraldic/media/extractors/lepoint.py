@@ -4,17 +4,23 @@
 Le Point website extractor implementation.
 """
 
-from heraldic.media.generic_media import GenericMedia
+from heraldic.media.generic_media import GenericMedia, GenericMediaExtractor
 import re
 
 
 class LePoint(GenericMedia):
     """
-    Class used for extracting items from media "".
+    Class used for media "Le Point".
     """
     supported_domains = ['www.lepoint.fr']
     id = 'le_point'
     display_name = 'Le Point'
+
+
+class LePointExtractor(GenericMediaExtractor):
+    """
+    Class used for extracting items from french media "Le Point".
+    """
 
     def _extract_body(self):
         return self.html_soup.find('div', attrs={'class': 'art-text'})

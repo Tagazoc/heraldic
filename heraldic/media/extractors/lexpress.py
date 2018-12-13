@@ -4,18 +4,23 @@
 L'express website extractor implementation.
 """
 
-from heraldic.media.generic_media import GenericMedia
+from heraldic.media.generic_media import GenericMedia, GenericMediaExtractor
 import re
 
 
 class LExpress(GenericMedia):
     """
-    Class used for extracting items from french media "L'Express".
+    Class used for french media "L'Express".
     """
     supported_domains = ['www.lexpress.fr', 'lexpansion.lexpress.fr']
     id = 'lexpress'
     display_name = 'L\'Express'
 
+
+class LExpressExtractor(GenericMediaExtractor):
+    """
+    Class used for extracting items from french media "L'Express".
+    """
     def _extract_body(self):
         return self.html_soup.article.find('div', attrs={'class': 'article_container'})
 

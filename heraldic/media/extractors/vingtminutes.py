@@ -4,18 +4,23 @@
 20 minutes website extractor implementation.
 """
 
-from heraldic.media.generic_media import GenericMedia
+from heraldic.media.generic_media import GenericMedia, GenericMediaExtractor
 from copy import copy
 
 
 class VingtMinutes(GenericMedia):
     """
-    Class used for extracting items from french media "20 Minutes".
+    Class used for french media "20 Minutes".
     """
     supported_domains = ['www.20minutes.fr']
     id = '20minutes'
     display_name = '20 Minutes'
 
+
+class VingtMinutesExtractor(GenericMediaExtractor):
+    """
+    Class used for extracting items from french media "20 Minutes".
+    """
     def _extract_body(self):
         content_div = copy(self.html_soup).article.find('div', attrs={'class': 'content'}).extract()
         try:

@@ -20,7 +20,6 @@ config = {
 }
 app = create_app(config)
 app_client = app.test_client()
-url = doc_dict['urls']
 
 
 def test_url_submit():
@@ -98,8 +97,8 @@ def test_document_error():
     Test malformed document gathering from a slightly different file with parsing error. Event though document will be
     updated, erroneous attribute will not change. Error will be stored in specific index.
     """
-    d = Document(url, doc_id=update_doc_dict['id'])
-    d.gather(update=True, filepath='tests/media/article_liberation.htm')
+    d = Document(url, doc_id=update_doc_dict['id'], filepath='tests/media/article_liberation.htm')
+    d.gather(update=True)
 
     del d
 
@@ -148,7 +147,6 @@ def test_document_deletion():
     Deletion of the document, and its attached objects : suggestions, errors (should not be) and old versions.
     """
     d = Document(url)
-    d.retrieve_from_url()
     d.retrieve_old_versions()
     d.delete()
 

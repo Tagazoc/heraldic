@@ -6,7 +6,7 @@ Class used to know which media are supported and which domain.
 
 from typing import Set
 from heraldic.media import extractors
-from heraldic.media.generic_media import GenericMedia
+from heraldic.media.generic_media import GenericMedia, GenericMediaExtractor
 from heraldic.misc.exceptions import DomainNotSupportedException
 import pkgutil
 import inspect
@@ -24,7 +24,7 @@ class KnownMedia(object):
             if media.id == media_name:
                 return media
 
-    def get_media_by_domain(self, domain, is_subdomain=False, log_failure=True) -> GenericMedia:
+    def get_media_class_by_domain(self, domain, is_subdomain=False, log_failure=True) -> GenericMedia:
         for media_class in self.media_classes:
             if domain in media_class.supported_domains:
                 return media_class
@@ -50,8 +50,9 @@ class KnownMedia(object):
             module = importer.find_module(modname).load_module(modname)
             # Get classes defined in module, and add them to media_classes attribute
             classes = inspect.getmembers(module, inspect.isclass)
-            extractor_classes = [class_[1] for class_ in classes if class_[1].__module__.endswith(modname)]
-            self.media_classes = self.media_classes.union(extractor_classes)
+            module_classes = [class_[1] for class_ in classes if class_[1].__module__.endswith(modname)]
+            self.media_classes = self.media_classes.union([class_ for class_ in module_classes
+                                                           if issubclass(class_, GenericMedia)])
 
 
 known_media = KnownMedia()

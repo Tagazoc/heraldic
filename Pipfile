@@ -24,6 +24,7 @@ matplotlib = "*"
 "html5lib" = "*"
 wordcloud = "*"
 numpy = "*"
+pytest-pycharm = "*"
 
 [dev-packages]
 

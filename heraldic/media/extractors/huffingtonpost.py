@@ -4,18 +4,23 @@
 Huffigton Post website extractor implementation.
 """
 
-from heraldic.media.generic_media import GenericMedia
+from heraldic.media.generic_media import GenericMedia, GenericMediaExtractor
 from copy import copy
 
 
 class HuffingtonPost(GenericMedia):
     """
-    Class used for extracting items from french media "Huffington Post".
+    Class used for media "Huffington Post".
     """
     supported_domains = ['www.huffingtonpost.fr']
     id = 'huffington_post'
     display_name = 'Huffington Post'
 
+
+class HuffingtonPostExtractor(GenericMediaExtractor):
+    """
+    Class used for extracting items from media "Huffington Post" in french langugage.
+    """
     def _extract_body(self):
         content_div = copy(self.html_soup).find('div', attrs={'class': 'post-contents'})
         try:

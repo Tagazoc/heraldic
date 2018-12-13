@@ -10,7 +10,7 @@ from heraldic.models.document_model import DocumentModel
 from typing import List
 import heraldic.misc.exceptions as ex
 from heraldic.misc.logging import logger
-from heraldic.misc.functions import get_domain, get_truncated_url
+from heraldic.misc.functions import get_domain
 from heraldic.analysis.text_analyzer import ta
 from heraldic.misc.config import config
 import itertools
@@ -20,23 +20,30 @@ class Document(object):
     """
     Class representing a Document through its way through Heraldic.
     """
-    def __init__(self, url: str='', doc_id: str=None):
+    def __init__(self, url: str='', doc_id: str=None, filepath: str=''):
         self.model: DocumentModel = DocumentModel()
         self.old_versions: List[DocumentModel] = []
-        self.url = self._check_and_truncate_url(url) if url else ''
+        self.url = ''
+        if url:
+            self._check_domain_support(url)
+            self.url = url
         self.doc_id = doc_id
-        # TODO sortir l'id du model ?
+        self.filepath = filepath
+
         if doc_id:
             try:
                 self._retrieve()
             except ex.DocumentNotFoundException:
                 self.retrieve_url_from_parse_error()
+                self.model = DocumentModel()
         elif url:
             try:
+                # TODO On se débrouille pour virer le protocole lorsqu'on vérifie/stocke. Du coup faire un script qui
+                # met à jour toutes les URL
                 self.retrieve_from_url()
             except ex.DocumentNotFoundException:
                 self.retrieve_id_from_parse_error()
-        self.extractor = None
+                self.model = DocumentModel()
 
     @classmethod
     def from_model(cls, model):
@@ -45,45 +52,52 @@ class Document(object):
         doc.url = model.urls.value[0]
         return doc
 
-    def gather(self, update_time=None, update: bool=False, filepath: str= '', raise_on_optional=False):
+    def gather(self, update_time=None, update: bool=False, raise_on_optional=False):
         """
         Gather a document contents from an url, parse it and store or update it.
         :param update_time: Update time (in rss feed) to avoid gathering if up-to-date
         :param update: disable existence check, in order to override document
-        :param filepath: If document is gathered from a file, file path.
         :param raise_on_optional: Raise exception on optional parsing if encountered
         """
         if self.model.initialized:
             # It is an update, is it already up-to-date ? Unless override flag
             if not update and (not update_time or self._is_uptodate(update_time)):
                 raise ex.DocumentExistsException(self.url)
-            updated_model = DocumentModel()
-            if filepath:
-                updated_model.gather_from_file(self.url, filepath)
-            else:
-                final_url = updated_model.gather_from_url(self.url)
-                self.model.urls.insert(self._check_and_truncate_url(final_url))
-            self._extract_fields(updated_model, raise_on_optional)
-            if config['DEFAULT'].getboolean('extract_words'):
-                updated_model.words.update(ta.extract_words(updated_model.body.value))
+
+            updated_model = self._fetch_and_extract(raise_on_optional=raise_on_optional)
             self.update_from_model(updated_model)
             logger.log('INFO_DOC_UPDATE_SUCCESS', self.url)
         else:
-            if filepath:
-                self.model.gather_from_file(self.url, filepath)
-            else:
-                final_url = self.model.gather_from_url(self.url)
-                self.model.urls.insert(self._check_and_truncate_url(final_url))
-
-            try:
-                self._extract_fields(raise_on_optional=raise_on_optional)
-            except ex.MandatoryParsingException:
-                self._store_failed_parsing_error()
-                raise
-            if config['DEFAULT'].getboolean('extract_words'):
-                self.model.words.update(ta.extract_words(self.model.body.value))
+            # If URL was a redirection, try to retrieve it aswell
+            model = self._fetch_and_extract(raise_on_optional=raise_on_optional)
+            if len(model.urls.value) > 1:
+                # If it already exists, update it
+                try:
+                    self.retrieve_from_url()
+                    self.update_from_model(model)
+                    logger.log('INFO_DOC_UPDATE_SUCCESS', self.url)
+                    return
+                except ex.DocumentNotFoundException:
+                    self.retrieve_id_from_parse_error()
+            self.model = model
             self._store()
             logger.log('INFO_DOC_STORE_SUCCESS', self.url)
+
+    def _fetch_and_extract(self, raise_on_optional=False) -> DocumentModel:
+        model = DocumentModel()
+        if self.filepath:
+            model.gather_from_file(self.url, self.filepath)
+        else:
+            model.gather_from_url(self.url)
+            self._check_domain_support(model.final_url)
+        try:
+            self._extract_fields(model=model, raise_on_optional=raise_on_optional)
+        except ex.MandatoryParsingException:
+            self._store_failed_parsing_error(model)
+            raise
+        if config['DEFAULT'].getboolean('extract_words'):
+            model.words.update(ta.extract_words(model.body.value))
+        return model
 
     def _extract_fields(self, model=None, raise_on_optional=False):
         """
@@ -91,11 +105,17 @@ class Document(object):
         :return:
         """
         model = model if model is not None else self.model
-        if not self.extractor:
-            extractor = known_media.get_media_by_domain(get_domain(self.url))
-            self.extractor = extractor(model)
-        self.extractor.check_article_url()
-        self.extractor.extract_fields(raise_on_optional=raise_on_optional)
+
+        media_class = known_media.get_media_class_by_domain(get_domain(self.url))
+        if not media_class.is_url_article(self.url):
+            raise ex.UrlNotSupportedException(self.url)
+        # Process each extractor, finishing with those set as "default"
+        for extractor_class in sorted(media_class.get_extractors(), key=lambda t: 1 if t.default_extractor else 0):
+            extractor = extractor_class(model)
+            if extractor.check_extraction():
+                extractor.extract_fields(raise_on_optional=raise_on_optional)
+                return
+        raise ex.UrlNotSupportedException(self.url)
 
     def _store(self):
         """
@@ -179,8 +199,8 @@ class Document(object):
                     # Next model version will be used as next occurrence of this attribute
                     counter_dict[k] = model.version_no.value + 1
 
-    def _store_failed_parsing_error(self):
-        index_storer.store_failed_parsing_error(self.model, self.doc_id)
+    def _store_failed_parsing_error(self, model: DocumentModel):
+        index_storer.store_failed_parsing_error(model, self.doc_id)
 
     def delete(self):
         """
@@ -208,14 +228,12 @@ class Document(object):
         return display_str
 
     @staticmethod
-    def _check_and_truncate_url(url) -> str:
+    def _check_domain_support(url) -> str:
         """
-        Check URL syntax.
+        Check URL syntax, then remove protocol scheme, port and URL resource.
         :return: Result of the check.
         """
         domain = get_domain(url)
 
         # Validate domain is supported
-        known_media.get_media_by_domain(domain)
-
-        return get_truncated_url(url)
+        known_media.get_media_class_by_domain(domain)

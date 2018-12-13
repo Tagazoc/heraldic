@@ -4,7 +4,7 @@
 L'Obs website extractor implementation.
 """
 
-from heraldic.media.generic_media import GenericMedia
+from heraldic.media.generic_media import GenericMedia, GenericMediaExtractor
 import re
 import json
 from copy import copy
@@ -12,12 +12,17 @@ from copy import copy
 
 class LObs(GenericMedia):
     """
-    Class used for extracting items from french media "L'Obs".
+    Class used for french media "L'Obs".
     """
     supported_domains = ['www.nouvelobs.com']
     id = 'l_obs'
     display_name = 'L\'Obs'
 
+
+class LObsExtractor(GenericMediaExtractor):
+    """
+    Class used for extracting items from french media "L'Obs".
+    """
     def _extract_body(self):
         content_div = copy(self.html_soup).find('div', attrs={'id': 'ObsArticle-body'})
         [readmore_a.decompose() for readmore_a in content_div.find_all('a', attrs={'class': 'lire'})]

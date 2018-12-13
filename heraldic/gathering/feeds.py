@@ -68,11 +68,11 @@ class UrlList:
 
             d = None
             try:
-                url = get_truncated_url(url)
+                protocol, url = get_truncated_url(url)
                 if url in self.gathered_urls:
                     continue
                 self.gathered_urls = self.gathered_urls.union([url])
-                d = Document(url)
+                d = Document(protocol + url)
                 d.gather(update_time=update_time, update=update_entries, raise_on_optional=raise_on_optional)
                 if dump_result:
                     print(str(d))

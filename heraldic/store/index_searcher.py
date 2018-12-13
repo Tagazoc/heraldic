@@ -8,6 +8,7 @@ from heraldic.store.elastic import es, DocumentIndex, OldVersionIndex, ErrorInde
 import heraldic.misc.exceptions as ex
 from elasticsearch.exceptions import NotFoundError
 from heraldic.models.document_model import DocumentModel, OldDocumentModel
+import heraldic.misc.functions as functions
 from typing import List, Generator
 import elasticsearch.helpers
 
@@ -43,7 +44,8 @@ def retrieve_model(doc_id: str) -> DocumentModel:
 
 
 def retrieve_model_from_url(url: str) -> DocumentModel:
-    dm = search_model_by_url(url)
+    protocol, clean_url = functions.get_truncated_url(url)
+    dm = search_model_by_url(clean_url)
 
     dm.set_errors_from_store(retrieve_errors(dm.id.value))
 
@@ -78,15 +80,17 @@ def search_models(q=None, body_query=None, limit: int=0) -> Generator[DocumentMo
 
 
 def search_model_by_url(url: str) -> DocumentModel:
-    hits = _search_query({'match': {'urls': url}}, terminate_after=1)
+    protocol, clean_url = functions.get_truncated_url(url)
+    hits = _search_query({'match': {'urls': clean_url}}, terminate_after=1)
     for hit in _generate_doc_models(hits):
         return hit
     raise ex.DocumentNotFoundException
 
 
 def search_error_id_by_url(url: str) -> str:
-    hits = _search_query({'match': {'urls': url}}, index_class=ErrorIndex,
-                         terminate_after=1)
+    protocol, clean_url = functions.get_truncated_url(url)
+    hits = _search_query({'match': {'urls': clean_url}},
+                         index_class=ErrorIndex, terminate_after=1)
     # Return first element's id, if no element return None
     try:
         hit = next(hits)
@@ -153,7 +157,9 @@ def check_url_existence(url: str) -> bool:
     :param url: URL of the potential document
     :return: True if a document with this url exists in 'docs' index, else False
     """
-    hits = _search_query({'match': {'urls': url}}, terminate_after=1, _source=False)
+    protocol, clean_url = functions.get_truncated_url(url)
+    hits = _search_query({'match': {'urls': clean_url}},
+                         terminate_after=1, _source=False)
     try:
         next(hits)
         return True
@@ -162,8 +168,9 @@ def check_url_existence(url: str) -> bool:
 
 
 def check_url_uptodate(url: str, update_time) -> bool:
+    protocol, clean_url = functions.get_truncated_url(url)
     query = {
-        'match': {'urls': url},
+        'match': {'urls': clean_url},
         'range': {
             'update_time': {
                 "gte": update_time

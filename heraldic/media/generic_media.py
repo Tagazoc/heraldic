@@ -7,6 +7,7 @@ Module implementing generic DocumentExtractor class.
 from typing import List, Optional
 import html
 import inspect
+import sys
 from heraldic.models.document_model import DocumentModel
 from bs4 import BeautifulSoup
 from bs4.element import Tag
@@ -21,15 +22,49 @@ import re
 
 class GenericMedia(object):
     """
-        Generic class for attribute extraction from a document, should not be directly instanciated.
+        Generic class for a media, should not be directly instanciated.
     """
     supported_domains = ['www.heraldic-project.org', 'hrldc.org']
     """The domains used in URLs of the selected media"""
 
+    articles_regex = [r'.*']
+    _articles_compiled_regex = [re.compile(regex) for regex in articles_regex]
+    """A list of regexes which help recognizing whether an URL is an article or not"""
+
     id = 'generic'
     display_name = 'Generic'
+
+    @classmethod
+    def get_extractors(cls) -> List:
+        return [v for k, v in inspect.getmembers(sys.modules[cls.__module__], inspect.isclass)
+                if k != 'GenericMediaExtractor'and issubclass(v, GenericMediaExtractor)]
+
+    @classmethod
+    def is_url_article(cls, url):
+        """
+        Check whether an URL may be associated with an article, based on its format.
+        :param url: The URL to be tested
+        """
+        return any([regex.match(url) for regex in cls._articles_compiled_regex])
+
+    @classmethod
+    def topmost_domains(cls):
+        return [re.match(r'(?:.*\.)?([^.]+\.[^.]+)', domain).group(1) for domain in cls.supported_domains]
+
+    @classmethod
+    def get_document_count(cls) -> int:
+        return index_searcher.count(q='media:' + cls.id)
+
+
+class GenericMediaExtractor(object):
+    """
+        Generic class for attribute extraction from a document, should not be directly instanciated.
+    """
     unwanted_extensions = ['jpg', 'png', 'gif']
     parser = 'html.parser'
+    _supported_domains = []
+    default_extractor = True
+    test_url = ''
 
     def __init__(self, dm: DocumentModel) -> None:
         """
@@ -51,27 +86,23 @@ class GenericMedia(object):
         self._document_type = 'article'
         """ Document type : article, video, panorama... """
 
-    def check_article_url(self) -> bool:
-        # First URL is the final one
-        url = self.dm.urls.value[0]
-        if not self._check_article_url(url):
-            raise ex.UrlNotSupportedException(url)
+    @property
+    def _media_class(self):
+        return [v for k, v in inspect.getmembers(sys.modules[self.__module__], inspect.isclass)
+                if k != 'GenericMedia' and issubclass(v, GenericMedia)][0]
 
-    @staticmethod
-    def _check_article_url(url: str) -> bool:
+    @property
+    def supported_domains(self):
+        if self._supported_domains:
+            return self._supported_domains
+        return self._media_class.supported_domains
+
+    def check_extraction(self) -> bool:
         """
-        Check whether an URL may be associated with an article, based on its format.
-        :return: Whether its format fits the website usage of URLs for articles.
+
+        :return:
         """
         return True
-
-    @classmethod
-    def topmost_domains(cls):
-        return [re.match(r'(?:.*\.)?([^.]+\.[^.]+)', domain).group(1) for domain in cls.supported_domains]
-
-    @classmethod
-    def get_document_count(cls) -> int:
-        return index_searcher.count(q='media:' + cls.id)
 
     def extract_fields(self, raise_on_optional=False):
         """
@@ -118,7 +149,7 @@ class GenericMedia(object):
         Function which returns media name attribute, in order to work with extract_fields function.
         :return: Media name
         """
-        return self.id
+        return self._media_class().id
 
     def _extract_title(self) -> str:
         """
@@ -229,10 +260,11 @@ class GenericMedia(object):
                 continue
             # Use first defined domain, should work "almost" every time
             try:
-                url = get_truncated_url(re.sub(r'^/([^/])', self.supported_domains[0] + r'/\1', href))
+                protocol, url = get_truncated_url(re.sub(r'^/([^/])', self.supported_domains[0] + r'/\1', href))
             except ex.InvalidUrlException:
                 continue
-            result.append(url)
+            # We let (for now) protocol in those URLS
+            result.append(protocol + url)
 
         # Only keep distinct values
         result = list(set(result))
@@ -304,7 +336,7 @@ class GenericMedia(object):
         URL format used for articles on the media website
         :return:
         """
-        return [url for url in self._side_links if self._check_article_url(url)]
+        return [url for url in self._side_links if self._media_class().is_url_article(url)]
 
     def _exclude_hrefs(self, html_as: List, side_links=True, attribute_name: str='', attribute_value: str='',
                        is_parent_attribute=False, tags: List[str]=None, regex: str='', only_internal_links=False):
@@ -435,27 +467,3 @@ class GenericMedia(object):
             raise ex.DateFormatParsingException(attribute_name, self.dm.urls.value[0], err)
         time = datetime.strptime(time_text, '%Y-%m-%dT%H:%M:%S')
         return time
-
-    def _try_multiple_implementations(self):
-        caller_func_name = inspect.stack()[1][3]
-        current_exc = None
-
-        i = 1
-        while True:
-            try:
-                func = getattr(self, caller_func_name + "_" + str(i))
-                i += 1
-            except AttributeError:
-
-                break
-            try:
-                result = func()
-            except Exception as err:
-                if current_exc:
-                    err.__cause__ = current_exc
-                current_exc = err
-                continue
-            if result is not None:
-                return result
-
-        raise current_exc

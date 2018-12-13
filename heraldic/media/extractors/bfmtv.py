@@ -4,18 +4,23 @@
 BFM TV website extractor implementation.
 """
 
-from heraldic.media.generic_media import GenericMedia
+from heraldic.media.generic_media import GenericMedia, GenericMediaExtractor
 import re
 
 
 class BfmTv(GenericMedia):
     """
-    Class used for extracting items from french media "BFM TV".
+    Class used for french media "BFM TV".
     """
     supported_domains = ['www.bfmtv.com']
     id = 'bfm_tv'
     display_name = 'BFM TV'
 
+
+class BfmTvExtractor(GenericMediaExtractor):
+    """
+    Class used for extracting items from french media "BFM TV".
+    """
     def _extract_body(self):
         return self.html_soup.find('div', attrs={'itemprop': 'articleBody'})
 

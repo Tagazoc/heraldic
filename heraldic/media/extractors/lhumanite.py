@@ -4,17 +4,22 @@
 "L'Humanité" website extractor implementation.
 """
 
-from heraldic.media.generic_media import GenericMedia
+from heraldic.media.generic_media import GenericMedia, GenericMediaExtractor
 
 
 class LHumanite(GenericMedia):
     """
-    Class used for extracting items from french media "L'Humanité".
+    Class used for french media "L'Humanité".
     """
     supported_domains = ['www.humanite.fr']
     id = 'l_humanite'
     display_name = 'L\'Humanité'
 
+
+class LHumaniteExtractor(GenericMediaExtractor):
+    """
+    Class used for extracting items from french media "L'Humanité".
+    """
     def _extract_body(self):
         return self.html_soup.find('div', attrs={'class': 'field-name-field-news-text'})
 

@@ -4,19 +4,24 @@
 France Info website extractor implementation.
 """
 
-from heraldic.media.generic_media import GenericMedia
+from heraldic.media.generic_media import GenericMedia, GenericMediaExtractor
 import re
 from copy import copy
 
 
 class FranceInfo(GenericMedia):
     """
-    Class used for extracting items from french media "France Info".
+    Class used for french media "France Info".
     """
     supported_domains = ['www.francetvinfo.fr']
     id = 'france_info'
     display_name = 'France Info'
 
+
+class FranceInfoExtractor(GenericMediaExtractor):
+    """
+    Class used for extracting items from french media "France Info".
+    """
     def _extract_body(self):
         content_div = copy(self.html_soup).find('div', attrs={'id': 'col-middle'})
         [aside.decompose() for aside in content_div.find_all('aside')]

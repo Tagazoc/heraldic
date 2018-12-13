@@ -4,18 +4,23 @@
 Europe 1 website extractor implementation.
 """
 
-from heraldic.media.generic_media import GenericMedia
+from heraldic.media.generic_media import GenericMedia, GenericMediaExtractor
 import re
 
 
 class Europe1(GenericMedia):
     """
-    Class used for extracting items from french media "Europe 1".
+    Class used for french media "Europe 1".
     """
     supported_domains = ['www.europe1.fr']
     id = 'europe_1'
     display_name = 'Europe 1'
 
+
+class Europe1Extractor(GenericMediaExtractor):
+    """
+    Class used for extracting items from french media "Europe 1".
+    """
     def _extract_body(self):
         return self.html_soup.find('div', attrs={'itemprop': 'articleBody'})
 

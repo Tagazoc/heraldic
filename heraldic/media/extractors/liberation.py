@@ -4,17 +4,24 @@
 Le Monde website extractor implementation.
 """
 
-from heraldic.media.generic_media import GenericMedia
+from heraldic.media.generic_media import GenericMedia, GenericMediaExtractor
 import re
 
 
 class Liberation(GenericMedia):
     """
-    Class used for extracting items from french media "Libération".
+    Class used for french media "Libération".
     """
     supported_domains = ['www.liberation.fr']
     id = 'liberation'
     display_name = 'Libération'
+
+
+class LiberationExtractor(GenericMediaExtractor):
+    """
+    Class used for extracting items from french media "Libération".
+    """
+    test_url = 'http://www.liberation.fr/france/2017/08/31/un-cadre-du-ps-en-soins-intensifs-apres-une-agression-par-un-depute-lrem_1593251'
 
     def _extract_body(self):
         return self.html_soup.find('div', attrs={'class': 'article-body'})

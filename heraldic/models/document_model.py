@@ -6,6 +6,7 @@ Module which implements DocumentModel class.
 
 from heraldic.models.attribute import Attribute, TextAttribute, KeywordListAttribute, KeywordAttribute,\
     DateAttribute, BooleanAttribute, IntegerAttribute, WordListAttribute, UrlListAttribute
+import heraldic.misc.functions as functions
 from collections import OrderedDict
 from copy import copy
 from typing import Dict, Optional
@@ -185,6 +186,10 @@ class DocumentModel(object):
     def has_errors(self):
         return not self.errors == {}
 
+    @property
+    def final_url(self):
+        return self.urls.value[0]
+
     def render_errors_for_store(self):
         errors_body = self.errors
         errors_body['media'] = self.attributes['media'].render_for_store()
@@ -205,7 +210,7 @@ class DocumentModel(object):
             if k in suggestions_dict.keys():
                 v.suggestions = suggestions_dict[k]
 
-    def gather_from_url(self, url: str) -> str:
+    def gather_from_url(self, url: str, force_protocol=''):
         """
         Gather document from an URL.
         :return: Final URL of the document.
@@ -218,18 +223,26 @@ class DocumentModel(object):
                    'Pragma': 'no-cache',
                    'Cache-Control': 'no-cache'
                    }
+        protocol, initial_url = functions.get_truncated_url(url)
+        if force_protocol:
+            protocol = force_protocol
         try:
-            r = requests.get(url, headers=headers)
+            r = requests.get(protocol + initial_url, headers=headers)
         except (ValueError, ConnectionError):
             raise
-        # Setting final URL (in case of redirection)
+        # Setting final URL (in case of redirection) in first position
         urls: KeywordListAttribute = self.attributes['urls']
-        urls.append(url)
+        # Remove protocol to avoid url confusion
+        protocol, final_url = functions.get_truncated_url(r.url)
+
+        urls.append(initial_url)
+        if final_url != initial_url:
+            urls.insert(final_url)
+
         r.encoding = 'utf-8'
         self.attributes['content'].value = r.text
 
         self._set_gather_attributes()
-        return r.url
 
     def gather_from_file(self, url: str, filepath: str):
         urls: KeywordListAttribute = self.attributes['urls']

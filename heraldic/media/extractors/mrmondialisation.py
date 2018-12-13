@@ -4,17 +4,22 @@
 Mr Mondialisation website extractor implementation.
 """
 
-from heraldic.media.generic_media import GenericMedia
+from heraldic.media.generic_media import GenericMedia, GenericMediaExtractor
 
 
 class MrMondialisation(GenericMedia):
     """
-    Class used for extracting items from french media "Mr Mondialisation".
+    Class used for french media "Mr Mondialisation".
     """
     supported_domains = ['mrmondialisation.org']
     id = 'MrMondialisation'
     display_name = 'Mr Mondialisation'
 
+
+class MrMondialisationExtractor(GenericMediaExtractor):
+    """
+    Class used for extracting items from french media "Mr Mondialisation".
+    """
     def _extract_body(self):
         return self.html_soup.article.find('div', attrs={'class': 'td-post-content'})
 
