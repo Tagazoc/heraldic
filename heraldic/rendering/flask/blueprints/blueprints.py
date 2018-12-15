@@ -33,7 +33,8 @@ def display_media():
     media_id = request.args.get('media_id')
     if not known_media.media_exists(media_id):
         abort(401)
-    hits_models = index_searcher.search_by_media(media_id)
+    hits_generator = index_searcher.search_by_media(media_id)
+    hits_models = [next(hits_generator) for _ in range(100)]
     return render_template('search.html', hits=hits_models)
 
 
