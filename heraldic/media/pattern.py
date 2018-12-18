@@ -21,7 +21,7 @@ class MediaNameExtractor(GenericMediaExtractor):
     """
     Class used for extracting items from media "".
     """
-    def check_extraction(self):
+    def _check_extraction(self):
         return self.html_soup.find('div', attrs={'itemprop': 'articleBody'}) is not None
 
     def _extract_body(self):

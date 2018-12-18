@@ -102,6 +102,12 @@ class GenericMediaExtractor(object):
 
         :return:
         """
+        try:
+            return self._check_extraction()
+        except Exception:
+            return False
+
+    def _check_extraction(self) -> bool:
         return True
 
     def extract_fields(self, raise_on_optional=False):

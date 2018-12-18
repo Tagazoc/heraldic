@@ -24,7 +24,7 @@ class LeMondeExtractor(GenericMediaExtractor):
     """
     default_extractor = True
 
-    def check_extraction(self):
+    def _check_extraction(self):
         return self.html_soup.article.find('div', attrs={'id': 'articleBody'}) is not None
 
     def _extract_body(self):
@@ -58,7 +58,7 @@ class LeMondeNewExtractor(GenericMediaExtractor):
     """
     Class used for extracting items from french media "Le Monde" for new article architecture (3rd trimeester of 2018).
     """
-    def check_extraction(self):
+    def _check_extraction(self):
         return self.html_soup.article.find('section', attrs={'class': 'article__content'}) is not None
 
     def _extract_body(self):
