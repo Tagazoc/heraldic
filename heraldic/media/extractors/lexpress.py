@@ -25,7 +25,10 @@ class LExpressExtractor(GenericMediaExtractor):
         return self.html_soup.article.find('div', attrs={'class': 'article_container'})
 
     def _extract_category(self):
-        html_category = self.html_soup.find('div', attrs={'class': 'article_category'}).find('a').text
+        try:
+            html_category = self.html_soup.find('div', attrs={'class': 'article_category'}).find('a').text
+        except AttributeError:
+            html_category = self.html_soup.find('ul', attrs={'class': 'list_inbl'}).find_all('li')[-1].find('span').text
         return html_category
 
     def _extract_href_sources(self):
