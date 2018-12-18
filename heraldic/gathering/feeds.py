@@ -54,9 +54,11 @@ class UrlList:
             try:
                 # items are feed entries
                 url = item['link']
-                update_time = datetime.fromtimestamp(mktime(item['updated_parsed']))
+                try:
+                    update_time = datetime.fromtimestamp(mktime(item['updated_parsed']))
+                except TypeError:
+                    update_time = None
             except KeyError:
-                url = item['link']
                 try:
                     update_time = datetime.fromtimestamp(mktime(item['published_parsed']))
                 except KeyError:
