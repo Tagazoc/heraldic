@@ -14,6 +14,7 @@ class LePoint(GenericMedia):
     """
     supported_domains = ['www.lepoint.fr']
     id = 'le_point'
+    articles_regex = [r'\.php/?$']
     display_name = 'Le Point'
 
 

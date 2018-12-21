@@ -14,6 +14,7 @@ class HuffingtonPost(GenericMedia):
     """
     supported_domains = ['www.huffingtonpost.fr']
     id = 'huffington_post'
+    articles_regex = [r'[0-9]{6}/?$']
     display_name = 'Huffington Post'
 
 

@@ -14,6 +14,7 @@ class LExpress(GenericMedia):
     """
     supported_domains = ['www.lexpress.fr', 'lexpansion.lexpress.fr']
     id = 'lexpress'
+    articles_regex = [r'\.html$']
     display_name = 'L\'Express'
 
 

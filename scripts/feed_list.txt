@@ -14,3 +14,4 @@ l_obs:http://www.nouvelobs.com/atom.xml
 l_humanite:https://www.humanite.fr/rss/actu.rss
 les_echos:https://www.lesechos.fr/rss/rss_une.xml
 fdesouche:http://www.fdesouche.com/feed
+marianne:https://www.marianne.net/rss.xml

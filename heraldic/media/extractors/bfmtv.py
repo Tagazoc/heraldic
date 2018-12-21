@@ -14,6 +14,7 @@ class BfmTv(GenericMedia):
     """
     supported_domains = ['www.bfmtv.com']
     id = 'bfm_tv'
+    articles_regex = [r'\.html$']
     display_name = 'BFM TV'
 
 

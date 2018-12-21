@@ -14,6 +14,7 @@ class VingtMinutes(GenericMedia):
     """
     supported_domains = ['www.20minutes.fr']
     id = '20minutes'
+    articles_regex = [r'/[0-9]+-[0-9]+']
     display_name = '20 Minutes'
 
 

@@ -13,6 +13,7 @@ class LHumanite(GenericMedia):
     """
     supported_domains = ['www.humanite.fr']
     id = 'l_humanite'
+    articles_regex = [r'/[a-z-0-9]+$']
     display_name = 'L\'Humanité'
 
 

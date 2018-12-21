@@ -15,6 +15,7 @@ class LeMonde(GenericMedia):
     """
     supported_domains = ['www.lemonde.fr']
     id = 'le_monde'
+    articles_regex = [r'\.html$']
     display_name = 'Le Monde'
 
 

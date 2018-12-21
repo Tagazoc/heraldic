@@ -37,9 +37,9 @@ class DomainNotSupportedException(GatherException):
 
 
 class UrlNotSupportedException(GatherException):
-    def __init__(self, url, do_not_log=False):
+    def __init__(self, url, final_url, do_not_log=False):
         if not do_not_log:
-            logger.log('WARN_URL_NOT_ARTICLE', url)
+            logger.log('WARN_URL_NOT_ARTICLE', url, final_url)
 
 
 class DocumentNotFoundException(HeraldicException):

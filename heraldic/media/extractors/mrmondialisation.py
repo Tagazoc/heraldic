@@ -13,6 +13,7 @@ class MrMondialisation(GenericMedia):
     """
     supported_domains = ['mrmondialisation.org']
     id = 'MrMondialisation'
+    articles_regex = [r'/[a-z-0-9]+$']
     display_name = 'Mr Mondialisation'
 
 

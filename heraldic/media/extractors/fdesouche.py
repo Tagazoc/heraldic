@@ -14,6 +14,7 @@ class Fdesouche(GenericMedia):
     """
     supported_domains = ['www.fdesouche.com']
     id = 'fdesouche'
+    articles_regex = [r'/[0-9]{6}']
     display_name = 'Fdesouche'
 
 

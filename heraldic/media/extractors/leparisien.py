@@ -14,6 +14,7 @@ class LeParisien(GenericMedia):
     """
     supported_domains = ['www.leparisien.fr']
     id = 'le_parisien'
+    articles_regex = [r'\.php/?$']
     display_name = 'Le Parisien'
 
 

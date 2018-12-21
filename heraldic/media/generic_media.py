@@ -28,7 +28,7 @@ class GenericMedia(object):
     """The domains used in URLs of the selected media"""
 
     articles_regex = [r'.*']
-    _articles_compiled_regex = [re.compile(regex) for regex in articles_regex]
+
     """A list of regexes which help recognizing whether an URL is an article or not"""
 
     id = 'generic'
@@ -45,7 +45,11 @@ class GenericMedia(object):
         Check whether an URL may be associated with an article, based on its format.
         :param url: The URL to be tested
         """
-        return any([regex.match(url) for regex in cls._articles_compiled_regex])
+        return any([regex.match(url) for regex in cls._articles_compiled_regex()])
+
+    @classmethod
+    def _articles_compiled_regex(cls):
+        return [re.compile(regex) for regex in cls.articles_regex]
 
     @classmethod
     def topmost_domains(cls):

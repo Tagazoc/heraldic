@@ -106,23 +106,28 @@ class Document(object):
         """
         model = model if model is not None else self.model
 
-        media_class = known_media.get_media_class_by_domain(get_domain(self.url))
-        if not media_class.is_url_article(self.url):
-            raise ex.UrlNotSupportedException(self.url)
+        media_class = known_media.get_media_class_by_domain(get_domain(model.final_url))
+        if not media_class.is_url_article(model.final_url):
+            if self.doc_id:
+                self._delete_error()
+            raise ex.UrlNotSupportedException(self.url, model.final_url)
         # Process each extractor, finishing with those set as "default"
         for extractor_class in sorted(media_class.get_extractors(), key=lambda t: 1 if t.default_extractor else 0):
             extractor = extractor_class(model)
             if extractor.check_extraction():
                 extractor.extract_fields(raise_on_optional=raise_on_optional)
                 return
-        raise ex.UrlNotSupportedException(self.url)
+        # URL is not supported, so delete the error if any
+        if self.doc_id:
+            self._delete_error()
+        raise ex.UrlNotSupportedException(self.url, model.final_url)
 
     def _store(self):
         """
         Store document contents.
         :return:
         """
-        self.model.id = index_storer.store(self.model, self.doc_id)
+        self.model.id.value = index_storer.store(self.model, self.doc_id)
 
     def _retrieve(self):
         """
@@ -136,6 +141,7 @@ class Document(object):
         Retrieve a document from its URL.
         """
         self.model = index_searcher.retrieve_model_from_url(self.url)
+        self.doc_id = self.model.id.value
 
     def retrieve_old_versions(self):
         """
@@ -209,6 +215,9 @@ class Document(object):
         """
         index_storer.delete(self.model, self.old_versions)
         logger.log('WARN_DOC_DELETED', self.model.id.value, self.url)
+
+    def _delete_error(self):
+        index_storer.delete_error(self.doc_id)
 
     def _is_uptodate(self, update_time: float):
         date = self.model.doc_update_time.value if self.model.doc_update_time.initialized \

@@ -14,6 +14,7 @@ class Liberation(GenericMedia):
     """
     supported_domains = ['www.liberation.fr']
     id = 'liberation'
+    articles_regex = [r'_[0-9]+$']
     display_name = 'Libération'
 
 

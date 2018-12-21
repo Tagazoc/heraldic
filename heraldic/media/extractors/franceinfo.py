@@ -15,6 +15,7 @@ class FranceInfo(GenericMedia):
     """
     supported_domains = ['www.francetvinfo.fr']
     id = 'france_info'
+    articles_regex = [r'\.html$']
     display_name = 'France Info'
 
 

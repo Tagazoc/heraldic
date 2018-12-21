@@ -14,6 +14,7 @@ class LesEchos(GenericMedia):
     """
     supported_domains = ['www.lesechos.fr']
     id = 'les_echos'
+    articles_regex = [r'\.php/?$']
     display_name = 'Les Echos'
 
 

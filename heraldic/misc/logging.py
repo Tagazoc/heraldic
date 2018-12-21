@@ -15,7 +15,8 @@ class Logger:
         'WARN_DOC_DELETED': 'Document "%{doc_id}" with URL %{url} is deleted.',
         'WARN_DOMAIN_MALFORMED': 'Domain of URL %{url} is malformed.',
         'WARN_DOMAIN_NOT_SUPPORTED': 'Domain %{domain} is currently not supported.',
-        'WARN_URL_NOT_ARTICLE': 'URL %{url} does not correspond to article format for this website.',
+        'WARN_URL_NOT_ARTICLE': 'URL %{url} (redirecting to %{final_url}) does not correspond to '
+                                'article format for this website.',
         'INFO_DOC_NOT_CHANGED': 'Document "%{doc_id}" with URL %{url} did not change after revision.',
         'WARN_ATTRIBUTE_PARSING_ERROR': 'Extraction of "%{attribute}" attribute for URL %{url} failed :'
                                         ' %{error_message}',
@@ -37,7 +38,7 @@ class Logger:
                                  '%{i_total} (%{i_existed} already up-to-date, %{i_d_unsupported} which domain '
                                  'was not supported, %{i_a_unsupported} which URL '
                                  'was not supported, %{i_errors} whose parsing failed)',
-        'WARN_URL_INVALID': 'URL %{url} is invalid.',
+        'WARN_URL_INVALID': 'URL %{url} (redirecting to %{final_url}) is invalid.',
         'WARN_FEED_UNAVAILABLE': 'Feed %{url} is unavailable with error code %{status}.'
     }
     LOG_TYPES = LOG_TYPES_DICT.keys()

@@ -14,6 +14,7 @@ class Europe1(GenericMedia):
     """
     supported_domains = ['www.europe1.fr']
     id = 'europe_1'
+    articles_regex = [r'[0-9]{6}$']
     display_name = 'Europe 1'
 
 

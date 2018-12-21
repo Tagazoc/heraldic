@@ -16,6 +16,7 @@ class LObs(GenericMedia):
     """
     supported_domains = ['www.nouvelobs.com']
     id = 'l_obs'
+    articles_regex = [r'\.html$']
     display_name = 'L\'Obs'
 
 
