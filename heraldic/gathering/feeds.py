@@ -41,8 +41,8 @@ class UrlList:
                            raise_on_optional=raise_on_optional, dump_result=dump_result)
 
         logger.log('INFO_LIST_HARVEST_END', self._counts['gathered'], len(self.entries),
-                   self._counts['exist'], self._counts['url_not_supported'],
-                   self._counts['domain_not_supported'], self._counts['errors'], self._inside_counts['gathered'],
+                   self._counts['exist'], self._counts['domain_not_supported'],
+                   self._counts['url_not_supported'], self._counts['errors'], self._inside_counts['gathered'],
                    self._inside_counts['total'], self._inside_counts['exist'], self._inside_counts['domain_not_supported'],
                    self._inside_counts['url_not_supported'], self._inside_counts['errors'])
 
@@ -176,6 +176,8 @@ class FeedHarvester:
 
     def retrieve_feeds(self, media_id=None):
         feeds_dicts = index_searcher.retrieve_feeds_dicts()
+        if media_id is not None:
+            feeds_dicts = [dic for dic in feeds_dicts if dic['_source']['media_id'] == media_id]
         self.feeds = [RssFeed(dic['_source']['url'], dic['_source']['media_id'],
                               dic['_source']['update_time'], dic['_id']) for dic in feeds_dicts]
 
