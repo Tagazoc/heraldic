@@ -24,6 +24,7 @@ class MarianneExtractor(GenericMediaExtractor):
     def _extract_body(self):
         content_div = copy(self.html_soup).find('div', attrs={'class': 'chapo_body_wrapper'})
         [div.decompose() for div in content_div.find_all('div', attrs={'class': 'read-more-wysiwyg'})]
+        return content_div
 
     def _extract_href_sources(self):
         html_as = self._body_tag.find_all('a')
