@@ -45,7 +45,7 @@ class GenericMedia(object):
         Check whether an URL may be associated with an article, based on its format.
         :param url: The URL to be tested
         """
-        return any([regex.match(url) for regex in cls._articles_compiled_regex()])
+        return any([regex.search(url) for regex in cls._articles_compiled_regex()])
 
     @classmethod
     def _articles_compiled_regex(cls):
