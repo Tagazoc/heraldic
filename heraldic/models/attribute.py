@@ -32,6 +32,7 @@ class Attribute(object):
                              }
     DEFAULT_VALUE = ""
     DEFAULT_INVALIDATION_TEXT = "Valeur incorrecte."
+    OPENAPI_SCHEMA = {'type': 'string'}
 
     def __init__(self, **kwargs) -> None:
         self.desc: str = kwargs['desc'] if 'desc' in kwargs else ""
@@ -123,6 +124,7 @@ class Attribute(object):
 class IntegerAttribute(Attribute):
     DEFAULT_STORE_MAPPING = {'type': 'short'}
     DEFAULT_VALUE = 0
+    OPENAPI_SCHEMA = {'type': 'integer'}
 
     def __init__(self, **kwargs):
         super(IntegerAttribute, self).__init__(**kwargs)
@@ -145,6 +147,7 @@ class KeywordAttribute(Attribute):
 
 class KeywordListAttribute(KeywordAttribute):
     DEFAULT_VALUE = []
+    OPENAPI_SCHEMA = {'type': 'array', 'items': {'type': 'string'}}
 
     def __init__(self, **kwargs):
         super(KeywordListAttribute, self).__init__(**kwargs)
@@ -217,6 +220,7 @@ class DateAttribute(Attribute):
 class BooleanAttribute(Attribute):
     DEFAULT_STORE_MAPPING = {'type': 'boolean'}
     DEFAULT_VALUE = False
+    OPENAPI_SCHEMA = {'type': 'boolean'}
 
     def __init__(self, **kwargs):
         super(BooleanAttribute, self).__init__(**kwargs)
@@ -236,6 +240,7 @@ class BooleanAttribute(Attribute):
 class NestedListAttribute(Attribute):
     DEFAULT_STORE_MAPPING = {'type': 'nested'}
     DEFAULT_VALUE = []
+    OPENAPI_SCHEMA = {'type': 'object'}
 
     def __init__(self, field_map: OrderedDict, **kwargs):
         super(NestedListAttribute, self).__init__(**kwargs)
@@ -267,6 +272,12 @@ class NestedListAttribute(Attribute):
 
 
 class WordListAttribute(NestedListAttribute):
+    OPENAPI_SCHEMA = {'type': 'array', 'items': {'type': 'object', 'properties': {
+        'word': {'type': 'string'},
+        'pos': {'type': 'string'},
+        'count': {'type': 'integer'}
+    }}}
+
     def __init__(self, **kwargs):
         word_field_map = OrderedDict([
             ('word', {'type': 'keyword'}),

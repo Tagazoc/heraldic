@@ -38,7 +38,7 @@ class KnownMedia(object):
         return media_id in self.names
 
     def display_names(self):
-        return {media.id: media.display_name for media in self.media_classes}
+        return [{'id': media.id, 'name': media.display_name} for media in self.media_classes]
 
     @property
     def names(self):

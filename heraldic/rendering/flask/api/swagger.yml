@@ -1,0 +1,209 @@
+openapi: 3.0.0
+info:
+  description: This is the swagger file for Heraldic API.
+  version: "1.0.0"
+  title: Swagger REST Article
+servers:
+  - url: /api/
+
+components:
+  schemas:
+    Doc:
+      type: object
+      properties:
+        category:
+          description: "Cat\xE9gorie"
+          type: string
+        contains_private_sources:
+          description: "Sources priv\xE9es"
+          type: boolean
+        description:
+          description: Description
+          type: string
+        doc_publication_time:
+          description: Date de publication de l'article
+          type: string
+        doc_update_time:
+          description: "Date de mise \xE0 jour de l'article"
+          type: string
+        document_type:
+          description: Type d'article
+          type: string
+        explicit_sources:
+          description: Sources explicites
+          items:
+            type: string
+          type: array
+        gather_time:
+          description: Date de collecte de l'article
+          type: string
+        href_sources:
+          description: Sources en lien hypertexte
+          items:
+            type: string
+          type: array
+        id:
+          description: Identifiant
+          type: string
+        keywords:
+          description: "Mots-cl\xE9s de l'article"
+          items:
+            type: string
+          type: array
+        media:
+          description: "M\xE9dia"
+          type: string
+        news_agency:
+          description: Agence de presse source
+          type: string
+        quoted_entities:
+          description: "Entit\xE9s cit\xE9es"
+          items:
+            type: string
+          type: array
+        subscribers_only:
+          description: "R\xE9serv\xE9 aux abonn\xE9s"
+          type: boolean
+        title:
+          description: Titre
+          type: string
+        update_time:
+          description: "Date de r\xE9vision"
+          type: string
+        urls:
+          description: URLs de l'article
+          items:
+            type: string
+          type: array
+        version_no:
+          description: "Num\xE9ro de version"
+          type: integer
+        words:
+          description: Words
+          items:
+            properties:
+              count:
+                type: integer
+              pos:
+                type: string
+              word:
+                type: string
+            type: object
+          type: array
+
+# Paths supported by the server application
+paths:
+  /media:
+    get:
+      operationId: media.read_all
+      tags:
+        - Media
+      summary: Media data structure supported by the API
+      description: Get media list
+      responses:
+        200:
+          description: Successful read media list operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                    name:
+                      type: string
+  /media/{id}:
+    get:
+      operationId: media.read_one
+      tags:
+      - Media
+      summary: Read one media from the list
+      description: Read one media from the list
+      parameters:
+      - name: id
+        in: path
+        description: ID of the media to get from the list
+        schema:
+          type: string
+        required: True
+      responses:
+        200:
+          description: Successfully read media from list operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                  name:
+                    type: string
+                  count:
+                    type: integer
+  /media/{id}/counts:
+    get:
+      operationId: media.counts
+      tags:
+        - Media
+      summary: Read doc counts from a media
+      description: Read doc counts from a media
+      parameters:
+        - name: id
+          in: path
+          description: ID of the media to get from the list
+          schema:
+            type: string
+          required: True
+        - name: unit
+          in: query
+          description: Unit used for the period of doc counts
+          schema:
+            type: string
+            enum:
+              - days
+              - hours
+              - months
+            default: days
+        - name: number
+          in: query
+          description: Number of units to measure the doc count
+          schema:
+            type: integer
+            maximum: 30
+            default: 10
+      responses:
+        200:
+          description: Successfully read doc count for media
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                  name:
+                    type: string
+                  counts:
+                    type: array
+                    items:
+                      type: integer
+  /docs:
+    get:
+      operationId: docs.get_url
+      description: Get a doc by its URL
+      parameters:
+      - name: url
+        in: query
+        description: URL of the document
+        schema:
+          type: string
+        required: True
+      responses:
+        200:
+          description: Successfully read doc count for media
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Doc'

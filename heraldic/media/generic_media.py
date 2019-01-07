@@ -56,8 +56,63 @@ class GenericMedia(object):
         return [re.match(r'(?:.*\.)?([^.]+\.[^.]+)', domain).group(1) for domain in cls.supported_domains]
 
     @classmethod
-    def get_document_count(cls) -> int:
-        return index_searcher.count(q='media:' + cls.id)
+    def get_document_count(cls, unit: str=None, count: int=None) -> int:
+
+        units_map = {
+            'days': 'd',
+            'hours': 'h',
+            'months': 'M'
+        }
+        if unit:
+            elastic_unit = units_map[unit]
+            query = {
+                'query': {
+                    'bool': {
+                        'must': [
+                            {
+                                'term': {
+                                    'media': cls.id
+                                }
+                            },
+                            {
+                                'range': {
+                                    'doc_publication_time': {
+                                        'gt': 'now-' + str(count + 1) + elastic_unit,
+                                        'lte': 'now-' + str(count) + elastic_unit
+                                    }
+                                }
+                            }
+                        ]
+                    }
+                }
+            }
+        else:
+            query = {
+                'query': {
+                    'term': {
+                        'media': cls.id
+                    }
+                }
+            }
+        return index_searcher.count(body_query=query)
+
+    @classmethod
+    def get_data(cls):
+        return {
+            'id': cls.id,
+            'name': cls.display_name,
+            'count': cls.get_document_count()
+        }
+
+    @classmethod
+    def get_counts(cls, unit, number):
+        counts = [cls.get_document_count(unit, i) for i in range(number)]
+        return {
+            'id': cls.id,
+            'name': cls.display_name,
+            'counts': counts
+        }
+
 
 
 class GenericMediaExtractor(object):

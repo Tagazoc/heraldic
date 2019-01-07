@@ -25,6 +25,7 @@ matplotlib = "*"
 wordcloud = "*"
 numpy = "*"
 pytest-pycharm = "*"
+connexion = "*"
 
 [dev-packages]
 
