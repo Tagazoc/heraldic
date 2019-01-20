@@ -20,8 +20,8 @@ La configuration par défaut est présente dans le fichier *config/default.ini* 
 ```ini
 [DEFAULT]
 elasticsearch_host = 127.0.0.1	# Hôte elasticsearch
-elasticsearch_port = 9200		# Port elasticsearch
-extract_words = no				# Désactivation de l'extraction des mots des articles
+elasticsearch_port = 9200	# Port elasticsearch
+extract_words = no		# Désactivation de l'extraction des mots des articles
 ```
 
 La configuration locale s'effectue dans le fichier *config/config.ini* .
@@ -32,14 +32,48 @@ La création des indexes s'effectue par le biais du script *scripts/create_indic
 
 ## Récupération d'articles
 
-Les différents fichiers du répertoire *samples/* emploient différentes manières de récupérer des articles :
+La récupération d'articles par Heraldic s'effectue via un utilitaire en ligne de commande :::
 
-* le script *single_extractor.py* récupère l'URL passée en entrée ou en argument.
-* le script *harvest_url_list.py* récupère les URL présentes dans le fichier passé en argument.
-* le script *harvest_feed.py* récupère tous les articles présents dans le flux RSS dont l'URL est passée en argument.
-* le script *harvest_rss_feeds.py* récupère tous les articles des flux stockés dans l'indexeur. Ces flux doivent être déposés via le script *scripts/create_feeds.py* avec pour argument un fichier contenant tous les feeds à inclure.
+    python -m heraldic <commande> [options]
 
-Si l'extraction des mots est activée, la récupération d'articles utilise le parsing du modèle français par défaut, un modèle plus spécifique à Heraldic (correspondant mieux aux articles Web) n'étant pas encore disponible. Ce modèle français est récupérable avec la commande suivante :
+Actuellement, il existe deux commandes :
+
+* "*gather*", qui permet la récupération d'un article, ou une liste d'articles dans un fichier. L'aide complète est :
+
+```bash
+usage: heraldic gather [-h] (-f FILE | -i | -u [URL [URL ...]]) [-d DEPTH]
+                       [-o] [-t]
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -f FILE, --file FILE  File containing one or several URLs (one per line)
+  -i, --stdin           Get URL from stdin
+  -u [URL [URL ...]], --url [URL [URL ...]]
+                        URL to gather
+  -d DEPTH, --depth DEPTH
+                        Depth of recursive gathering of sources
+  -o, --override        Gather again up-to-date documents
+  -t, --test            Stop on optional parsing exception
+```
+
+* "*harvest*", qui permet la récupération d'un flux RSS ou tous ceux qui sont enregistrés dans l'indexeur. L'aide complète est :
+
+```bash
+usage: heraldic harvest [-h] [-o] [-d DEPTH] [media]
+
+positional arguments:
+  media                 Specify only one media to harvest
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -o, --override        Gather again up-to-date documents
+  -d DEPTH, --depth DEPTH
+                        Depth of recursive gathering of sources
+```
+
+On remarque l'option *DEPTH* qui permet la récupération récursive des liens dans les articles, si ceux-ci sont supportés bien entendu.
+
+Si l'extraction des mots est activée dans le fichier de configuration, la récupération d'articles utilise le parsing du modèle français par défaut, un modèle plus spécifique à Heraldic (correspondant mieux aux articles Web) n'étant pas encore disponible. Ce modèle français est récupérable avec la commande suivante :
 
 ```bash
 python -m spacy download fr
