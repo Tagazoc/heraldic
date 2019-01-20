@@ -13,9 +13,9 @@ Guide
 
    global
    installation
+   gathering
    document
    extraction
-   gathering
    storage
    api
 
