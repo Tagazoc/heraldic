@@ -24,10 +24,13 @@ matplotlib = "*"
 "html5lib" = "*"
 wordcloud = "*"
 numpy = "*"
-pytest-pycharm = "*"
-connexion = "*"
+connexion = {extras = ["swagger-ui"],version = "*"}
+
 
 [dev-packages]
+sphinx = "*"
+pytest-pycharm = "*"
+pyyaml = ">=4.2b1"
 
 [requires]
 python_version = "3.6"
