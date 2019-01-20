@@ -8,7 +8,7 @@ import connexion
 
 
 def create_app():
-    app = connexion.App('heraldicapi', specification_dir='heraldic/rendering/flask/api/')
+    app = connexion.App('heraldicapi', specification_dir='heraldic/api/')
 
     app.add_api('swagger.yml')
 
