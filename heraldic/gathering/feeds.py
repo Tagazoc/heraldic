@@ -18,6 +18,7 @@ class UrlList:
         
         self.gathered_urls = set()
         self.entries = list(entries) if entries is not None else []
+        self.last_update_time: datetime = None
 
         self._counts = {
             'gathered': 0,
@@ -68,6 +69,12 @@ class UrlList:
                 url = item
                 update_time = None
 
+            # Unless an update is enforced, entries which did not change since last feed update are skipped
+            if not update_entries and self.last_update_time is not None and update_time is not None \
+                    and self.last_update_time >= update_time:
+                counts['exist'] += 1
+                continue
+
             d = None
             try:
                 protocol, url = get_truncated_url(url)
@@ -109,11 +116,11 @@ class UrlList:
 
 
 class RssFeed(UrlList):
-    def __init__(self, feed_url, media_id=None, update_time=None, feed_id=None):
+    def __init__(self, feed_url, media_id=None, last_update_time=None, feed_id=None):
         super(RssFeed, self).__init__()
         self.id = feed_id
         self.url = feed_url
-        self.stored_update_time: datetime = datetime.fromtimestamp(update_time) if update_time else None
+        self.last_update_time: datetime = datetime.fromtimestamp(last_update_time) if last_update_time else None
         self.update_time = None
         self.title = None
         self.link = None
@@ -121,8 +128,10 @@ class RssFeed(UrlList):
 
     def gather(self):
         feed = feedparser.parse(self.url)
-        if feed['bozo'] and not isinstance(feed['bozo_exception'], feedparser.ThingsNobodyCaresAboutButMe)\
-                or feed['status'] >= 400:
+        if feed['status'] >= 400 or (feed['bozo']
+                                     and not isinstance(feed['bozo_exception'], feedparser.CharacterEncodingOverride)
+                                     and not isinstance(feed['bozo_exception'], feedparser.ThingsNobodyCaresAboutButMe)
+                                     ):  # And me.
             raise ex.FeedUnavailable(self.url, feed['status'])
         self.url = feed['href']
         try:
@@ -185,7 +194,7 @@ class FeedHarvester:
         for feed in self.feeds:
             try:
                 feed.gather()
-                if feed.update_time >= feed.stored_update_time + timedelta(seconds=delay):
+                if feed.update_time >= feed.last_update_time + timedelta(seconds=delay):
                     feed.harvest(update_entries=override, max_depth=max_depth)
                     feed.update()
             except ex.FeedUnavailable:
