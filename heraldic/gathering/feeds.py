@@ -87,9 +87,6 @@ class UrlList:
                     print(str(d))
                 self.gathered_urls = self.gathered_urls.union(d.model.urls.value)
                 counts['gathered'] += 1
-            except ex.DocumentExistsException:
-                counts['exist'] += 1
-                continue
             except ex.UrlNotSupportedException:
                 counts['url_not_supported'] += 1
                 continue
@@ -107,12 +104,15 @@ class UrlList:
             except RequestException:
                 counts['errors'] += 1
                 continue
+            # If document is already up-to-date, still gather inside links
+            except ex.DocumentExistsException:
+                counts['exist'] += 1
 
             if max_depth > depth:
                 inside_links = d.model.href_sources.value + d.model.side_links.value
                 self._inside_counts['total'] += len(inside_links)
                 # Gather internal links, but without updating existing documents
-                self._gather_links(inside_links, update_entries=False, max_depth=max_depth, depth=depth + 1)
+                self._gather_links(inside_links, update_entries=update_entries, max_depth=max_depth, depth=depth + 1)
 
 
 class RssFeed(UrlList):
