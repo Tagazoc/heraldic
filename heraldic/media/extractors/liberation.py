@@ -22,10 +22,13 @@ class LiberationExtractor(GenericMediaExtractor):
     """
     Class used for extracting items from french media "Libération".
     """
-    test_url = 'http://www.liberation.fr/france/2017/08/31/un-cadre-du-ps-en-soins-intensifs-apres-une-agression-par-un-depute-lrem_1593251'
+    test_urls = ['http://www.liberation.fr/france/2017/08/31/un-cadre-du-ps-en-soins-intensifs-apres-une-'
+                 'agression-par-un-depute-lrem_1593251']
 
     def _extract_body(self):
-        return self.html_soup.find('div', attrs={'class': 'article-body'})
+        body = self.html_soup.select_one('div.article-body')
+        self._author_tag = body.select_one('span.author').extract()
+        return body
 
     def _extract_title(self):
         return self.html_soup.find('meta', attrs={'property': "og:title"}).get('content')
@@ -37,12 +40,15 @@ class LiberationExtractor(GenericMediaExtractor):
         return html_as
 
     def _extract_category(self):
-        category = self.html_soup.find('div', attrs={'class': 'article-subhead'}).text
+        category = self.html_soup.select_one('div.article-subhead').text
         return category
 
     def _extract_news_agency(self):
-        a_text = self.html_soup.find('span', attrs={'class': 'author'}).a.text
-        source = re.search(r', avec (.*)', a_text)
+        a_text = self._author_tag.a.text
+        source = re.search(r' avec (.*)', a_text)
         if source is not None:
             return source.group(1)
         return ''
+
+    def _extract_side_links(self):
+        return self.html_soup.select('ul.live-items a')

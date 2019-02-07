@@ -25,7 +25,10 @@ class LObsExtractor(GenericMediaExtractor):
     Class used for extracting items from french media "L'Obs".
     """
     def _extract_body(self):
-        content_div = copy(self.html_soup).find('div', attrs={'id': 'ObsArticle-body'})
+        content_div = self.html_soup.find('div', attrs={'id': 'ObsArticle-body'})
+        self._side_links = content_div.find_all('a', attrs={'class': 'lire'})
+        # Make a copy of content div to avoid changing whole htmlsoup
+        content_div = copy(content_div)
         [readmore_a.decompose() for readmore_a in content_div.find_all('a', attrs={'class': 'lire'})]
         content_div.find('p', attrs={'class': 'author'}).decompose()
         try:
