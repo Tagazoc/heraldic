@@ -48,3 +48,33 @@ class HuffingtonPostExtractor(GenericMediaExtractor):
     def _extract_category(self):
         span_text = self.html_soup.select_one('span.entry-eyebrow').text
         return span_text
+
+    def _extract_news_agency(self):
+        author_text = self.html_soup.select_one('a.author-card__details__name').text
+        source = re.search(r' avec (.*)', author_text)
+        if source is not None:
+            return source.group(1)
+        return ''
+
+
+class HuffingtonPostVideoExtractor(HuffingtonPostExtractor):
+    """
+    Class used for extracting items from pages displaying a video on media "Huffington Post" in french language.
+    """
+    test_urls = ['https://www.huffingtonpost.fr/2019/02/04/grand-debat-a-evry-cette-maire-a-ose-la-petite-'
+                 'blague-face-a-macron_a_23661348/']
+    default_extractor = False
+    _document_type = 'video'
+
+    def _check_extraction(self):
+        return self.html_soup.select_one('div.video-entry__content-info') is not None
+
+    def _extract_body(self):
+        return self.html_soup.select_one('div.video-entry__caption')
+
+    def _extract_news_agency(self):
+        # No news agency for video
+        return ''
+
+    def _extract_side_links(self):
+        return self.html_soup.select('div.entry-recirc-mod ul a')
