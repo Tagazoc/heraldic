@@ -8,6 +8,7 @@ if __name__ == '__main__':
     import argparse
     from heraldic.cli import harvest
     from heraldic.cli import gather
+    from heraldic.cli import test
 
     parser = argparse.ArgumentParser(description="Run commands to interact with Heraldic indexer", prog='heraldic')
     subparsers = parser.add_subparsers(help='sub-command help',)
@@ -29,6 +30,10 @@ if __name__ == '__main__':
     parser_gather.add_argument('-t', '--test', help='Stop on optional parsing exception', action='store_true',
                                default=False)
     parser_gather.set_defaults(func=gather)
+
+    parser_test = subparsers.add_parser('test', help='Gather test URLs for one or several medias')
+    parser_test.add_argument('media', help='Specify only one media to test', nargs='?')
+    parser_test.set_defaults(func=test)
 
     args = parser.parse_args()
     try:

@@ -7,7 +7,7 @@ La récupération d'articles par Heraldic s'effectue via un utilitaire en ligne 
 
 Actuellement, il existe deux commandes :
 
-* "``gather``", qui permet la récupération d'un article, ou une liste d'articles dans un fichier. L'aide complète est :::
+* "``gather``", qui permet la récupération d'un article, ou une liste d'articles dans un fichier. L'aide complète est : ::
 
     usage: heraldic gather [-h] (-f FILE | -i | -u [URL [URL ...]]) [-d DEPTH]
                            [-o] [-t]
@@ -23,7 +23,7 @@ Actuellement, il existe deux commandes :
       -o, --override        Gather again up-to-date documents
       -t, --test            Stop on optional parsing exception
 
-* "``harvest``", qui permet la récupération d'un flux RSS ou tous ceux qui sont enregistrés dans l'indexeur. L'aide complète est :::
+* "``harvest``", qui permet la récupération d'un flux RSS ou tous ceux qui sont enregistrés dans l'indexeur. L'aide complète est : ::
 
     usage: heraldic harvest [-h] [-o] [-d DEPTH] [media]
     
@@ -38,4 +38,13 @@ Actuellement, il existe deux commandes :
 
 On remarque l'option ``DEPTH`` qui permet la récupération récursive des liens dans les articles, si ceux-ci sont supportés bien entendu.
 
+* "``test``", qui permet la récupération simplifiée des articles spécifiés comme référence pour les différents extracteurs d'un ou de l'ensemble des médias supportés : ::
+
+    usage: heraldic test [-h] [media]
+
+    positional arguments:
+      media       Specify only one media to test
+
+    optional arguments:
+      -h, --help  show this help message and exit
 
