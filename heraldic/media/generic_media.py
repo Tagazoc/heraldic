@@ -114,7 +114,6 @@ class GenericMedia(object):
         }
 
 
-
 class GenericMediaExtractor(object):
     """
         Generic class for attribute extraction from a document, should not be directly instanciated.
@@ -123,7 +122,9 @@ class GenericMediaExtractor(object):
     parser = 'html.parser'
     _supported_domains = []
     default_extractor = True
-    test_url = ''
+    test_urls = []
+    _document_type = 'article'
+    """ Document type : article, video, panorama... """
 
     def __init__(self, dm: DocumentModel) -> None:
         """
@@ -142,19 +143,16 @@ class GenericMediaExtractor(object):
         self._body_tag = None
         """ Body backup, which can be reused for other attributes. """
 
-        self._document_type = 'article'
-        """ Document type : article, video, panorama... """
-
-    @property
-    def _media_class(self):
-        return [v for k, v in inspect.getmembers(sys.modules[self.__module__], inspect.isclass)
+    @classmethod
+    def _media_class(cls):
+        return [v for k, v in inspect.getmembers(sys.modules[cls.__module__], inspect.isclass)
                 if k != 'GenericMedia' and issubclass(v, GenericMedia)][0]
 
-    @property
-    def supported_domains(self):
-        if self._supported_domains:
-            return self._supported_domains
-        return self._media_class.supported_domains
+    @classmethod
+    def get_media_domains(cls):
+        if cls._supported_domains:
+            return cls._supported_domains
+        return cls._media_class().supported_domains
 
     def check_extraction(self) -> bool:
         """
@@ -325,7 +323,7 @@ class GenericMediaExtractor(object):
                 continue
             # Use first defined domain, should work "almost" every time
             try:
-                protocol, url = get_truncated_url(re.sub(r'^/([^/])', self.supported_domains[0] + r'/\1', href))
+                protocol, url = get_truncated_url(re.sub(r'^/([^/])', self.get_media_domains()[0] + r'/\1', href))
             except ex.InvalidUrlException:
                 continue
             # We let (for now) protocol in those URLS
@@ -334,6 +332,12 @@ class GenericMediaExtractor(object):
         # Only keep distinct values
         result = list(set(result))
         return result
+
+    def _post_extract_side_links(self, source_tags: List[Tag]) -> List[str]:
+        links = self._post_extract_href_sources(source_tags)
+
+        # We keep only the internal links (side links are internal by essence)
+        return [url for url in links if self._media_class().is_url_article(url)]
 
     def _extract_category(self) -> str:
         """
@@ -397,11 +401,11 @@ class GenericMediaExtractor(object):
 
     def _extract_side_links(self) -> List[str]:
         """
-        Use _side_links attribute, which is usually extracted in href_sources attribute, and compare its content with
-        URL format used for articles on the media website
+        Use _side_links attribute, which is usually extracted in body or href_sources attributes,
+        and compare its content with URL format used for articles on the media website
         :return:
         """
-        return [url for url in self._side_links if self._media_class().is_url_article(url)]
+        return self._side_links
 
     def _exclude_hrefs(self, html_as: List, side_links=True, attribute_name: str='', attribute_value: str='',
                        is_parent_attribute=False, tags: List[str]=None, regex: str='', only_internal_links=False):
@@ -498,7 +502,9 @@ class GenericMediaExtractor(object):
         reg = re.compile(regex)
         filtered_as = []
         for a in html_as:
+            # External links are kept if only internal links are excluded
             if only_internal_links and not cls._is_internal_link(a['href']):
+                filtered_as.append(a)
                 continue
             if not reg.match(a['href']):
                 try:
@@ -515,7 +521,7 @@ class GenericMediaExtractor(object):
         if re.match(r'/', url):
             return True
         try:
-            if get_domain(url) in cls.supported_domains:
+            if get_domain(url) in cls.get_media_domains():
                 return True
             else:
                 return False
