@@ -38,8 +38,6 @@ class Document(object):
                 self.model = DocumentModel()
         elif url:
             try:
-                # TODO On se débrouille pour virer le protocole lorsqu'on vérifie/stocke. Du coup faire un script qui
-                # met à jour toutes les URL
                 self.retrieve_from_url()
             except ex.DocumentNotFoundException:
                 self.retrieve_id_from_parse_error()
