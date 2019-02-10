@@ -23,10 +23,19 @@ class LeFigaroExtractor(GenericMediaExtractor):
     """
     Class used for extracting items from french media "Le Figaro".
     """
+    test_urls = ['http://www.lefigaro.fr/sciences/2019/02/07/01008-20190207ARTFIG00201-la-nasa-a-photographie'
+                 '-la-sonde-chinoise-sur-la-face-cachee-de-la-lune.php',
+                 'http://www.lefigaro.fr/conjoncture/2019/02/07/20002-20190207ARTFIG00194-eoliennes-'
+                 'le-tabou-du-recyclage-et-du-cout-du-demantelement.php']
+
     def _extract_body(self):
-        content_div = copy(self.html_soup).find('div', attrs={'class': 'fig-content__body'}).extract()
-        bs = content_div.find_all('b')
-        [b.decompose() for b in bs if re.search(r'LIRE AUSSI', b.text, re.IGNORECASE)]
+        content_div = self.html_soup.select_one('div.fig-content__body')
+        lireaussi_tags = content_div.find_all(string=re.compile(r'LIRE AUSSI -'))
+        self._side_links.extend([tag.parent.extract().a for tag in lireaussi_tags])
+
+        b_avoiraussi = content_div.find_all(string=re.compile(r'à voir aussi', re.IGNORECASE))
+        [self._side_links.extend(p.parent.extract().select('a')) for p in b_avoiraussi]
+
         return content_div
 
     def _extract_href_sources(self):
@@ -36,9 +45,8 @@ class LeFigaroExtractor(GenericMediaExtractor):
         return html_as
 
     def _extract_category(self):
-        html_li = self.html_soup.find('li', attrs={'class': 'fig-breadcrumb__item--current'})
-        span_text = html_li.find('span').text
+        span_text = self.html_soup.select_one('li.fig-breadcrumb__item--current span').text
         return span_text
 
     def _extract_subscribers_only(self):
-        return self.html_soup.find('div', attrs={'class': 'fig-premium-paywall'}) is not None
+        return self.html_soup.select_one('div.fig-premium-paywall') is not None
