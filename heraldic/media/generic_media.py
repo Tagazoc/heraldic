@@ -529,7 +529,7 @@ class GenericMediaExtractor(object):
             return False
 
     def _format_time(self, text: str, attribute_name: str) -> datetime:
-        match = re.match(r'(\d{4}-\d{2}-\d{2})(?:CES)?T(\d{2}:\d{2})((?::\d{2})?)', text[:19])
+        match = re.match(r'(\d{4}-\d{2}-\d{2})(?:CES?)?T(\d{2}:\d{2})((?::\d{2})?)', text[:19])
         try:
             seconds = match.group(3) if len(match.group(3)) > 0 else ':00'
 
