@@ -22,9 +22,11 @@ class LePointExtractor(GenericMediaExtractor):
     """
     Class used for extracting items from french media "Le Point".
     """
+    test_urls = ['https://www.lepoint.fr/politique/exclusif-ismael-emelien-annonce-au-point-sa-demission'
+                 '-11-02-2019-2292608_20.php']
 
     def _extract_body(self):
-        return self.html_soup.find('div', attrs={'class': 'art-text'})
+        return self.html_soup.select_one('div.art-text')
 
     def _extract_title(self):
         return self.html_soup.find('meta', attrs={'property': "og:title"}).get('content')
@@ -35,7 +37,7 @@ class LePointExtractor(GenericMediaExtractor):
         return html_as
 
     def _extract_category(self):
-        text = self.html_soup.find('nav', attrs={'class': 'breadcrumb'}).find_all('span')[-1].text
+        text = self.html_soup.select('nav.breadcrumb span')[-1].text
         return text
 
     def _extract_news_agency(self):
@@ -48,3 +50,6 @@ class LePointExtractor(GenericMediaExtractor):
 
     def _extract_subscribers_only(self):
         return self.html_soup.find('aside', attrs={'id': 'article-reserve-aux-abonnes'}) is not None
+
+    def _extract_side_links(self):
+        return self.html_soup.select_one('h3.header-meme-sujet').parent.select('a')

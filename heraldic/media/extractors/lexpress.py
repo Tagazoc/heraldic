@@ -22,14 +22,24 @@ class LExpressExtractor(GenericMediaExtractor):
     """
     Class used for extracting items from french media "L'Express".
     """
+    test_urls = ['https://www.lexpress.fr/actualite/politique/contrats-russes-mediapart-leve-le-voile-'
+                 'sur-les-millions-de-benalla_2061798.html']
+
     def _extract_body(self):
-        return self.html_soup.article.find('div', attrs={'class': 'article_container'})
+        content_div = self.html_soup.article.select_one('div.article_container')
+        side_links_tags = [strong.parent for strong in content_div.select('p strong')
+                           if strong.text.startswith('LIRE AUSSI')]
+
+        side_links_tags.extend(content_div.select('div.block_summary_gpt'))
+
+        self._side_links.extend([a for tag in side_links_tags for a in tag.extract().select('a')])
+        return content_div
 
     def _extract_category(self):
         try:
-            html_category = self.html_soup.find('div', attrs={'class': 'article_category'}).find('a').text
+            html_category = self.html_soup.select_one('div.article_category a').text
         except AttributeError:
-            html_category = self.html_soup.find('ul', attrs={'class': 'list_inbl'}).find_all('li')[-1].find('span').text
+            html_category = self.html_soup.select('nav.breadcrumb ul.list_inbl li')[-1].find('span').text
         return html_category
 
     def _extract_href_sources(self):
@@ -44,3 +54,4 @@ class LExpressExtractor(GenericMediaExtractor):
         if source is None:
             return text
         return ''
+

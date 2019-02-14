@@ -21,8 +21,13 @@ class LHumaniteExtractor(GenericMediaExtractor):
     """
     Class used for extracting items from french media "L'Humanité".
     """
+
+    test_urls = ['https://www.humanite.fr/affaire-jeanne-calment-pourquoi-la-these-de-lusurpation'
+                 '-didentite-nest-quune-fake-news-667790',
+                 'https://www.humanite.fr/sante-publique-la-fausse-bonne-idee-des-soins-de-proximite-667815']
+
     def _extract_body(self):
-        return self.html_soup.find('div', attrs={'class': 'field-name-field-news-text'})
+        return self.html_soup.select_one('div.field-name-field-news-text')
 
     def _extract_href_sources(self):
         html_as = self._body_tag.find_all('a')
@@ -31,8 +36,11 @@ class LHumaniteExtractor(GenericMediaExtractor):
 
     def _extract_category(self):
         text = self.html_soup.find('div', attrs={'id': 'block-system-main-menu'}).\
-            find('ul', attrs={'class': 'menu'}).find('a', attrs={'class': 'active'}).text
+            select_one('ul.menu a.active').text
         return text
 
     def _extract_subscribers_only(self):
         return self.html_soup.find('div', attrs={'id': 'non-abonnes-link-url'}) is not None
+
+    def _extract_side_links(self):
+        return self.html_soup.select('div.field-name-block-similar-contents a')
