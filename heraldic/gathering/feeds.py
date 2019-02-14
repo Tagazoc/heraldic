@@ -83,8 +83,6 @@ class UrlList:
                 self.gathered_urls = self.gathered_urls.union([url])
                 d = Document(protocol + url)
                 d.gather(update_time=update_time, update=update_entries, raise_on_optional=raise_on_optional)
-                if dump_result:
-                    print(str(d))
                 self.gathered_urls = self.gathered_urls.union(d.model.urls.value)
                 counts['gathered'] += 1
             except ex.UrlNotSupportedException:
@@ -107,6 +105,9 @@ class UrlList:
             # If document is already up-to-date, still gather inside links
             except ex.DocumentExistsException:
                 counts['exist'] += 1
+
+            if dump_result:
+                print(str(d))
 
             if max_depth > depth:
                 inside_links = d.model.href_sources.value + d.model.side_links.value
