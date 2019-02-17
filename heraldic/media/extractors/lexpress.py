@@ -23,7 +23,9 @@ class LExpressExtractor(GenericMediaExtractor):
     Class used for extracting items from french media "L'Express".
     """
     test_urls = ['https://www.lexpress.fr/actualite/politique/contrats-russes-mediapart-leve-le-voile-'
-                 'sur-les-millions-de-benalla_2061798.html']
+                 'sur-les-millions-de-benalla_2061798.html',
+                 'https://www.lexpress.fr/actualite/societe/pour-52-des-francais-les-gilets-jaunes-doivent-'
+                 's-arreter_2062700.html']
 
     def _extract_body(self):
         content_div = self.html_soup.article.select_one('div.article_container')
@@ -50,8 +52,8 @@ class LExpressExtractor(GenericMediaExtractor):
     def _extract_news_agency(self):
         text = self.html_soup.find('span', attrs={'itemprop': 'author'}).span.text
         # Do not want the nominative author
-        source = re.match(r'(.*) pour l\'Express', text, re.IGNORECASE) or re.match(r'Par (.*)', text, re.IGNORECASE)
-        if source is None:
-            return text
+        source = re.match(r'(.*) pour l\'Express', text, re.IGNORECASE) or re.match(r'Par (.*)', text, re.IGNORECASE)\
+                 or re.match(r'LEXPRESS\.fr avec (.*)', text, re.IGNORECASE)
+        if source is not None:
+            return source.group(1)
         return ''
-
