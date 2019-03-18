@@ -55,7 +55,7 @@ def retrieve_model_from_url(url: str) -> DocumentModel:
 
 
 def retrieve_old_version_models(doc_id: str) -> Generator[OldDocumentModel, None, None]:
-    for hit in _retrieve_old_versions(doc_id):
+    for hit in retrieve_old_versions(doc_id):
         dm = OldDocumentModel(doc_id)
 
         dm.id.value = hit['_id']
@@ -190,7 +190,7 @@ def count(q=None, body_query=None, index_class=DocumentIndex) -> int:
     return es.count(index=index_class.INDEX_NAME, doc_type=index_class.TYPE_NAME, q=q, body=body_query)['count']
 
 
-def _retrieve_old_versions(doc_id) -> Generator[dict, None, None]:
+def retrieve_old_versions(doc_id) -> Generator[dict, None, None]:
     hits = _search_query({'term': {'doc_id': doc_id}}, index_class=OldVersionIndex, sort=['version_no'])
 
     for hit in hits:

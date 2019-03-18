@@ -20,7 +20,7 @@ class Document(object):
     """
     Class representing a Document through its way through Heraldic.
     """
-    def __init__(self, url: str='', doc_id: str=None, filepath: str=''):
+    def __init__(self, url: str = '', doc_id: str = None, filepath: str = ''):
         self.model: DocumentModel = DocumentModel()
         self.old_versions: List[DocumentModel] = []
         self.url = ''
@@ -34,7 +34,10 @@ class Document(object):
             try:
                 self._retrieve()
             except ex.DocumentNotFoundException:
-                self.retrieve_url_from_parse_error()
+                try:
+                    self.retrieve_url_from_parse_error()
+                except ex.DocumentNotFoundException:
+                    pass
                 self.model = DocumentModel()
         elif url:
             try:
@@ -42,6 +45,8 @@ class Document(object):
             except ex.DocumentNotFoundException:
                 self.retrieve_id_from_parse_error()
                 self.model = DocumentModel()
+        else:
+            raise ValueError('Document must have an URL or an id as an attribute')
 
     @classmethod
     def from_model(cls, model):
@@ -50,20 +55,20 @@ class Document(object):
         doc.url = model.urls.value[0]
         return doc
 
-    def gather(self, update_time=None, update: bool=False, raise_on_optional=False):
+    def gather(self, update_time=None, force_update: bool = False, raise_on_optional=False):
         """
         Gather a document contents from an url, parse it and store or update it.
-        :param update_time: Update time (in rss feed) to avoid gathering if up-to-date
-        :param update: disable existence check, in order to override document
+        :param update_time: Time of update (in rss feed) to avoid gathering if up-to-date
+        :param force_update: force update by deleting old versions, and disable existence check, in order to override document
         :param raise_on_optional: Raise exception on optional parsing if encountered
         """
         if self.model.initialized:
             # It is an update, is it already up-to-date ? Unless override flag
-            if not update and (not update_time or self._is_uptodate(update_time)):
+            if not force_update and update_time and self._is_uptodate(update_time):
                 raise ex.DocumentExistsException(self.url)
 
             updated_model = self._fetch_and_extract(raise_on_optional=raise_on_optional)
-            self.update_from_model(updated_model)
+            self.update_from_model(updated_model, force_update=force_update)
             logger.log('INFO_DOC_UPDATE_SUCCESS', self.url)
         else:
             # If URL was a redirection, try to retrieve it aswell
@@ -162,16 +167,17 @@ class Document(object):
         """
         self.url = index_searcher.retrieve_error_url(self.doc_id)
 
-    def update_from_model(self, new_model: DocumentModel):
+    def update_from_model(self, new_model: DocumentModel, force_update=False):
         """
         Update document from another model, updating model and adding old model (containing old attributes' values)
         to old versions list.
+        :param force_update: Delete old versions of the document
         :param new_model: new model which attributes will override old ones (Cthulu ftaghn)
         :return:
         """
         old_model = self.model.update(new_model)
         self.old_versions.append(old_model)
-        index_storer.update(self.model, old_model)
+        index_storer.update(self.model, old_model, delete_old_versions=force_update)
 
     def update_from_revision(self, attribute_dict: dict):
         """
@@ -203,6 +209,35 @@ class Document(object):
                     # Next model version will be used as next occurrence of this attribute
                     counter_dict[k] = model.version_no.value + 1
 
+    def _versions_to_json(self):
+        """
+
+        :return:
+        """
+        json_versions = []
+        # Each version of the document is built : each initialized attribute in the last version is processed
+        # through all versions, in order to find its first occurrence
+        version_models = list(itertools.chain(self.old_versions, [self.model]))
+        version_models.reverse()
+        last_json_model = dict()
+        for _ in itertools.chain(self.old_versions, [self.model]):
+            json_model = dict()
+            for k in self.model.attributes.keys():
+                # Lalalaïlalalaïlalala
+                for yodel in version_models:
+                    attribute = yodel.attributes[k]
+                    # Only the initialized ones
+                    if attribute.initialized:
+                        json_model[k] = attribute.value
+                # Delete values which did not change
+                if k in last_json_model.keys() and json_model[k] == last_json_model[k]:
+                    del json_model[k]
+            # Save the "current" full version
+            last_json_model = {**last_json_model, **json_model}
+            json_versions.append(json_model)
+            version_models.pop()
+        return json_versions
+
     def _store_failed_parsing_error(self, model: DocumentModel):
         index_storer.store_failed_parsing_error(model, self.doc_id)
 
@@ -211,6 +246,8 @@ class Document(object):
         Delete model in store, as old versions models.
         :return:
         """
+        if not self.model.initialized:
+            raise ex.DeletionError()
         index_storer.delete(self.model, self.old_versions)
         logger.log('WARN_DOC_DELETED', self.model.id.value, self.url)
 
@@ -233,6 +270,15 @@ class Document(object):
                 if v.suggestions:
                     display_str += k + ' : suggestions : ' + ",".join(v.render_suggestions_for_display()) + "\n"
         return display_str
+
+    def to_json(self, with_history=False):
+        json_doc = dict()
+        json_doc['model'] = self.model.to_json()
+        json_doc['errors'] = self.model.errors
+        if with_history:
+            versions = self._versions_to_json()
+            json_doc['versions'] = versions
+        return json_doc
 
     @staticmethod
     def _check_domain_support(url) -> str:

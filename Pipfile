@@ -25,12 +25,12 @@ matplotlib = "*"
 wordcloud = "*"
 numpy = "*"
 connexion = {extras = ["swagger-ui"],version = "*"}
-
+swagger-tester = "*"
+swagger-parser = "*"
 
 [dev-packages]
 sphinx = "*"
 pytest-pycharm = "*"
-pyyaml = ">=4.2b1"
 
 [requires]
 python_version = "3.6"

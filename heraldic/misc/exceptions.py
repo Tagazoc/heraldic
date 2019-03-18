@@ -15,6 +15,10 @@ class IndexerConnectionError(HeraldicException, ConnectionError):
     pass
 
 
+class DeletionError(HeraldicException):
+    pass
+
+
 class GatherException(HeraldicException):
     pass
 
@@ -32,6 +36,7 @@ class InvalidUrlException(GatherError):
 
 class DomainNotSupportedException(GatherException):
     def __init__(self, domain, do_not_log=False):
+        self.domain = domain
         if not do_not_log:
             logger.log('WARN_DOMAIN_NOT_SUPPORTED', domain)
 

@@ -46,11 +46,11 @@ class DocumentModel(object):
 
             ('keywords', KeywordListAttribute(desc="Mots-clés de l'article", revisable=False)),
             ('href_sources', UrlListAttribute(desc="Sources en lien hypertexte", revisable=False)),
-            ('explicit_sources', KeywordListAttribute(desc="Sources explicites")),
+            # ('explicit_sources', KeywordListAttribute(desc="Sources explicites")),
             ('news_agency', KeywordAttribute(desc="Agence de presse source", revisable=False,
                                              storable={'type': 'keyword'})),
-            ('quoted_entities', KeywordListAttribute(desc="Entités citées", extractible=False)),
-            ('contains_private_sources', BooleanAttribute(desc="Sources privées", extractible=False)),
+            # ('quoted_entities', KeywordListAttribute(desc="Entités citées", extractible=False)),
+            # ('contains_private_sources', BooleanAttribute(desc="Sources privées", extractible=False)),
             ('subscribers_only', BooleanAttribute(desc="Réservé aux abonnés", revisable=False)),
             ('document_type', KeywordAttribute(desc="Type d'article", revisable=False, storable={'type': 'keyword'})),
             ('side_links', UrlListAttribute(desc="Liens vers d'autres articles", storable=False, displayable=False,
@@ -87,14 +87,19 @@ class DocumentModel(object):
         else:
             super(DocumentModel, self).__setattr__(key, value)
 
+    def to_json(self):
+        json_model = {k: v.value for k, v in self.attributes.items() if v.displayable}
+        return json_model
+
     @property
     def initialized(self):
         return self.urls.value != []
 
-    def update(self, model: 'DocumentModel') -> 'OldDocumentModel':
+    def update(self, model: 'DocumentModel', force_update=False) -> 'OldDocumentModel':
         """
         Updates model with another model : new values are set in current model, then old ones are returned
         in another model.
+        :param force_update:
         :param model: model with newer values
         :return: old model only containing old values
         """
@@ -124,7 +129,10 @@ class DocumentModel(object):
 
         # Updating version_no
         old_model.version_no = copy(self.version_no.value)
-        self.version_no.value += 1
+        if force_update:
+            self.version_no.value = 1
+        else:
+            self.version_no.value += 1
 
         # Updating from_gathering attribute
         self.from_gathering = model.from_gathering

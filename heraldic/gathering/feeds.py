@@ -82,7 +82,7 @@ class UrlList:
                     continue
                 self.gathered_urls = self.gathered_urls.union([url])
                 d = Document(protocol + url)
-                d.gather(update_time=update_time, update=update_entries, raise_on_optional=raise_on_optional)
+                d.gather(update_time=update_time, force_update=update_entries, raise_on_optional=raise_on_optional)
                 self.gathered_urls = self.gathered_urls.union(d.model.urls.value)
                 counts['gathered'] += 1
             except ex.UrlNotSupportedException:

@@ -8,15 +8,12 @@ servers:
 
 components:
   schemas:
-    Doc:
+    DocModel:
       type: object
       properties:
         category:
           description: "Cat\xE9gorie"
           type: string
-        contains_private_sources:
-          description: "Sources priv\xE9es"
-          type: boolean
         description:
           description: Description
           type: string
@@ -29,11 +26,6 @@ components:
         document_type:
           description: Type d'article
           type: string
-        explicit_sources:
-          description: Sources explicites
-          items:
-            type: string
-          type: array
         gather_time:
           description: Date de collecte de l'article
           type: string
@@ -56,11 +48,6 @@ components:
         news_agency:
           description: Agence de presse source
           type: string
-        quoted_entities:
-          description: "Entit\xE9s cit\xE9es"
-          items:
-            type: string
-          type: array
         subscribers_only:
           description: "R\xE9serv\xE9 aux abonn\xE9s"
           type: boolean
@@ -90,6 +77,20 @@ components:
                 type: string
             type: object
           type: array
+        errors:
+          type: object
+          additionalProperties:
+            type: string
+    Doc:
+      type: object
+      properties:
+        model:
+          $ref: '#/components/schemas/DocModel'
+        versions:
+          type: array
+          items:
+            $ref: '#/components/schemas/DocModel'
+
 
 # Paths supported by the server application
 paths:
@@ -200,9 +201,63 @@ paths:
         schema:
           type: string
         required: True
+      - name: with_history
+        in: query
+        description: query old versions of the document
+        schema:
+          type: boolean
+          default: false
       responses:
         200:
-          description: Successfully read doc count for media
+          description: Successfully got document
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Doc'
+    post:
+      operationId: docs.post_url
+      description: Send a doc by its URL
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                url:
+                  type: string
+              required:
+                - url
+      responses:
+        200:
+          description: Successfully got document
+          content:
+            application/json:
+              schema:
+                type: string
+  /docs/{id}:
+    get:
+      operationId: docs.get_doc
+      tags:
+        - Media
+      summary: Read one document by its index ID
+      description: Read one document by its index ID
+      parameters:
+        - name: id
+          in: path
+          description: ID of the doc to get
+          schema:
+            type: string
+          required: True
+        - name: with_history
+          in: query
+          description: query old versions of the document
+          schema:
+            type: boolean
+            default: false
+      responses:
+        200:
+          description: Successfully got document
           content:
             application/json:
               schema:

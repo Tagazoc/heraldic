@@ -4,7 +4,7 @@
 Document test module.
 """
 
-from tests.media.liberation_test import *
+from tests.medias.liberation_test import *
 from heraldic.models.document import Document
 import pytest
 from heraldic.rendering.flask.factory import create_app
@@ -98,7 +98,7 @@ def test_document_error():
     updated, erroneous attribute will not change. Error will be stored in specific index.
     """
     d = Document(url, doc_id=update_doc_dict['id'], filepath='tests/media/article_liberation.htm')
-    d.gather(update=True)
+    d.gather()
 
     del d
 

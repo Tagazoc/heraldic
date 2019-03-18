@@ -8,7 +8,8 @@ import connexion
 
 
 def create_app():
-    app = connexion.App('heraldicapi', specification_dir='heraldic/api/')
+    specification_dir = 'heraldic/api'
+    app = connexion.App('heraldicapi', port=5000, debug=True, specification_dir=specification_dir)
 
     app.add_api('swagger.yml')
 

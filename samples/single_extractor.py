@@ -16,7 +16,7 @@ def main(argv):
         url = input()
     d = Document(url, debug=True)
     try:
-        d.gather(update=True)
+        d.gather(force_update=True)
     except ex.DocumentNotChangedException:
         pass
     for k, v in d.model.attributes.items():

@@ -80,7 +80,7 @@ def review_document():
     if form.validate_on_submit():
         if 'gather_again' in request.form:
             try:
-                d.gather(update=True)
+                d.gather(force_update=True)
                 flash("L'article a de nouveau été récupéré", "info")
             except DocumentNotChangedException:
                 flash("Aucune mise à jour constatée", "danger")
@@ -102,7 +102,7 @@ def regather_document():
     doc_id = request.args['id']
     d = Document(doc_id=doc_id)
     try:
-        d.gather(update=True)
+        d.gather(force_update=True)
     except DocumentNotChangedException:
         flash("Aucune mise à jour constatée", "danger")
     d.retrieve_old_versions()
