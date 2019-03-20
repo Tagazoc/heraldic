@@ -95,11 +95,11 @@ class DocumentModel(object):
     def initialized(self):
         return self.urls.value != []
 
-    def update(self, model: 'DocumentModel', force_update=False) -> 'OldDocumentModel':
+    def update(self, model: 'DocumentModel', update_inplace=False) -> 'OldDocumentModel':
         """
         Updates model with another model : new values are set in current model, then old ones are returned
         in another model.
-        :param force_update:
+        :param update_inplace: Force update by updating only the current version
         :param model: model with newer values
         :return: old model only containing old values
         """
@@ -129,9 +129,7 @@ class DocumentModel(object):
 
         # Updating version_no
         old_model.version_no = copy(self.version_no.value)
-        if force_update:
-            self.version_no.value = 1
-        else:
+        if not update_inplace:
             self.version_no.value += 1
 
         # Updating from_gathering attribute

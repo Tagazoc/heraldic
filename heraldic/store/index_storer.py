@@ -57,11 +57,11 @@ def delete_error(doc_id):
         pass
 
 
-def update(dm: DocumentModel, om: OldDocumentModel, delete_old_versions=False):
+def update(dm: DocumentModel, om: OldDocumentModel, update_inplace=False):
     """
     Update a document in the store, updating document within the "docs" index, and creating a document with old
     values in the "docs_history" index.
-    :param delete_old_versions: Whether we delete old versions of the document
+    :param update_inplace: Whether we add old model to versions of the document
     :param dm: Up-to-date model
     :param om: Model containing deprecated values
     :return:
@@ -87,18 +87,11 @@ def update(dm: DocumentModel, om: OldDocumentModel, delete_old_versions=False):
         else:
             delete_error(dm.id.value)
 
-    if delete_old_versions:
+    if update_inplace:
         dm_body = dm.render_for_store()
         es.update(DocumentIndex.INDEX_NAME, doc_type=DocumentIndex.TYPE_NAME, id=dm.id.value,
                   body={'doc': dm_body})
         es.indices.refresh(index=DocumentIndex.INDEX_NAME)
-
-        hits = i_s.retrieve_old_versions(dm.id.value)
-        for hit in hits:
-            version_id = hit['_id']
-            es.delete(OldVersionIndex.INDEX_NAME, OldVersionIndex.TYPE_NAME, version_id)
-
-        es.indices.refresh(index=OldVersionIndex.INDEX_NAME)
 
     elif dm.storable_values_updated:
         dm_body = dm.render_for_store()

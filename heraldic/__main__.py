@@ -35,6 +35,8 @@ if __name__ == '__main__':
     parser_test.add_argument('media', help='Specify only one media to test', nargs='?')
     parser_test.set_defaults(func=test)
 
+    parser_regather = subparsers.add_parser('regather', )
+
     args = parser.parse_args()
     try:
         args.func(args)

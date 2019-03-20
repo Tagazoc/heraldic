@@ -205,6 +205,40 @@ def test_document_error_solved():
                 assert doc_version[k] == v
 
 
+def test_document_update_inplace():
+    """
+    Gather the original document with "inplace" flag, in order to enhance parser for example. Only the last version
+    of the document should be updated.
+    """
+    d = Document(url)
+    d.gather(update_inplace=True)
+
+    del d
+
+    response = requests.get(api_url + 'docs/' + doc_id + '?with_history=true')
+    assert response.status_code == 200
+    assert response.headers['Content-Type'] == 'application/json'
+    doc = json.loads(response.text)
+
+    for k, v in update_inplace_doc_dict.items():
+        # Arrays in elastic are unordered
+        if isinstance(v, list):
+            assert set(doc['model'][k]) == set(v)
+        else:
+            assert doc['model'][k] == v
+
+    assert doc['errors'] == {}
+
+    doc_versions = doc['versions']
+    for doc_version, update_inplace_doc_version in zip(doc_versions, update_inplace_doc_versions):
+        for (k, v) in update_inplace_doc_version.items():
+            # Arrays in elastic are unordered
+            if isinstance(v, list):
+                assert set(doc_version[k]) == set(v)
+            else:
+                assert doc_version[k] == v
+
+
 def test_document_deletion():
     """
     Deletion of the document, and its attached objects : suggestions, errors (should not be) and old versions.

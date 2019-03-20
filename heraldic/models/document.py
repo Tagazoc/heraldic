@@ -55,20 +55,20 @@ class Document(object):
         doc.url = model.urls.value[0]
         return doc
 
-    def gather(self, update_time=None, force_update: bool = False, raise_on_optional=False):
+    def gather(self, update_time=None, update_inplace: bool = False, raise_on_optional=False):
         """
         Gather a document contents from an url, parse it and store or update it.
         :param update_time: Time of update (in rss feed) to avoid gathering if up-to-date
-        :param force_update: force update by deleting old versions, and disable existence check, in order to override document
+        :param update_inplace: force update by overriding current version, and disable existence check
         :param raise_on_optional: Raise exception on optional parsing if encountered
         """
         if self.model.initialized:
             # It is an update, is it already up-to-date ? Unless override flag
-            if not force_update and update_time and self._is_uptodate(update_time):
+            if not update_inplace and update_time and self._is_uptodate(update_time):
                 raise ex.DocumentExistsException(self.url)
 
             updated_model = self._fetch_and_extract(raise_on_optional=raise_on_optional)
-            self.update_from_model(updated_model, force_update=force_update)
+            self.update_from_model(updated_model, update_inplace=update_inplace)
             logger.log('INFO_DOC_UPDATE_SUCCESS', self.url)
         else:
             # If URL was a redirection, try to retrieve it aswell
@@ -167,17 +167,17 @@ class Document(object):
         """
         self.url = index_searcher.retrieve_error_url(self.doc_id)
 
-    def update_from_model(self, new_model: DocumentModel, force_update=False):
+    def update_from_model(self, new_model: DocumentModel, update_inplace=False):
         """
         Update document from another model, updating model and adding old model (containing old attributes' values)
         to old versions list.
-        :param force_update: Delete old versions of the document
+        :param update_inplace: Delete old versions of the document
         :param new_model: new model which attributes will override old ones (Cthulu ftaghn)
         :return:
         """
-        old_model = self.model.update(new_model)
+        old_model = self.model.update(new_model, update_inplace=update_inplace)
         self.old_versions.append(old_model)
-        index_storer.update(self.model, old_model, delete_old_versions=force_update)
+        index_storer.update(self.model, old_model, update_inplace=update_inplace)
 
     def update_from_revision(self, attribute_dict: dict):
         """

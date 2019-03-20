@@ -15,5 +15,5 @@ def test(args):
                                  media_class.get_extractors()])
 
     url_list = UrlList(urls)
-    url_list.harvest(max_depth=0, update_entries=True, raise_on_optional=True, dump_result=True)
+    url_list.harvest(max_depth=0, update_inplace=True, raise_on_optional=True, dump_result=True)
 

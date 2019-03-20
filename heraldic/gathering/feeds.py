@@ -37,8 +37,8 @@ class UrlList:
             'errors': 0
         }
 
-    def harvest(self, update_entries=True, max_depth=0, raise_on_optional=False, dump_result=False):
-        self._gather_links(self.entries, update_entries=update_entries, max_depth=max_depth,
+    def harvest(self, update_inplace=True, max_depth=0, raise_on_optional=False, dump_result=False):
+        self._gather_links(self.entries, update_inplace=update_inplace, max_depth=max_depth,
                            raise_on_optional=raise_on_optional, dump_result=dump_result)
 
         logger.log('INFO_LIST_HARVEST_END', self._counts['gathered'], len(self.entries),
@@ -47,7 +47,7 @@ class UrlList:
                    self._inside_counts['total'], self._inside_counts['exist'], self._inside_counts['domain_not_supported'],
                    self._inside_counts['url_not_supported'], self._inside_counts['errors'])
 
-    def _gather_links(self, items: List, update_entries=False, max_depth=0, depth=0, raise_on_optional=False,
+    def _gather_links(self, items: List, update_inplace=False, max_depth=0, depth=0, raise_on_optional=False,
                       dump_result=False):
         counts = self._counts if depth == 0 else self._inside_counts
         for item in items:
@@ -70,7 +70,7 @@ class UrlList:
                 update_time = None
 
             # Unless an update is enforced, entries which did not change since last feed update are skipped
-            if not update_entries and self.last_update_time is not None and update_time is not None \
+            if not update_inplace and self.last_update_time is not None and update_time is not None \
                     and self.last_update_time >= update_time:
                 counts['exist'] += 1
                 continue
@@ -82,7 +82,7 @@ class UrlList:
                     continue
                 self.gathered_urls = self.gathered_urls.union([url])
                 d = Document(protocol + url)
-                d.gather(update_time=update_time, force_update=update_entries, raise_on_optional=raise_on_optional)
+                d.gather(update_time=update_time, update_inplace=update_inplace, raise_on_optional=raise_on_optional)
                 self.gathered_urls = self.gathered_urls.union(d.model.urls.value)
                 counts['gathered'] += 1
             except ex.UrlNotSupportedException:
@@ -113,7 +113,7 @@ class UrlList:
                 inside_links = d.model.href_sources.value + d.model.side_links.value
                 self._inside_counts['total'] += len(inside_links)
                 # Gather internal links, but without updating existing documents
-                self._gather_links(inside_links, update_entries=update_entries, max_depth=max_depth, depth=depth + 1)
+                self._gather_links(inside_links, update_inplace=update_inplace, max_depth=max_depth, depth=depth + 1)
 
 
 class RssFeed(UrlList):
@@ -144,8 +144,8 @@ class RssFeed(UrlList):
         self.link = feed['feed']['link']
         self.entries = feed['entries']
 
-    def harvest(self, update_entries: bool = True, max_depth=0, raise_on_optional=False, dump_result=False):
-        self._gather_links(self.entries, update_entries=update_entries, max_depth=max_depth,
+    def harvest(self, update_inplace: bool = True, max_depth=0, raise_on_optional=False, dump_result=False):
+        self._gather_links(self.entries, update_inplace=update_inplace, max_depth=max_depth,
                            raise_on_optional=raise_on_optional, dump_result=dump_result)
 
         logger.log('INFO_FEED_HARVEST_END', self.url, self._counts['gathered'], len(self.entries),
@@ -196,7 +196,7 @@ class FeedHarvester:
             try:
                 feed.gather()
                 if feed.update_time >= feed.last_update_time + timedelta(seconds=delay):
-                    feed.harvest(update_entries=override, max_depth=max_depth)
+                    feed.harvest(update_inplace=override, max_depth=max_depth)
                     feed.update()
             except ex.FeedUnavailable:
                 continue
@@ -205,4 +205,4 @@ class FeedHarvester:
     def harvest_feed(feed_url, update_entries=True, max_depth=5):
         feed = RssFeed(feed_url)
         feed.gather()
-        feed.harvest(update_entries=update_entries, max_depth=max_depth)
+        feed.harvest(update_inplace=update_entries, max_depth=max_depth)
