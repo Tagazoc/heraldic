@@ -108,20 +108,41 @@ def retrieve_error_url(doc_id: str) -> str:
     return res['_source']['urls'][0]
 
 
-def get_similar_errors_urls(error_body: str, media: str) -> Generator[str, None, None]:
-    query = {
-        'bool': {
-            'must': [{
-                'term': {
-                    'body.keyword': error_body
-                }
-            }, {
-                'term': {
-                    'media': media
-                }
-            }]
+def get_similar_errors_urls(media: str, attribute: str, error_body: str = '') -> Generator[str, None, None]:
+    if attribute and error_body:
+        query = {
+            'bool': {
+                'must': [{
+                    'term': {
+                        'body.keyword': error_body
+                    }
+                }, {
+                    'term': {
+                        'media': media
+                    }
+                }]
+            }
         }
-    }
+    elif attribute:
+        query = {
+            'bool': {
+                'must': [{
+                    'exists': {
+                        'field': 'body'
+                    }
+                }, {
+                    'term': {
+                        'media': media
+                    }
+                }]
+            }
+        }
+    else:
+        query = {
+            'term': {
+                'media': media
+            }
+        }
     hits = _search_query(query, index_class=ErrorIndex, sort='gather_time:desc')
     for hit in hits:
         yield hit['_source']['urls'][0]
