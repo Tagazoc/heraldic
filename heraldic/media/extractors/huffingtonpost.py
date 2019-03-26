@@ -39,7 +39,8 @@ class HuffingtonPostExtractor(GenericMediaExtractor):
         except AttributeError:
             pass
         try:
-            content_div.find(string=re.compile(r'à voir .*', re.IGNORECASE)).parent.parent.decompose()
+            strong = content_div.find_all('strong')
+            [s.find(string=re.compile(r'à voir .*', re.IGNORECASE)).parent.parent.decompose() for s in strong]
         except AttributeError:
             pass
         try:
