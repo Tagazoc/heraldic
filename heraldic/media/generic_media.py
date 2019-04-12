@@ -29,6 +29,8 @@ class GenericMedia(object):
 
     articles_regex = [r'.*']
 
+    not_articles_regex = []
+
     """A list of regexes which help recognizing whether an URL is an article or not"""
 
     id = 'generic'
@@ -45,11 +47,16 @@ class GenericMedia(object):
         Check whether an URL may be associated with an article, based on its format.
         :param url: The URL to be tested
         """
-        return any([regex.search(url) for regex in cls._articles_compiled_regex()])
+        return not any([regex.search(url) for regex in cls._not_articles_compiled_regex()]) \
+               and any([regex.search(url) for regex in cls._articles_compiled_regex()])
 
     @classmethod
     def _articles_compiled_regex(cls):
         return [re.compile(regex) for regex in cls.articles_regex]
+
+    @classmethod
+    def _not_articles_compiled_regex(cls):
+        return [re.compile(regex) for regex in cls.not_articles_regex]
 
     @classmethod
     def topmost_domains(cls):
@@ -266,8 +273,10 @@ class GenericMediaExtractor(object):
 
         return time_text
 
-    def _post_extract_doc_publication_time(self, text: str) -> datetime:
-        return self._format_time(text, 'doc_publication_time')
+    def _post_extract_doc_publication_time(self, time) -> datetime:
+        if isinstance(time, datetime):
+            return time
+        return self._format_time(time, 'doc_publication_time')
 
     def _extract_doc_update_time(self) -> Optional[str]:
         """
@@ -292,10 +301,12 @@ class GenericMediaExtractor(object):
             return None
         return time_text
 
-    def _post_extract_doc_update_time(self, text: str) -> Optional[datetime]:
-        if text is None:
+    def _post_extract_doc_update_time(self, time) -> Optional[datetime]:
+        if time is None:
             return None
-        return self._format_time(text, 'doc_update_time')
+        elif isinstance(time, datetime):
+            return time
+        return self._format_time(time, 'doc_update_time')
 
     def _extract_href_sources(self) -> List[Tag]:
         """

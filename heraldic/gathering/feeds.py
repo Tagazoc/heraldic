@@ -17,7 +17,7 @@ class UrlList:
     def __init__(self, entries=None):
         
         self.gathered_urls = set()
-        self.entries = list(entries) if entries is not None else []
+        self.entries = entries if entries is not None else []
         self.last_update_time: datetime = None
 
         self._counts = {
