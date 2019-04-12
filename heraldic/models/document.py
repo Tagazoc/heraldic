@@ -20,7 +20,7 @@ class Document(object):
     """
     Class representing a Document through its way through Heraldic.
     """
-    def __init__(self, url: str = '', doc_id: str = None, filepath: str = ''):
+    def __init__(self, url: str = '', doc_id: str = None, filepath: str = '', contents: str = '', redirection_url: str = ''):
         self.model: DocumentModel = DocumentModel()
         self.old_versions: List[DocumentModel] = []
         self.url = ''
@@ -29,6 +29,8 @@ class Document(object):
             self.url = url
         self.doc_id = doc_id
         self.filepath = filepath
+        self.contents = contents
+        self.redirection_url = redirection_url
 
         if doc_id:
             try:
@@ -89,7 +91,9 @@ class Document(object):
     def _fetch_and_extract(self, raise_on_optional=False) -> DocumentModel:
         model = DocumentModel()
         if self.filepath:
-            model.gather_from_file(self.url, self.filepath)
+            model.gather_from_file(self.url, self.filepath, self.redirection_url)
+        elif self.contents:
+            model.gather_from_contents(self.url, self.contents, self.redirection_url)
         else:
             model.gather_from_url(self.url)
             self._check_domain_support(model.final_url)

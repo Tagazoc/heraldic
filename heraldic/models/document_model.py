@@ -236,26 +236,39 @@ class DocumentModel(object):
             r = requests.get(protocol + initial_url, headers=headers)
         except (ValueError, ConnectionError):
             raise
-        # Setting final URL (in case of redirection) in first position
-        urls: KeywordListAttribute = self.attributes['urls']
         # Remove protocol to avoid url confusion
         protocol, final_url = functions.get_truncated_url(r.url)
 
-        urls.append(initial_url)
-        if final_url != initial_url:
-            urls.insert(final_url)
+        self._set_urls_attribute(initial_url, final_url)
 
         r.encoding = 'utf-8'
         self.attributes['content'].value = r.text
 
         self._set_gather_attributes()
 
-    def gather_from_file(self, url: str, filepath: str):
-        urls: KeywordListAttribute = self.attributes['urls']
-        urls.append(url)
+    def gather_from_file(self, url: str, filepath: str, redirection_url: str):
+        protocol, initial_url = functions.get_truncated_url(url)
+        if redirection_url:
+            protocol, final_url = functions.get_truncated_url(redirection_url)
+        else:
+            final_url = ''
+
+        self._set_urls_attribute(initial_url, final_url)
 
         with open(filepath, 'r') as f:
             self.attributes['content'].value = f.read()
+        self._set_gather_attributes()
+
+    def gather_from_contents(self, url: str, contents: str, redirection_url: str):
+        protocol, initial_url = functions.get_truncated_url(url)
+        if redirection_url:
+            protocol, final_url = functions.get_truncated_url(redirection_url)
+        else:
+            final_url = ''
+
+        self._set_urls_attribute(initial_url, final_url)
+
+        self.attributes['content'].value = contents
         self._set_gather_attributes()
 
     def _set_gather_attributes(self):
@@ -268,6 +281,15 @@ class DocumentModel(object):
 
         # Specify model comes from gathering.
         self.from_gathering = True
+
+    def _set_urls_attribute(self, initial_url, final_url):
+
+        # Setting final URL (in case of redirection) in first position
+        urls: KeywordListAttribute = self.attributes['urls']
+
+        urls.append(initial_url)
+        if final_url and final_url != initial_url:
+            urls.insert(final_url)
 
 
 class OldDocumentModel(DocumentModel):
