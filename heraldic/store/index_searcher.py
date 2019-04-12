@@ -251,5 +251,5 @@ def _search_query(query: dict=None, index_class=DocumentIndex, **kwargs) -> Gene
     if query is not None:
         body = {'query': query}
     results = elasticsearch.helpers.scan(es, query=body, index=index_class.INDEX_NAME, doc_type=index_class.TYPE_NAME,
-                                         **kwargs)
+                                         scroll='120m', **kwargs)
     return results
