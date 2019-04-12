@@ -15,6 +15,7 @@ class LExpress(GenericMedia):
     supported_domains = ['www.lexpress.fr', 'lexpansion.lexpress.fr']
     id = 'lexpress'
     articles_regex = [r'\.html$']
+    not_articles_regex = [r'/infos/']
     display_name = 'L\'Express'
 
 
@@ -57,3 +58,28 @@ class LExpressExtractor(GenericMediaExtractor):
         if source is not None:
             return source.group(1)
         return ''
+
+    def _check_extraction(self):
+        # Check for real article in default extractor because some article lists share the same URL pattern as articles
+        # example : https://www.lexpress.fr/actualite/l-express-du-23-novembre-2016-un-desir-de-droite_1852753.html
+        return self.html_soup.select_one('article.article') is not None
+
+
+class LExpressConversationExtractor(GenericMediaExtractor):
+    default_extractor = False
+    test_urls = 'https://www.lexpress.fr/actualite/societe/fait-divers/manifestant-frappe-le-1er-mai-alexandre' \
+                '-benalla-le-collaborateur-de-l-elysee-charge-de-la-securite-lors-de-la-campagne-d-emmanuel' \
+                '-macron-mis-en-cause_2026478.html'
+
+    def _check_extraction(self):
+        return self.html_soup.find('div', attrs={'itemtype': 'http://schema.org/Conversation'}) is not None
+
+    def _extract_body(self):
+        content_div = self.html_soup.find('div', attrs={
+            'itemtype': 'http://schema.org/Conversation'
+        })
+        [div.decompose() for div in content_div.select('div.XPR-chat-container-entry__date')]
+        return content_div
+
+    def _extract_side_links(self):
+        return self.html_soup.select('ul.XPR-chatlist a')
