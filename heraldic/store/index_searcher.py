@@ -114,7 +114,7 @@ def get_similar_errors_urls(media: str, attribute: str, error_body: str = '') ->
             'bool': {
                 'must': [{
                     'term': {
-                        'body.keyword': error_body
+                        attribute + '.keyword': error_body
                     }
                 }, {
                     'term': {
@@ -128,7 +128,7 @@ def get_similar_errors_urls(media: str, attribute: str, error_body: str = '') ->
             'bool': {
                 'must': [{
                     'exists': {
-                        'field': 'body'
+                        'field': attribute
                     }
                 }, {
                     'term': {
