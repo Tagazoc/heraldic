@@ -267,9 +267,15 @@ class GenericMediaExtractor(object):
                 time_text = self.html_soup.find('time', attrs={'itemprop': 'datePublished'}).get('datetime')
             except AttributeError:
                 try:
-                    time_text = self.html_soup.find('time').get('datetime')
+                    time_text = self.html_soup.find('meta', attrs={
+                        'property': "og:article:published_time"
+                    }).get('content')
                 except AttributeError:
-                    time_text = self.html_soup.find('meta', attrs={'property': "og:article:published_time"}).get('content')
+                    try:
+                        data = json.loads(self.html_soup.find('script', type='application/ld+json').text)
+                        time_text = data['datePublished']
+                    except AttributeError:
+                        time_text = self.html_soup.find('time').get('datetime')
 
         return time_text
 
@@ -292,11 +298,14 @@ class GenericMediaExtractor(object):
                     time_text = self.html_soup.find('time', attrs={'itemprop': 'dateModified'}).get('datetime')
                 except AttributeError:
                     try:
-                        time_text = self.html_soup.find_all('time')[1].get('datetime')
+                        time_text = self.html_soup.find('meta', attrs={'property': "og:article:modified_time"}).get('content')
                     except AttributeError:
-                        time_text = self.html_soup.find('meta', attrs={'property': "og:article:modified_time"}).get(
-                            'content')
-        except IndexError:
+                        try:
+                            data = json.loads(self.html_soup.find('script', type='application/ld+json').text)
+                            time_text = data['dateModified']
+                        except (AttributeError, IndexError):
+                            time_text = self.html_soup.find_all('time')[1].get('datetime')
+        except (AttributeError, IndexError):
             # Should all fail, return None
             return None
         return time_text

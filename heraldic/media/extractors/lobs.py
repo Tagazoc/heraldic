@@ -42,14 +42,6 @@ class LObsExtractor(GenericMediaExtractor):
             pass
         return content_div
 
-    def _extract_doc_publication_time(self):
-        data = json.loads(self.html_soup.find('script', type='application/ld+json').text)
-        return data['datePublished']
-
-    def _extract_doc_update_time(self):
-        data = json.loads(self.html_soup.find('script', type='application/ld+json').text)
-        return data['dateModified']
-
     def _extract_href_sources(self):
         html_as = self._body_tag.select('a')
         html_as = self._exclude_hrefs_by_regex(html_as, r'.*/$')
