@@ -14,7 +14,7 @@ class Liberation(GenericMedia):
     """
     supported_domains = ['www.liberation.fr']
     id = 'liberation'
-    articles_regex = [r'_[0-9]+$']
+    articles_regex = [r'_[0-9]+/?$']
     display_name = 'Libération'
 
 
@@ -52,3 +52,21 @@ class LiberationExtractor(GenericMediaExtractor):
 
     def _extract_side_links(self):
         return self.html_soup.select('ul.live-items a')
+
+
+class LiberationDirectExtractor(GenericMediaExtractor):
+    default_extractor = False
+    test_urls = ['https://www.liberation.fr/direct/element/sanofi-accuse-de-rejets-toxiques-hors-norme-'
+                 'depuis-son-usine-qui-produit-la-depakine_84269/']
+
+    def _check_extraction(self):
+        return self.html_soup.select_one('div.direct-headband') is not None
+
+    def _extract_title(self):
+        return self.html_soup.find('meta', attrs={'property': "og:title"}).get('content')
+
+    def _extract_body(self):
+        return self.html_soup.select_one('div.live div.live-content span')
+
+    def _extract_side_links(self):
+        return self.html_soup.select('div.tag-container ul.live-items a')
