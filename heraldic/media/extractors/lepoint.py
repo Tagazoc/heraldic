@@ -52,4 +52,7 @@ class LePointExtractor(GenericMediaExtractor):
         return self.html_soup.find('aside', attrs={'id': 'article-reserve-aux-abonnes'}) is not None
 
     def _extract_side_links(self):
-        return self.html_soup.select_one('h3.header-meme-sujet').parent.select('a')
+        try:
+            return self.html_soup.select_one('h3.header-meme-sujet').parent.select('a')
+        except AttributeError:
+            return []
