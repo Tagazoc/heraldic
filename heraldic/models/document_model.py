@@ -115,9 +115,11 @@ class DocumentModel(object):
                         storable_values_updated = True
                     old_model.attributes[k].update(self.attributes[k].value)
                     self.attributes[k] = copy(v)
-
                 elif v.parsing_error is not None or v.suggestions != self.attributes[k].suggestions:
                     # Updating attribute even if value did not change
+                    self.attributes[k] = copy(v)
+                elif v.initialized and v.parsing_error is None and self.attributes[k].parsing_error is not None:
+                    # Delete error if it exists no more
                     self.attributes[k] = copy(v)
 
         # Did some values really change ?
