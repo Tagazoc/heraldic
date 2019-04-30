@@ -40,12 +40,12 @@ def _match_url(url):
     return url_regex.match(url)
 
 
-def get_domain(url):
+def get_domain(url, do_not_log=False):
     try:
         match = _match_url(url)
         return match.group(2)
     except AttributeError:
-        raise InvalidUrlException(url)
+        raise InvalidUrlException(url, do_not_log=do_not_log)
 
 
 def get_resource(url, do_not_log_on_error=False):
@@ -56,7 +56,7 @@ def get_resource(url, do_not_log_on_error=False):
         raise InvalidUrlException(url, do_not_log=do_not_log_on_error)
 
 
-def get_truncated_url(url) -> Tuple[str, str]:
+def get_truncated_url(url, do_not_log_on_error=False) -> Tuple[str, str]:
     try:
         match = _match_url(url)
 
@@ -64,4 +64,4 @@ def get_truncated_url(url) -> Tuple[str, str]:
         protocol_scheme = 'http://' if len(match.group(1)) < 6 else match.group(1)
         return protocol_scheme, match.group(2) + match.group(3)
     except AttributeError:
-        raise InvalidUrlException(url)
+        raise InvalidUrlException(url, do_not_log=do_not_log_on_error)

@@ -17,6 +17,7 @@ class Logger:
         'WARN_DOMAIN_NOT_SUPPORTED': 'Domain %{domain} is currently not supported.',
         'WARN_URL_NOT_ARTICLE': 'URL %{url} (redirecting to %{final_url}) does not correspond to '
                                 'article format for this website.',
+        'WARN_CONTENT_NOT_SUPPORTED': 'Content in URL %{url} (redirecting to %{final_url}) is not supported.',
         'INFO_DOC_NOT_CHANGED': 'Document "%{doc_id}" with URL %{url} did not change after revision.',
         'WARN_ATTRIBUTE_PARSING_ERROR': 'Extraction of "%{attribute}" attribute for URL %{url} failed :'
                                         ' %{error_message}',
