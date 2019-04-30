@@ -262,3 +262,49 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Doc'
+  /regather:
+    get:
+      operationId: regather.get_error_urls
+      parameters:
+        - name: media
+          in: query
+          schema:
+            type: string
+        - name: attribute
+          in: query
+          schema:
+            type: string
+        - name: error
+          in : query
+          schema:
+            type: string
+      responses:
+        200:
+          description: URL to regather
+          content:
+            application/json:
+              schema:
+                type: string
+    post:
+      operationId: regather.post_doc
+      requestBody:
+        description: Content of the web page
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                url:
+                  type: string
+                content:
+                  type: string
+              required:
+                - url
+                - content
+      responses:
+        200:
+          description: Another URL to regather
+          content:
+            application/json:
+              schema:
+                type: string

@@ -5,6 +5,7 @@ Module which runs an API
 """
 
 import connexion
+from flask_cors import CORS
 
 
 def create_app():
@@ -12,7 +13,7 @@ def create_app():
     app = connexion.App('heraldicapi', port=5000, debug=True, specification_dir=specification_dir)
 
     app.add_api('swagger.yml')
-
+    CORS(app.app)
     return app
 
 
