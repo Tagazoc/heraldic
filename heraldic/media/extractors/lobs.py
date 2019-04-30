@@ -52,18 +52,13 @@ class LObsExtractor(GenericMediaExtractor):
         return text
 
     def _extract_news_agency(self):
-        author = self.html_soup.select_one('div.ObsArticle-author span').text
-        source = re.search(r' avec (.*)', author)
-        if source is not None:
-            return source.group(1)
-        try:
-            text = self._body_tag.select('strong')[-1].text
-            source = re.search(r'Avec (.*)\)', text)
-            if source is not None:
-                return source.group(1)
-        except IndexError:
-            pass
-        return ''
+        author = self.html_soup.select_one('div.ObsArticle-author span')
+        if author is None:
+            try:
+                author = self._body_tag.select('strong')[-1]
+            except IndexError:
+                return None
+        return author
 
     def _extract_subscribers_only(self):
         return self.html_soup.select_one('div.ObsPaywall') is not None

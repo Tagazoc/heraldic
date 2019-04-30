@@ -61,17 +61,10 @@ class HuffingtonPostExtractor(GenericMediaExtractor):
         return span_text
 
     def _extract_news_agency(self):
-        try:
-            author_text = self.html_soup.select_one('a.author-card__details__name').text
-        except AttributeError:
-            try:
-                author_text = self.html_soup.select_one('span.author-card__microbio').text
-            except AttributeError:
-                return ''
-        source = re.search(r' avec (.*)', author_text)
-        if source is not None:
-            return source.group(1)
-        return ''
+        author_tag = self.html_soup.select_one('a.author-card__details__name')
+        if author_tag is None:
+            author_tag = self.html_soup.select_one('span.author-card__microbio')
+        return author_tag
 
 
 class HuffingtonPostVideoExtractor(HuffingtonPostExtractor):
@@ -91,7 +84,7 @@ class HuffingtonPostVideoExtractor(HuffingtonPostExtractor):
 
     def _extract_news_agency(self):
         # No news agency for video
-        return ''
+        return None
 
     def _extract_side_links(self):
         return self.html_soup.select('div.entry-recirc-mod ul a')

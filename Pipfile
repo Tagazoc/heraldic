@@ -27,6 +27,8 @@ numpy = "*"
 connexion = {extras = ["swagger-ui"],version = "*"}
 swagger-tester = "*"
 swagger-parser = "*"
+pyopenssl = "*"
+flask-cors = "*"
 
 [dev-packages]
 sphinx = "*"

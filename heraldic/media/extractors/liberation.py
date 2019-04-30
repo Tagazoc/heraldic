@@ -44,11 +44,7 @@ class LiberationExtractor(GenericMediaExtractor):
         return category
 
     def _extract_news_agency(self):
-        a_text = self._author_tag.a.text
-        source = re.search(r' avec (.*)', a_text)
-        if source is not None:
-            return source.group(1)
-        return ''
+        return self._author_tag.a
 
     def _extract_side_links(self):
         return self.html_soup.select('ul.live-items a')

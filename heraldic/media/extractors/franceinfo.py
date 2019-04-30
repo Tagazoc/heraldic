@@ -43,11 +43,4 @@ class FranceInfoExtractor(GenericMediaExtractor):
         return text
 
     def _extract_news_agency(self):
-        try:
-            text = self.html_soup.select_one('span.author').text
-        except AttributeError:
-            return []
-        source = re.search(r' avec (.*)', text)
-        if source is not None:
-            return source.group(1)
-        return ''
+        return self.html_soup.select_one('span.author')

@@ -28,10 +28,9 @@ class GenericMedia(object):
     """The domains used in URLs of the selected media"""
 
     articles_regex = [r'.*']
-
     not_articles_regex = []
 
-    """A list of regexes which help recognizing whether an URL is an article or not"""
+    """Lists of regexes which help recognizing whether an URL is an article or not"""
 
     id = 'generic'
     display_name = 'Generic'
@@ -132,6 +131,9 @@ class GenericMediaExtractor(object):
     test_urls = []
     _document_type = 'article'
     """ Document type : article, video, panorama... """
+
+    _news_agencies = ['AFP', 'Reuters']
+    _news_agencies_regex = re.compile('('+"|".join(_news_agencies)+')', re.IGNORECASE)
 
     def __init__(self, dm: DocumentModel) -> None:
         """
@@ -274,7 +276,7 @@ class GenericMediaExtractor(object):
                     try:
                         data = json.loads(self.html_soup.find('script', type='application/ld+json').text)
                         time_text = data['datePublished']
-                    except AttributeError:
+                    except (AttributeError, KeyError):
                         time_text = self.html_soup.find('time').get('datetime')
 
         return time_text
@@ -303,7 +305,7 @@ class GenericMediaExtractor(object):
                         try:
                             data = json.loads(self.html_soup.find('script', type='application/ld+json').text)
                             time_text = data['dateModified']
-                        except (AttributeError, IndexError):
+                        except (AttributeError, KeyError):
                             time_text = self.html_soup.find_all('time')[1].get('datetime')
         except (AttributeError, IndexError):
             # Should all fail, return None
@@ -343,7 +345,8 @@ class GenericMediaExtractor(object):
                 continue
             # Use first defined domain, should work "almost" every time
             try:
-                protocol, url = get_truncated_url(re.sub(r'^/([^/])', self.get_media_domains()[0] + r'/\1', href))
+                protocol, url = get_truncated_url(re.sub(r'^/([^/])', self.get_media_domains()[0] + r'/\1', href),
+                                                  do_not_log_on_error=True)
             except ex.InvalidUrlException:
                 continue
             # We let (for now) protocol in those URLS
@@ -366,12 +369,22 @@ class GenericMediaExtractor(object):
         """
         return ''
 
-    def _extract_news_agency(self) -> str:
+    def _extract_news_agency(self) -> Tag:
         """
-        Extract news agency explicitly given in the document
-        :return: news agency name
+        Extract author tag from the document which may contain the name of news agency
+        Real author name won't be kept
+        :return: author HTML tag
         """
-        return ''
+        return None
+
+    def _post_extract_news_agency(self, author_tag: Tag) -> str:
+        try:
+            match = self._news_agencies_regex.search(author_tag.text)
+            if match is not None:
+                return match.group(1)
+            return ''
+        except AttributeError:
+            return ''
 
     def _extract_explicit_sources(self) -> List[str]:
         return []
@@ -516,7 +529,6 @@ class GenericMediaExtractor(object):
 
         return filtered_as
 
-    # TODO invalidurl qui ne print pas
     @classmethod
     def _exclude_hrefs_by_regex(cls, html_as: List, regex: str, only_internal_links=True):
         reg = re.compile(regex)
@@ -541,7 +553,7 @@ class GenericMediaExtractor(object):
         if re.match(r'/', url):
             return True
         try:
-            if get_domain(url) in cls.get_media_domains():
+            if get_domain(url, do_not_log=True) in cls.get_media_domains():
                 return True
             else:
                 return False

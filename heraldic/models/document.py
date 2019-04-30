@@ -127,7 +127,7 @@ class Document(object):
         # URL is not supported, so delete the error if any
         if self.doc_id:
             self._delete_error()
-        raise ex.UrlNotSupportedException(self.url, model.final_url)
+        raise ex.DocumentNotArticleException(self.url, model.final_url)
 
     def _store(self):
         """

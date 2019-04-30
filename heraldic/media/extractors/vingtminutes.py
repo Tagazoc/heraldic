@@ -56,11 +56,7 @@ class VingtMinutesExtractor(GenericMediaExtractor):
         return html_category
 
     def _extract_news_agency(self):
-        author = self.html_soup.select_one('p.authorsign-label').text
-        source = re.search(r' avec (.*)', author, re.IGNORECASE)
-        if source is not None:
-            return source.group(1)
-        return ''
+        return self.html_soup.select_one('p.authorsign-label')
 
     def _extract_side_links(self):
         self._side_links.extend(self.html_soup.select('block-contentLinks a'))

@@ -48,5 +48,8 @@ class LeFigaroExtractor(GenericMediaExtractor):
         span_text = self.html_soup.select_one('li.fig-breadcrumb__item--current span').text
         return span_text
 
+    def _extract_news_agency(self):
+        return self.html_soup.select_one('span.fig-content-metas__author')
+
     def _extract_subscribers_only(self):
         return self.html_soup.select_one('div.fig-premium-paywall') is not None

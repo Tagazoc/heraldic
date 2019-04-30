@@ -40,11 +40,7 @@ class Europe1Extractor(GenericMediaExtractor):
         return html_as
 
     def _extract_news_agency(self):
-        text = self.html_soup.select_one('div.author div.titre').text
-        source = re.search(r' avec (.*)', text)
-        if source is not None:
-            return source.group(1)
-        return ''
+        return self.html_soup.select_one('div.author div.titre')
 
     def _extract_side_links(self):
         return self.html_soup.select('footer.footer-article div.memetheme a')

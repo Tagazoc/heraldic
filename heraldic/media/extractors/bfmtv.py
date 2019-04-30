@@ -34,11 +34,7 @@ class BfmTvExtractor(GenericMediaExtractor):
         return text
 
     def _extract_news_agency(self):
-        text = self.html_soup.find('strong', attrs={'rel': 'author'}).text
-        source = re.search(r' avec (.*)', text)
-        if source is not None:
-            return source.group(1)
-        return ''
+        return self.html_soup.find('strong', attrs={'rel': 'author'})
 
     def _extract_side_links(self):
         return self.html_soup.select('ul.related-article a')

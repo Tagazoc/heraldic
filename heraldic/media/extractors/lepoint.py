@@ -41,12 +41,7 @@ class LePointExtractor(GenericMediaExtractor):
         return text
 
     def _extract_news_agency(self):
-        text = self.html_soup.find('span', attrs={'rel': 'author'}).text
-        # Do not want the nominative author
-        source = re.search(r'(AFP|Reuters)', text, re.IGNORECASE)
-        if source is not None:
-            return source.group(1)
-        return ''
+        return self.html_soup.find('span', attrs={'rel': 'author'})
 
     def _extract_subscribers_only(self):
         return self.html_soup.find('aside', attrs={'id': 'article-reserve-aux-abonnes'}) is not None

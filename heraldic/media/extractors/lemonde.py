@@ -91,13 +91,7 @@ class LeMondeNewExtractor(GenericMediaExtractor):
             return ''
 
     def _extract_news_agency(self):
-        try:
-            data_source = self.html_soup.find('span', attrs={'class': 'meta__author'}).text
-            source = re.search(r' avec (.*)', data_source)
-            sources = source.group(1)
-            return sources
-        except AttributeError:
-            return ''
+        return self.html_soup.find('span', attrs={'class': 'meta__author'})
 
     def _extract_subscribers_only(self):
         return self.html_soup.select_one('p.article__status') is not None

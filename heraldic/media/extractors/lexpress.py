@@ -51,13 +51,7 @@ class LExpressExtractor(GenericMediaExtractor):
         return html_as
 
     def _extract_news_agency(self):
-        text = self.html_soup.find('span', attrs={'itemprop': 'author'}).span.text
-        # Do not want the nominative author
-        source = re.match(r'(.*) pour l\'Express', text, re.IGNORECASE) or re.match(r'Par (.*)', text, re.IGNORECASE)\
-                 or re.match(r'LEXPRESS\.fr avec (.*)', text, re.IGNORECASE)
-        if source is not None:
-            return source.group(1)
-        return ''
+        return self.html_soup.find('span', attrs={'itemprop': 'author'}).span
 
     def _check_extraction(self):
         # Check for real article in default extractor because some article lists share the same URL pattern as articles
@@ -67,9 +61,9 @@ class LExpressExtractor(GenericMediaExtractor):
 
 class LExpressConversationExtractor(GenericMediaExtractor):
     default_extractor = False
-    test_urls = 'https://www.lexpress.fr/actualite/societe/fait-divers/manifestant-frappe-le-1er-mai-alexandre' \
+    test_urls = ['https://www.lexpress.fr/actualite/societe/fait-divers/manifestant-frappe-le-1er-mai-alexandre' \
                 '-benalla-le-collaborateur-de-l-elysee-charge-de-la-securite-lors-de-la-campagne-d-emmanuel' \
-                '-macron-mis-en-cause_2026478.html'
+                '-macron-mis-en-cause_2026478.html']
 
     def _check_extraction(self):
         return self.html_soup.find('div', attrs={'itemtype': 'http://schema.org/Conversation'}) is not None
