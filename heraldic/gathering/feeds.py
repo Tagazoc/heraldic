@@ -25,6 +25,7 @@ class UrlList:
             'exist': 0,
             'domain_not_supported': 0,
             'url_not_supported': 0,
+            'not_article': 0,
             'errors': 0
         }
 
@@ -34,6 +35,7 @@ class UrlList:
             'exist': 0,
             'domain_not_supported': 0,
             'url_not_supported': 0,
+            'not_article': 0,
             'errors': 0
         }
 
@@ -43,9 +45,10 @@ class UrlList:
 
         logger.log('INFO_LIST_HARVEST_END', self._counts['gathered'], len(self.entries),
                    self._counts['exist'], self._counts['domain_not_supported'],
-                   self._counts['url_not_supported'], self._counts['errors'], self._inside_counts['gathered'],
+                   self._counts['url_not_supported'], self._counts['not_article'], self._counts['errors'],
+                   self._inside_counts['gathered'],
                    self._inside_counts['total'], self._inside_counts['exist'], self._inside_counts['domain_not_supported'],
-                   self._inside_counts['url_not_supported'], self._inside_counts['errors'])
+                   self._inside_counts['url_not_supported'], self._inside_counts['not_article'], self._inside_counts['errors'])
 
     def _gather_links(self, items: List, update_inplace=False, max_depth=0, depth=0, raise_on_optional=False,
                       dump_result=False):
@@ -90,6 +93,9 @@ class UrlList:
                 continue
             except ex.DomainNotSupportedException:
                 counts['domain_not_supported'] += 1
+                continue
+            except ex.DocumentNotArticleException:
+                counts['not_article'] += 1
                 continue
             except ex.GatherError:
                 counts['errors'] += 1
@@ -150,10 +156,10 @@ class RssFeed(UrlList):
 
         logger.log('INFO_FEED_HARVEST_END', self.url, self._counts['gathered'], len(self.entries),
                    self._counts['exist'],
-                   self._counts['domain_not_supported'], self._counts['url_not_supported'],
+                   self._counts['domain_not_supported'], self._counts['url_not_supported'], self._counts['not_article'],
                    self._counts['errors'], self._inside_counts['gathered'],
                    self._inside_counts['total'], self._inside_counts['exist'], self._inside_counts['domain_not_supported'],
-                   self._inside_counts['domain_not_supported'], self._inside_counts['errors'])
+                   self._inside_counts['domain_not_supported'], self._inside_counts['not_article'], self._inside_counts['errors'])
 
     def render_for_store(self):
         body = {

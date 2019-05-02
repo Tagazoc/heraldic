@@ -27,18 +27,19 @@ class Logger:
         'INFO_FEED_UPDATE_SUCCESS': 'Feed %{feed_url} was successfully updated.',
         'INFO_FEED_HARVEST_END': 'Feed %{feed_url} gathered %{gathered} documents on %{total} (%{existed} '
                                  'already up-to-date, %{domain_unsupported} which domain was not supported, '
-                                 '%{url_unsupported} which URL was not supported, %{errors}'
-                                 ' whose parsing failed), and recursively gathered %{i_gathered} links on '
+                                 '%{url_unsupported} which URL was not supported, %{not_article} which were not articles,'
+                                 '%{errors} whose parsing failed), and recursively gathered %{i_gathered} links on '
                                  '%{i_total} (%{i_existed} already up-to-date, %{i_d_unsupported} which domain '
                                  'was not supported, %{i_a_unsupported} which URL '
-                                 'was not supported, %{i_errors} whose parsing failed)',
+                                 'was not supported, %{i_not_article} which were not articles, and '
+                                 '%{i_errors} whose parsing failed)',
         'INFO_LIST_HARVEST_END': 'Provided URL list gathered %{gathered} documents on %{total} (%{existed} '
                                  'already up-to-date, %{domain_unsupported} which domain was not supported, '
-                                 '%{url_unsupported} which URL was not supported, %{errors}'
-                                 ' whose parsing failed), and recursively gathered %{i_gathered} links on '
+                                 '%{url_unsupported} which URL was not supported, %{not_article} which were not articles,'
+                                 '%{errors} whose parsing failed), and recursively gathered %{i_gathered} links on '
                                  '%{i_total} (%{i_existed} already up-to-date, %{i_d_unsupported} which domain '
                                  'was not supported, %{i_a_unsupported} which URL '
-                                 'was not supported, %{i_errors} whose parsing failed)',
+                                 'was not supported, %{i_not_article} which were not articles, and %{i_errors} whose parsing failed)',
         'WARN_URL_INVALID': 'URL %{url} is invalid.',
         'WARN_FEED_UNAVAILABLE': 'Feed %{url} is unavailable with error code %{status}.'
     }
