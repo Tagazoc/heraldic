@@ -534,13 +534,16 @@ class GenericMediaExtractor(object):
         reg = re.compile(regex)
         filtered_as = []
         for a in html_as:
+            href = a.get('href')
+            if href is None:
+                continue
             # External links are kept if only internal links are excluded
-            if only_internal_links and not cls._is_internal_link(a['href']):
+            if only_internal_links and not cls._is_internal_link(href):
                 filtered_as.append(a)
                 continue
-            if not reg.match(a['href']):
+            if not reg.match(href):
                 try:
-                    if not reg.match(get_resource(a['href'])):
+                    if not reg.match(get_resource(href)):
                         filtered_as.append(a)
                 except ex.InvalidUrlException:
                     filtered_as.append(a)
