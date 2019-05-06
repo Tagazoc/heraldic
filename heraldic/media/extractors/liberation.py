@@ -40,8 +40,12 @@ class LiberationExtractor(GenericMediaExtractor):
         return html_as
 
     def _extract_category(self):
-        category = self.html_soup.select_one('div.article-subhead').text
-        return category
+        try:
+            category = self.html_soup.select_one('div.article-subhead').text
+            return category
+        except AttributeError:
+            return ''
+
 
     def _extract_news_agency(self):
         return self._author_tag.a
