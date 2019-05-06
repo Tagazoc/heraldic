@@ -34,7 +34,10 @@ class FranceInfoExtractor(GenericMediaExtractor):
         self._side_links = [tag.extract() for tag in alireaussi_tag.select('a')]
 
         [aside.decompose() for aside in content_div.find_all('aside')]
-        content_div.select_one('div.content-feedback-block').decompose()
+        try:
+            content_div.select_one('div.content-feedback-block').decompose()
+        except AttributeError:
+            pass
         return content_div
 
     def _extract_category(self):
