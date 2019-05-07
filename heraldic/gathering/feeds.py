@@ -26,7 +26,8 @@ class UrlList:
             'domain_not_supported': 0,
             'url_not_supported': 0,
             'not_article': 0,
-            'errors': 0
+            'errors': 0,
+            'total': 0
         }
 
         self._inside_counts = {
@@ -43,7 +44,7 @@ class UrlList:
         self._gather_links(self.entries, update_inplace=update_inplace, max_depth=max_depth,
                            raise_on_optional=raise_on_optional, dump_result=dump_result)
 
-        logger.log('INFO_LIST_HARVEST_END', self._counts['gathered'], len(self.entries),
+        logger.log('INFO_LIST_HARVEST_END', self._counts['gathered'], self._counts['total'],
                    self._counts['exist'], self._counts['domain_not_supported'],
                    self._counts['url_not_supported'], self._counts['not_article'], self._counts['errors'],
                    self._inside_counts['gathered'],
@@ -54,7 +55,7 @@ class UrlList:
                       dump_result=False):
         counts = self._counts if depth == 0 else self._inside_counts
         for item in items:
-
+            self._counts['total'] += 1
             try:
                 # items are feed entries
                 url = item['link']
@@ -154,7 +155,7 @@ class RssFeed(UrlList):
         self._gather_links(self.entries, update_inplace=update_inplace, max_depth=max_depth,
                            raise_on_optional=raise_on_optional, dump_result=dump_result)
 
-        logger.log('INFO_FEED_HARVEST_END', self.url, self._counts['gathered'], len(self.entries),
+        logger.log('INFO_FEED_HARVEST_END', self.url, self._counts['gathered'], self._counts['total'],
                    self._counts['exist'],
                    self._counts['domain_not_supported'], self._counts['url_not_supported'], self._counts['not_article'],
                    self._counts['errors'], self._inside_counts['gathered'],
