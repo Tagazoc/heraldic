@@ -21,7 +21,7 @@ doc_dict = {
     'doc_update_time': '2017-08-31T14:20:10Z',
     'document_type': 'article',
     'href_sources': [
-        'https://www.marianne.net/politique/le-responsable-ps-agresse-par-un-depute-lrem-est-en-soins-intensifs'],
+        'www.marianne.net/politique/le-responsable-ps-agresse-par-un-depute-lrem-est-en-soins-intensifs'],
     'keywords': ['actualités', 'news', 'Agence France-Presse', 'Paris', 'Pompier', 'Mediapart', 'Blog', 'Assen',
                  'Jabber', 'Primaire présidentielle socialiste de 2011', 'Surréalisme', 'Scooter', 'Violence',
                  'Urgences', 'Réanimation', 'Arabes', 'En marche !', 'Rue Broca', 'Député', 'Racisme', 'Marianne',
@@ -46,7 +46,7 @@ update_doc_dict = {
     'doc_update_time': '2017-08-31T14:21:10Z',
     'document_type': 'article',
     'href_sources': [
-        'https://www.marianne.net/politique/le-responsable-ps-agresse-par-un-depute-lrem-est-en-soins-intensifs'],
+        'www.marianne.net/politique/le-responsable-ps-agresse-par-un-depute-lrem-est-en-soins-intensifs'],
     'keywords': ['Violence', 'Socialiste', 'Agence France-Presse', 'Jabber', 'Surréalisme', 'Paris', 'Hebdomadaire',
                  'Assemblée nationale', 'Mediapart', 'Arabes', 'Diffamation', "Mohamed M'jid", 'Famille', 'Marianne',
                  'Député', 'En marche !', 'Urgences', 'Didier Le Bret', 'Assen', 'Blog', 'actualités', 'PS',
@@ -70,7 +70,7 @@ update_doc_versions = [
         'doc_update_time': '2017-08-31T14:20:10Z',
         'document_type': 'article',
         'href_sources': [
-            'https://www.marianne.net/politique/le-responsable-ps-agresse-par-un-depute-lrem-est-en-soins-intensifs'],
+            'www.marianne.net/politique/le-responsable-ps-agresse-par-un-depute-lrem-est-en-soins-intensifs'],
         'keywords': ['Hôpital', 'Rue Broca', 'actualités', 'Assen', 'Réanimation', 'Paris', 'news', 'Didier Le Bret',
                      'Famille', 'Hebdomadaire', 'Surréalisme', 'Pompier', 'Scooter', 'Marianne', 'En marche !', 'Blog',
                      'Arabes', 'Député', 'Socialiste', 'Diffamation', 'Élections législatives de 2012', "Mohamed M'jid",
@@ -103,7 +103,7 @@ error_doc_dict = {
     'doc_update_time': '2017-08-31T14:21:10Z',
     'document_type': 'article',
     'href_sources': [
-        'https://www.marianne.net/politique/le-responsable-ps-agresse-par-un-depute-lrem-est-en-soins-intensifs'],
+        'www.marianne.net/politique/le-responsable-ps-agresse-par-un-depute-lrem-est-en-soins-intensifs'],
     'keywords': ['Violence', 'Socialiste', 'Agence France-Presse', 'Jabber', 'Surréalisme', 'Paris', 'Hebdomadaire',
                  'Assemblée nationale', 'Mediapart', 'Arabes', 'Diffamation', "Mohamed M'jid", 'Famille', 'Marianne',
                  'Député', 'En marche !', 'Urgences', 'Didier Le Bret', 'Assen', 'Blog', 'actualités', 'PS',
@@ -127,7 +127,7 @@ error_doc_versions = [
         'doc_update_time': '2017-08-31T14:20:10Z',
         'document_type': 'article',
         'href_sources': [
-            'https://www.marianne.net/politique/le-responsable-ps-agresse-par-un-depute-lrem-est-en-soins-intensifs'],
+            'www.marianne.net/politique/le-responsable-ps-agresse-par-un-depute-lrem-est-en-soins-intensifs'],
         'keywords': ['Hôpital', 'Rue Broca', 'actualités', 'Assen', 'Réanimation', 'Paris', 'news', 'Didier Le Bret',
                      'Famille', 'Hebdomadaire', 'Surréalisme', 'Pompier', 'Scooter', 'Marianne', 'En marche !', 'Blog',
                      'Arabes', 'Député', 'Socialiste', 'Diffamation', 'Élections législatives de 2012', "Mohamed M'jid",
@@ -168,7 +168,7 @@ error_solved_doc_dict = {
     'doc_update_time': '2017-08-31T14:21:10Z',
     'document_type': 'article',
     'href_sources': [
-        'https://www.marianne.net/politique/le-responsable-ps-agresse-par-un-depute-lrem-est-en-soins-intensifs'],
+        'www.marianne.net/politique/le-responsable-ps-agresse-par-un-depute-lrem-est-en-soins-intensifs'],
     'keywords': ['Famille', 'Marianne', 'En marche !', 'Diffamation', 'Assemblée nationale', 'Didier Le Bret', 'Blog',
                  'Hebdomadaire', 'Élections législatives de 2012', 'actualités',
                  'Primaire présidentielle socialiste de 2011', 'news', 'Député', 'Libération', 'Arabes', 'Socialiste',
@@ -193,7 +193,7 @@ error_solved_doc_versions = [
         'doc_update_time': '2017-08-31T14:20:10Z',
         'document_type': 'article',
         'href_sources': [
-            'https://www.marianne.net/politique/le-responsable-ps-agresse-par-un-depute-lrem-est-en-soins-intensifs'],
+            'www.marianne.net/politique/le-responsable-ps-agresse-par-un-depute-lrem-est-en-soins-intensifs'],
         'keywords': ['Urgences', 'Assen', 'Libération', 'Scooter', 'Rue Broca',
                      'Didier Le Bret', 'Arabes', 'En marche !', 'actualités', 'Mediapart',
                      'Hôpital', 'Paris', 'Jabber', 'Hebdomadaire', 'Diffamation', 'Blog',
@@ -238,7 +238,7 @@ update_inplace_doc_dict = {
     'doc_update_time': '2017-08-31T14:20:10Z',
     'document_type': 'article',
     'href_sources': [
-        'https://www.marianne.net/politique/le-responsable-ps-agresse-par-un-depute-lrem-est-en-soins-intensifs'],
+        'www.marianne.net/politique/le-responsable-ps-agresse-par-un-depute-lrem-est-en-soins-intensifs'],
     'keywords': ['Famille', 'Marianne', 'En marche !', 'Diffamation', 'Assemblée nationale', 'Didier Le Bret', 'Blog',
                  'Hebdomadaire', 'Élections législatives de 2012', 'actualités',
                  'Primaire présidentielle socialiste de 2011', 'news', 'Député', 'Libération', 'Arabes', 'Socialiste',
@@ -263,7 +263,7 @@ update_inplace_doc_versions = [
         'doc_update_time': '2017-08-31T14:20:10Z',
         'document_type': 'article',
         'href_sources': [
-            'https://www.marianne.net/politique/le-responsable-ps-agresse-par-un-depute-lrem-est-en-soins-intensifs'],
+            'www.marianne.net/politique/le-responsable-ps-agresse-par-un-depute-lrem-est-en-soins-intensifs'],
         'keywords': ['Urgences', 'Assen', 'Libération', 'Scooter', 'Rue Broca',
                      'Didier Le Bret', 'Arabes', 'En marche !', 'actualités', 'Mediapart',
                      'Hôpital', 'Paris', 'Jabber', 'Hebdomadaire', 'Diffamation', 'Blog',

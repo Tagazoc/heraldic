@@ -349,8 +349,8 @@ class GenericMediaExtractor(object):
                                                   do_not_log_on_error=True)
             except ex.InvalidUrlException:
                 continue
-            # We let (for now) protocol in those URLS
-            result.append(protocol + url)
+            # Only add url without protocol
+            result.append(url)
 
         # Only keep distinct values
         result = list(set(result))
