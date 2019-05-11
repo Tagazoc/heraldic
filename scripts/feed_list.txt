@@ -15,3 +15,4 @@ l_humanite:https://www.humanite.fr/rss/actu.rss
 les_echos:https://www.lesechos.fr/rss/rss_une.xml
 fdesouche:http://www.fdesouche.com/feed
 marianne:https://www.marianne.net/rss.xml
+valeurs_actuelles:https://www.valeursactuelles.com/taxonomy/term/0/feed

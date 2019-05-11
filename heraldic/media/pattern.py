@@ -21,11 +21,13 @@ class MediaNameExtractor(GenericMediaExtractor):
     """
     Class used for extracting items from media "".
     """
+    test_urls = []
+
     def _check_extraction(self):
-        return self.html_soup.find('div', attrs={'itemprop': 'articleBody'}) is not None
+        return self.html_soup.select_one('div.articleBody') is not None
 
     def _extract_body(self):
-        return self.html_soup.find('div', attrs={'itemprop': 'articleBody'})
+        return self.html_soup.select_one('div.articleBody')
 
     def _extract_href_sources(self):
         html_as = self._body_tag.find_all('a')
@@ -33,12 +35,8 @@ class MediaNameExtractor(GenericMediaExtractor):
         return html_as
 
     def _extract_category(self):
-        text = self.html_soup.find('ul', attrs={'class': 'breadcrumb'}).find_all('a')[1].text
+        text = self.html_soup.select('ul.breadcrumb').find_all('a')[1].text
         return text
 
     def _extract_news_agency(self):
-        text = self.html_soup.find('strong', attrs={'rel': 'author'}).text
-        source = re.search(r' avec (.*)', text)
-        if source is not None:
-            return source.group(1)
-        return ''
+        return self.html_soup.find('strong', attrs={'rel': 'author'})

@@ -5,6 +5,7 @@
 from heraldic.gathering.feeds import FeedHarvester, RssFeed
 import sys
 from heraldic.store.elastic import FeedsIndex
+import heraldic.misc.exceptions as ex
 
 
 def main(argv):
@@ -20,8 +21,11 @@ def main(argv):
             media_id, url = line.split(':', 1)
             if url not in feed_urls:
                 feed = RssFeed(url, media_id)
-                feed.gather()
-                feed.store()
+                try:
+                    feed.gather()
+                    feed.store()
+                except ex.FeedUnavailable:
+                    pass
 
 
 if __name__ == "__main__":
