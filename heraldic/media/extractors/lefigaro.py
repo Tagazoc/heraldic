@@ -15,7 +15,7 @@ class LeFigaro(GenericMedia):
     """
     supported_domains = ['www.lefigaro.fr']
     id = 'le_figaro'
-    articles_regex = [r'\.php/?$']
+    articles_regex = [r'(\.php/?|\d{8})$']
     display_name = 'Le Figaro'
 
 
