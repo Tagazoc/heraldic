@@ -56,7 +56,7 @@ class ValeursActuellesExtractor(GenericMediaExtractor):
     def _extract_category(self):
         try:
             text = self.html_soup.select_one('div.field--name-field-rubrique').find_all('a')[-1].text
-            return text
+            return text.strip()
         except AttributeError:
             return ''
 
