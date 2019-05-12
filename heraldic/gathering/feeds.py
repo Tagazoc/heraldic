@@ -9,8 +9,9 @@ from typing import List
 from datetime import datetime, timedelta
 from time import mktime
 from heraldic.misc.logging import logger
-from heraldic.misc.functions import get_truncated_url
+from heraldic.misc.functions import get_truncated_url, get_domain
 from requests.exceptions import RequestException
+from heraldic.media.known_media import known_media
 
 
 class UrlList:
@@ -52,7 +53,7 @@ class UrlList:
                    self._inside_counts['url_not_supported'], self._inside_counts['not_article'], self._inside_counts['errors'])
 
     def _gather_links(self, items: List, update_inplace=False, max_depth=0, depth=0, raise_on_optional=False,
-                      dump_result=False):
+                      dump_result=False, restricted_crawl_domains=None):
         counts = self._counts if depth == 0 else self._inside_counts
         for item in items:
             self._counts['total'] += 1
@@ -118,9 +119,12 @@ class UrlList:
 
             if max_depth > depth:
                 inside_links = d.model.href_sources.value + d.model.side_links.value
+                if restricted_crawl_domains is not None:
+                    inside_links = [link for link in inside_links if get_domain(link) in restricted_crawl_domains]
                 self._inside_counts['total'] += len(inside_links)
                 # Gather internal links, but without updating existing documents
-                self._gather_links(inside_links, update_inplace=update_inplace, max_depth=max_depth, depth=depth + 1)
+                self._gather_links(inside_links, update_inplace=update_inplace, max_depth=max_depth, depth=depth + 1,
+                                   restricted_crawl_domains=restricted_crawl_domains)
 
 
 class RssFeed(UrlList):
@@ -133,6 +137,7 @@ class RssFeed(UrlList):
         self.title = None
         self.link = None
         self.media_id = media_id
+        self.media_domains = known_media[media_id].supported_domains
 
     def gather(self):
         feed = feedparser.parse(self.url)
@@ -151,9 +156,10 @@ class RssFeed(UrlList):
         self.link = feed['feed']['link']
         self.entries = feed['entries']
 
-    def harvest(self, update_inplace: bool = True, max_depth=0, raise_on_optional=False, dump_result=False):
+    def harvest(self, update_inplace: bool = True, max_depth=0, raise_on_optional=False, dump_result=False, crawl_internally=False):
+        only_domains = self.media_domains if crawl_internally else None
         self._gather_links(self.entries, update_inplace=update_inplace, max_depth=max_depth,
-                           raise_on_optional=raise_on_optional, dump_result=dump_result)
+                           raise_on_optional=raise_on_optional, dump_result=dump_result, restricted_crawl_domains=only_domains)
 
         logger.log('INFO_FEED_HARVEST_END', self.url, self._counts['gathered'], self._counts['total'],
                    self._counts['exist'],
@@ -198,12 +204,12 @@ class FeedHarvester:
         self.feeds = [RssFeed(dic['_source']['url'], dic['_source']['media_id'],
                               dic['_source']['update_time'], dic['_id']) for dic in feeds_dicts]
 
-    def harvest(self, override=False, max_depth=0, delay=0):
+    def harvest(self, override=False, max_depth=0, delay=0, crawl_internally=False):
         for feed in self.feeds:
             try:
                 feed.gather()
                 if feed.update_time >= feed.last_update_time + timedelta(seconds=delay):
-                    feed.harvest(update_inplace=override, max_depth=max_depth)
+                    feed.harvest(update_inplace=override, max_depth=max_depth, crawl_internally=crawl_internally)
                     feed.update()
             except ex.FeedUnavailable:
                 continue

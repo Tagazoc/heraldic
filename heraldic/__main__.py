@@ -18,6 +18,8 @@ if __name__ == '__main__':
     parser_harvest.add_argument('-o', '--override', help='Gather again up-to-date documents', action='store_true',
                                 default=False)
     parser_harvest.add_argument('-d', '--depth', help='Depth of recursive gathering of sources', type=int, default=0)
+    parser_harvest.add_argument('-i', '--crawl-internally', help='Only crawl domains for this media', action='store_true',
+                                default=False)
     parser_harvest.set_defaults(func=harvest)
 
     parser_gather = subparsers.add_parser('gather', help='Gather one or several URLs')

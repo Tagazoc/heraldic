@@ -8,4 +8,4 @@ def harvest(args):
     harvester = FeedHarvester()
     harvester.retrieve_feeds(media_id=args.media)
 
-    harvester.harvest(args.override, max_depth=args.depth)
+    harvester.harvest(args.override, max_depth=args.depth, crawl_internally=args.crawl_internally)
