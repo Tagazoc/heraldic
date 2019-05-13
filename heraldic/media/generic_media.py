@@ -343,10 +343,12 @@ class GenericMediaExtractor(object):
                 continue
             if extension_pattern.search(href):
                 continue
-            # Use first defined domain, should work "almost" every time
+            # Use first defined domain to fill it, should work "almost" every time
             try:
-                protocol, url = get_truncated_url(re.sub(r'^/([^/])', self.get_media_domains()[0] + r'/\1', href),
-                                                  do_not_log_on_error=True)
+                href = re.sub(r'^/([^/])', self.get_media_domains()[0] + r'/\1', href)
+                href = re.sub(r'^([^/]+)', self.get_media_domains()[0] + r'/\1', href)
+                protocol, url = get_truncated_url(href, do_not_log_on_error=True)
+
             except ex.InvalidUrlException:
                 continue
             # Only add url without protocol
