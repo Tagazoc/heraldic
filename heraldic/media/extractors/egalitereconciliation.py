@@ -21,7 +21,8 @@ class EgaliteReconciliationExtractor(GenericMediaExtractor):
     """
     Class used for extracting items from media "Egalité & Réconciliation".
     """
-    test_urls = ['https://www.egaliteetreconciliation.fr/Le-judeo-christianisme-arme-de-destruction-massive-du-catholicisme-romain-52567.html']
+    test_urls = ['https://www.egaliteetreconciliation.fr/Le-judeo-christianisme-arme-de-destruction-massive-du-catholicisme-romain-52567.html',
+                 'https://www.egaliteetreconciliation.fr/Isadora-Duncan-devient-une-agence-et-recrute-54771.html']
 
     def _check_extraction(self):
         return True
@@ -46,3 +47,10 @@ class EgaliteReconciliationExtractor(GenericMediaExtractor):
         html_as = self._body_tag.find_all('a')
 
         return html_as
+
+    def _extract_side_links(self):
+        side_links_as = self.html_soup.select('div#renvois_articles h4 a')
+        self._side_links.extend(side_links_as)
+        side_links_as = self.html_soup.select('div#navigartprecsuiv a')
+        self._side_links.extend(side_links_as)
+        return self._side_links
