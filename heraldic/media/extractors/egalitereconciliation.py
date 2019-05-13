@@ -29,8 +29,11 @@ class EgaliteReconciliationExtractor(GenericMediaExtractor):
 
     def _extract_body(self):
         content_div = self.html_soup.select_one('div.entry-content')
-        notes_div = self.html_soup.select_one('div.notes')
-        content_div.insert(0, notes_div)
+        try:
+            notes_div = self.html_soup.select_one('div.notes')
+            content_div.insert(0, notes_div)
+        except ValueError:
+            pass
         return content_div
 
     def _extract_title(self):
