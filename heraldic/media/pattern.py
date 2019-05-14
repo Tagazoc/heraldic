@@ -24,7 +24,7 @@ class MediaNameExtractor(GenericMediaExtractor):
     test_urls = []
 
     def _check_extraction(self):
-        return self.html_soup.select_one('div.articleBody') is not None
+        return True
 
     def _extract_body(self):
         return self.html_soup.select_one('div.articleBody')
@@ -40,3 +40,8 @@ class MediaNameExtractor(GenericMediaExtractor):
 
     def _extract_news_agency(self):
         return self.html_soup.find('strong', attrs={'rel': 'author'})
+
+    def _extract_side_links(self):
+        side_links_as = self.html_soup.select('div.linked-articles a')
+        self._side_links.extend(side_links_as)
+        return self._side_links
