@@ -134,8 +134,8 @@ class RssFeed(UrlList):
         self.url = feed_url
         self.last_update_time: datetime = datetime.fromtimestamp(last_update_time) if last_update_time else None
         self.update_time = None
-        self.title = None
-        self.link = None
+        self.title = ''
+        self.link = feed_url
         self.media_id = media_id
         self.media_domains = known_media[media_id].supported_domains
 
@@ -152,8 +152,14 @@ class RssFeed(UrlList):
         except KeyError:
             # Sometimes...
             self.update_time = datetime.now()
-        self.title = feed['feed']['title']
-        self.link = feed['feed']['link']
+        try:
+            self.title = feed['feed']['title']
+        except KeyError:
+            pass
+        try:
+            self.link = feed['feed']['link']
+        except KeyError:
+            pass
         self.entries = feed['entries']
 
     def harvest(self, update_inplace: bool = True, max_depth=0, raise_on_optional=False, dump_result=False, crawl_internally=False):
