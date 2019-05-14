@@ -149,7 +149,7 @@ class RssFeed(UrlList):
         self.url = feed['href']
         try:
             self.update_time = datetime.fromtimestamp(mktime(feed['feed']['updated_parsed']))
-        except KeyError:
+        except (KeyError, TypeError):
             # Sometimes...
             self.update_time = datetime.now()
         try:
