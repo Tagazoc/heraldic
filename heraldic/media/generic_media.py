@@ -346,7 +346,7 @@ class GenericMediaExtractor(object):
             # Use first defined domain to fill it, should work "almost" every time
             try:
                 href = re.sub(r'^/([^/])', self.get_media_domains()[0] + r'/\1', href)
-                href = re.sub(r'^([^/]+)', self.get_media_domains()[0] + r'/\1', href)
+                href = re.sub(r'^([^/]+$)', self.get_media_domains()[0] + r'/\1', href)
                 protocol, url = get_truncated_url(href, do_not_log_on_error=True)
 
             except ex.InvalidUrlException:
