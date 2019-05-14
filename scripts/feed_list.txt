@@ -19,3 +19,4 @@ valeurs_actuelles:https://www.valeursactuelles.com/taxonomy/term/0/feed
 slate:https://www.slate.fr/rss.xml
 egalite_reconciliation:https://www.egaliteetreconciliation.fr/spip.php?page=backend
 atlantico:https://www.atlantico.fr/rss.xml
+france_inter:https://www.franceinter.fr/rss/a-la-une.xml
