@@ -40,6 +40,14 @@ class Logger:
                                  '%{i_total} (%{i_existed} already up-to-date, %{i_d_unsupported} which domain '
                                  'was not supported, %{i_a_unsupported} which URL '
                                  'was not supported, %{i_not_article} which were not articles, and %{i_errors} whose parsing failed)',
+        'INFO_SOURCE_HARVEST_END': 'For media %{media_name}, %{gathered} documents were gathered on %{total} (%{existed} '
+                                 'already up-to-date, %{domain_unsupported} which domain was not supported, '
+                                 '%{url_unsupported} which URL was not supported, %{not_article} which were not articles,'
+                                 '%{errors} whose parsing failed), and recursively gathered %{i_gathered} links on '
+                                 '%{i_total} (%{i_existed} already up-to-date, %{i_d_unsupported} which domain '
+                                 'was not supported, %{i_a_unsupported} which URL '
+                                 'was not supported, %{i_not_article} which were not articles, and '
+                                 '%{i_errors} whose parsing failed)',
         'WARN_URL_INVALID': 'URL %{url} is invalid.',
         'WARN_FEED_UNAVAILABLE': 'Feed %{url} is unavailable with error code %{status}.'
     }

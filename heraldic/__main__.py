@@ -13,13 +13,19 @@ if __name__ == '__main__':
 
     parser = argparse.ArgumentParser(description="Run commands to interact with Heraldic indexer", prog='heraldic')
     subparsers = parser.add_subparsers(help='sub-command help', dest='command')
-    parser_harvest = subparsers.add_parser('harvest', help='Harvest links in supported feeds')
+    parser_harvest = subparsers.add_parser('harvest', help='Harvest links in feeds or gathered sources')
     parser_harvest.add_argument('media', help='Specify only one media to harvest', nargs='?')
+    parser_harvest.add_argument('-s', '--sources', help='Gather the sources of indexed documents instead of feeds',
+                                action='store_true', default=False)
     parser_harvest.add_argument('-o', '--override', help='Gather again up-to-date documents', action='store_true',
                                 default=False)
     parser_harvest.add_argument('-d', '--depth', help='Depth of recursive gathering of sources', type=int, default=0)
     parser_harvest.add_argument('-i', '--crawl-internally', help='Only crawl domains for this media', action='store_true',
                                 default=False)
+    parser_harvest.add_argument('-t', '--delay', help='Time between document gathering (in seconds)',
+                                action='store_true', default=False)
+    parser_harvest.add_argument('-r', '--recursive-step', help='Step between recursive crawling in gathered sources (0 disables)',
+                                type=int, default=0)
     parser_harvest.set_defaults(func=harvest)
 
     parser_gather = subparsers.add_parser('gather', help='Gather one or several URLs')
