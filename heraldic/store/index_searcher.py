@@ -71,12 +71,12 @@ def retrieve_all_urls() -> Generator[str, None, None]:
             yield result['_source']['urls'][0]
 
 
-def search_by_media(media_id: str) -> Generator[DocumentModel, None, None]:
+def search_by_media(media_id: str, limit=0) -> Generator[DocumentModel, None, None]:
     return _generate_doc_models(_search_query(q="media:" + media_id, size=100))
 
 
-def search_models(q=None) -> Generator[DocumentModel, None, None]:
-    return _generate_doc_models(_search_query(q=q))
+def search_models(q=None, **kwargs) -> Generator[DocumentModel, None, None]:
+    return _generate_doc_models(_search_query(q=q, **kwargs))
 
 
 def search_model_by_url(url: str) -> DocumentModel:
