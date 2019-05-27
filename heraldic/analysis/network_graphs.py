@@ -153,11 +153,11 @@ def _retrieve_recursive_sources(model, include_other_domains=False, depth=0, ini
             continue
         url_dict = {}
         try:
-            source = known_media.get_media_class_by_domain(source, is_subdomain=True, do_not_log=True)[0].display_name
+            source = known_media.get_media_class_by_domain(source, is_subdomain=True, log_failure=False).display_name
 
             if initial_media_name == source:
                 continue
-            url_doc = index_searcher.retrieve_model_from_url(get_truncated_url(url))
+            url_doc = index_searcher.retrieve_model_from_url(url)
             if depth > 0:
                 url_dict = _retrieve_recursive_sources(url_doc, include_other_domains, depth - 1, initial_media_name)
         except ex.DomainNotSupportedException:

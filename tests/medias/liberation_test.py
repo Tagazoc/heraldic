@@ -29,6 +29,7 @@ doc_dict = {
                  'Famille', 'Hôpital', 'Socialiste', 'Élections législatives de 2012', "Mohamed M'jid"],
     'media': 'liberation',
     'news_agency': 'AFP',
+    'sources_domains': ['www.marianne.net'],
     'subscribers_only': False,
     'title': 'Un cadre du PS en «soins intensifs» après une agression par un député LREM',
     'urls': [
@@ -54,6 +55,7 @@ update_doc_dict = {
                  'Primaire présidentielle socialiste de 2011', 'Pompier', 'Libération'],
     'media': 'liberation',
     'news_agency': 'AFP',
+    'sources_domains': ['www.marianne.net'],
     'subscribers_only': False,
     'title': 'Un cadre du PS en «soins intensifs» après une agression par un député LREM',
     'urls': [
@@ -78,6 +80,7 @@ update_doc_versions = [
                      'Urgences', 'Primaire présidentielle socialiste de 2011', 'Agence France-Presse'],
         'media': 'liberation',
         'news_agency': 'AFP',
+        'sources_domains': ['www.marianne.net'],
         'subscribers_only': False,
         'title': 'Un cadre du PS en «soins intensifs» après une agression par un député LREM',
         'urls': [
@@ -111,6 +114,7 @@ error_doc_dict = {
                  'Primaire présidentielle socialiste de 2011', 'Pompier', 'Libération'],
     'media': 'liberation',
     'news_agency': 'Reuters',
+    'sources_domains': ['www.marianne.net'],
     'subscribers_only': False,
     'title': 'Un cadre du PS en «soins intensifs» après une agression par un député LREM',
     'urls': [
@@ -135,6 +139,7 @@ error_doc_versions = [
                      'Urgences', 'Primaire présidentielle socialiste de 2011', 'Agence France-Presse'],
         'media': 'liberation',
         'news_agency': 'AFP',
+        'sources_domains': ['www.marianne.net'],
         'subscribers_only': False,
         'title': 'Un cadre du PS en «soins intensifs» après une agression par un député LREM',
         'urls': [
@@ -177,6 +182,7 @@ error_solved_doc_dict = {
                  'Racisme'],
     'media': 'liberation',
     'news_agency': 'Reuters',
+    'sources_domains': ['www.marianne.net'],
     'subscribers_only': False,
     'title': 'Un cadre du PS en «soins très intensifs» après une agression par un député LREM',
     'urls': [
@@ -203,6 +209,7 @@ error_solved_doc_versions = [
                      'Socialiste', 'Élections législatives de 2012'],
         'media': 'liberation',
         'news_agency': 'AFP',
+        'sources_domains': ['www.marianne.net'],
         'subscribers_only': False,
         'title': 'Un cadre du PS en «soins intensifs» après une agression par un député LREM',
         'urls': [
@@ -247,6 +254,7 @@ update_inplace_doc_dict = {
                  'Racisme'],
     'media': 'liberation',
     'news_agency': 'AFP',
+    'sources_domains': ['www.marianne.net'],
     'subscribers_only': False,
     'title': 'Un cadre du PS en «soins intensifs» après une agression par un député LREM',
     'urls': [
@@ -273,6 +281,7 @@ update_inplace_doc_versions = [
                      'Socialiste', 'Élections législatives de 2012'],
         'media': 'liberation',
         'news_agency': 'AFP',
+        'sources_domains': ['www.marianne.net'],
         'subscribers_only': False,
         'title': 'Un cadre du PS en «soins intensifs» après une agression par un député LREM',
         'urls': [

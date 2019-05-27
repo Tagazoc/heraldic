@@ -201,9 +201,9 @@ class RssFeed(UrlList):
 
 
 class UrlFile(UrlList):
-    def __init__(self, file_name):
+    def __init__(self, file_name, **kwargs):
         with open(file_name, 'r') as f:
-            super(UrlFile, self).__init__(f.read().splitlines())
+            super(UrlFile, self).__init__(f.read().splitlines(), **kwargs)
 
 
 class FeedHarvester:

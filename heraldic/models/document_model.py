@@ -7,6 +7,8 @@ Module which implements DocumentModel class.
 from heraldic.models.attribute import Attribute, TextAttribute, KeywordListAttribute, KeywordAttribute,\
     DateAttribute, BooleanAttribute, IntegerAttribute, WordListAttribute, UrlListAttribute
 import heraldic.misc.functions as functions
+from heraldic.analysis.text_analyzer import ta
+from heraldic.misc.config import config
 from collections import OrderedDict
 from copy import copy
 from typing import Dict, Optional
@@ -22,7 +24,7 @@ class DocumentModel(object):
         """ Ordered dict containing attributes """
         self.attributes: Dict[str, Attribute] = OrderedDict([
             ('id', KeywordAttribute(desc="Identifiant", revisable=False, extractible=False, storable=False)),
-            ('media', KeywordAttribute(desc="Média", mandatory=True, revisable=False, storable={'type': 'keyword'})),
+            ('media', KeywordAttribute(desc="Média", mandatory=True, revisable=False)),
             ('gather_time', DateAttribute(desc="Date de collecte de l'article", revisable=False, extractible=False)),
             ('update_time', DateAttribute(desc="Date de révision", revisable=False, extractible=False)),
             ('version_no', IntegerAttribute(desc="Numéro de version", revisable=False, extractible=False)),
@@ -38,7 +40,7 @@ class DocumentModel(object):
             ('words', WordListAttribute(desc="Words", displayable=True, revisable=True, extractible=False)),
 
             # Extracted data
-            ('category', KeywordAttribute(desc="Catégorie", revisable=False, storable={'type': 'keyword'})),
+            ('category', KeywordAttribute(desc="Catégorie", revisable=False)),
             ('title', TextAttribute(desc="Titre", revisable=False)),
             ('description', TextAttribute(desc="Description", revisable=False)),
             ('doc_publication_time', DateAttribute(desc="Date de publication de l'article", revisable=False)),
@@ -46,13 +48,14 @@ class DocumentModel(object):
 
             ('keywords', KeywordListAttribute(desc="Mots-clés de l'article", revisable=False)),
             ('href_sources', UrlListAttribute(desc="Sources en lien hypertexte", revisable=False)),
+            ('sources_domains', KeywordListAttribute(desc="Domaines des sources", revisable=False, extractible=False)),
             # ('explicit_sources', KeywordListAttribute(desc="Sources explicites")),
             ('news_agency', KeywordAttribute(desc="Agence de presse source", revisable=False,
                                              storable={'type': 'keyword'})),
             # ('quoted_entities', KeywordListAttribute(desc="Entités citées", extractible=False)),
             # ('contains_private_sources', BooleanAttribute(desc="Sources privées", extractible=False)),
             ('subscribers_only', BooleanAttribute(desc="Réservé aux abonnés", revisable=False)),
-            ('document_type', KeywordAttribute(desc="Type d'article", revisable=False, storable={'type': 'keyword'})),
+            ('document_type', KeywordAttribute(desc="Type d'article", revisable=False)),
             ('side_links', UrlListAttribute(desc="Liens vers d'autres articles", storable=False, displayable=False,
                                             revisable=False))
         ])
@@ -283,6 +286,23 @@ class DocumentModel(object):
 
         # Specify model comes from gathering.
         self.from_gathering = True
+
+    def set_non_extractible_attributes(self):
+        self._set_words()
+        self._set_sources_domains()
+
+    def _set_words(self):
+        if config['DEFAULT'].getboolean('extract_words'):
+            self.words.update(ta.extract_words(self.body.value))
+
+    def _set_sources_domains(self):
+        model_domains = set(functions.get_domain(url, do_not_log=True) for url in self.urls.value)
+        domains = []
+        for source_url in self.href_sources.value:
+            domain = functions.get_domain(source_url, do_not_log=True)
+            if domain not in model_domains and domain not in domains:
+                domains.append(domain)
+        self.sources_domains.update(domains)
 
     def _set_urls_attribute(self, initial_url, final_url):
 

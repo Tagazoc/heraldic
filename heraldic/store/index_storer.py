@@ -8,7 +8,6 @@ from heraldic.models.document_model import DocumentModel, OldDocumentModel
 from heraldic.store.elastic import es, DocumentIndex, OldVersionIndex, ErrorIndex, SuggestionIndex, FeedsIndex
 from elasticsearch.exceptions import NotFoundError
 from heraldic.misc.exceptions import DocumentNotChangedException
-import heraldic.store.index_searcher as i_s
 from typing import List
 
 
@@ -107,19 +106,19 @@ def update(dm: DocumentModel, om: OldDocumentModel, update_inplace=False):
 
 
 def delete(dm: DocumentModel, old_models: List[DocumentModel]) -> None:
-    es.delete(DocumentIndex.INDEX_NAME, id=dm.id, doc_type=DocumentIndex.TYPE_NAME)
+    es.delete(DocumentIndex.INDEX_NAME, id=dm.id.value, doc_type=DocumentIndex.TYPE_NAME)
     es.indices.refresh(index=DocumentIndex.INDEX_NAME)
 
     if dm.has_suggestions:
-        es.delete(SuggestionIndex.INDEX_NAME, id=dm.id, doc_type=SuggestionIndex.TYPE_NAME)
+        es.delete(SuggestionIndex.INDEX_NAME, id=dm.id.value, doc_type=SuggestionIndex.TYPE_NAME)
         es.indices.refresh(index=SuggestionIndex.INDEX_NAME)
 
     if dm.has_errors:
-        es.delete(ErrorIndex.INDEX_NAME, id=dm.id, doc_type=ErrorIndex.TYPE_NAME)
+        es.delete(ErrorIndex.INDEX_NAME, id=dm.id.value, doc_type=ErrorIndex.TYPE_NAME)
         es.indices.refresh(index=ErrorIndex.INDEX_NAME)
 
     for old_dm in old_models:
-        es.delete(OldVersionIndex.INDEX_NAME, id=old_dm.id, doc_type=OldVersionIndex.TYPE_NAME)
+        es.delete(OldVersionIndex.INDEX_NAME, id=old_dm.id.value, doc_type=OldVersionIndex.TYPE_NAME)
 
     es.indices.refresh(index=OldVersionIndex.INDEX_NAME)
 

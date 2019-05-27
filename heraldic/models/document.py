@@ -11,8 +11,6 @@ from typing import List
 import heraldic.misc.exceptions as ex
 from heraldic.misc.logging import logger
 from heraldic.misc.functions import get_domain
-from heraldic.analysis.text_analyzer import ta
-from heraldic.misc.config import config
 import itertools
 
 
@@ -102,8 +100,7 @@ class Document(object):
         except ex.MandatoryParsingException:
             self._store_failed_parsing_error(model)
             raise
-        if config['DEFAULT'].getboolean('extract_words'):
-            model.words.update(ta.extract_words(model.body.value))
+        model.set_non_extractible_attributes()
         return model
 
     def _extract_fields(self, model=None, raise_on_optional=False):

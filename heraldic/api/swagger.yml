@@ -48,6 +48,11 @@ components:
         news_agency:
           description: Agence de presse source
           type: string
+        sources_domains:
+          description: Domaines des sources
+          items:
+            type: string
+          type: array
         subscribers_only:
           description: "R\xE9serv\xE9 aux abonn\xE9s"
           type: boolean
