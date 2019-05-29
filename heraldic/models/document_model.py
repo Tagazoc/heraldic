@@ -288,24 +288,23 @@ class DocumentModel(object):
         self.from_gathering = True
 
     def set_non_extractible_attributes(self):
-        self._set_words()
-        self._set_sources_domains()
+        self._set_words_attribute()
+        self._set_sources_domains_attribute()
 
-    def _set_words(self):
+    def _set_words_attribute(self):
         if config['DEFAULT'].getboolean('extract_words'):
             self.words.update(ta.extract_words(self.body.value))
 
-    def _set_sources_domains(self):
-        model_domains = set(functions.get_domain(url, do_not_log=True) for url in self.urls.value)
+    def _set_sources_domains_attribute(self):
+        model_domains = set(functions.get_domain(url, do_not_log=True, only_topmost=True) for url in self.urls.value)
         domains = []
         for source_url in self.href_sources.value:
             domain = functions.get_domain(source_url, do_not_log=True)
-            if domain not in model_domains and domain not in domains:
+            if not any(domain.endswith(model_domain) for model_domain in model_domains) and domain not in domains:
                 domains.append(domain)
         self.sources_domains.update(domains)
 
     def _set_urls_attribute(self, initial_url, final_url):
-
         # Setting final URL (in case of redirection) in first position
         urls: KeywordListAttribute = self.attributes['urls']
 

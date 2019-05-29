@@ -34,15 +34,19 @@ url_regex = re.compile(
             r'(?:\?|#|$)'
         )
 
+topmost_regex = re.compile(r'(?:.*\.)?([^.]+\.[^.]+)')
+
 
 @lru_cache(maxsize=1000)
 def _match_url(url):
     return url_regex.match(url)
 
 
-def get_domain(url, do_not_log=False):
+def get_domain(url, only_topmost=False, do_not_log=False):
     try:
         match = _match_url(url)
+        if only_topmost:
+            return topmost_regex.match(match.group(2)).group(1)
         return match.group(2)
     except AttributeError:
         raise InvalidUrlException(url, do_not_log=do_not_log)
