@@ -123,6 +123,7 @@ def get_similar_errors_urls(media: str, attribute: str, error_body: str = '') ->
                 }]
             }
         }
+        index_class = ErrorIndex
     elif attribute:
         query = {
             'bool': {
@@ -137,13 +138,15 @@ def get_similar_errors_urls(media: str, attribute: str, error_body: str = '') ->
                 }]
             }
         }
+        index_class = ErrorIndex
     else:
         query = {
             'term': {
                 'media': media
             }
         }
-    hits = _search_query(query, index_class=ErrorIndex, sort='gather_time:desc')
+        index_class = DocumentIndex
+    hits = _search_query(query, index_class=index_class, sort='gather_time:desc')
     for hit in hits:
         yield hit['_source']['urls'][0]
 
