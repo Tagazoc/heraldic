@@ -23,7 +23,7 @@ if __name__ == '__main__':
     parser_harvest.add_argument('-i', '--crawl-internally', help='Only crawl domains for this media', action='store_true',
                                 default=False)
     parser_harvest.add_argument('-D', '--delay', help='Time between document gathering (in seconds)',
-                                action='store_true', default=False)
+                                type=int, default=0)
     parser_harvest.add_argument('-r', '--recursive-step', help='Step between recursive crawling in gathered sources (0 disables)',
                                 type=int, default=0)
     parser_harvest.set_defaults(func=harvest)
@@ -40,7 +40,7 @@ if __name__ == '__main__':
                                action='store_true',
                                default=False)
     parser_gather.add_argument('-D', '--delay', help='Time between document gathering (in seconds)',
-                               action='store_true', default=False)
+                               type=int, default=0)
     parser_gather.add_argument('-t', '--test', help='Stop on optional parsing exception', action='store_true',
                                default=False)
     parser_gather.set_defaults(func=gather)
@@ -62,7 +62,7 @@ if __name__ == '__main__':
                                  action='store_true',
                                  default=False)
     parser_regather.add_argument('-D', '--delay', help='Time between document gathering (in seconds)',
-                                 action='store_true', default=False)
+                                 type=int, default=0)
     parser_regather.add_argument('-t', '--test', help='Stop on optional parsing exception', action='store_true',
                                  default=False)
     parser_regather.set_defaults(func=regather)
