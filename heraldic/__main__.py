@@ -22,7 +22,7 @@ if __name__ == '__main__':
     parser_harvest.add_argument('-d', '--depth', help='Depth of recursive gathering of sources', type=int, default=0)
     parser_harvest.add_argument('-i', '--crawl-internally', help='Only crawl domains for this media', action='store_true',
                                 default=False)
-    parser_harvest.add_argument('-t', '--delay', help='Time between document gathering (in seconds)',
+    parser_harvest.add_argument('-D', '--delay', help='Time between document gathering (in seconds)',
                                 action='store_true', default=False)
     parser_harvest.add_argument('-r', '--recursive-step', help='Step between recursive crawling in gathered sources (0 disables)',
                                 type=int, default=0)
@@ -31,11 +31,16 @@ if __name__ == '__main__':
     parser_gather = subparsers.add_parser('gather', help='Gather one or several URLs')
     group = parser_gather.add_mutually_exclusive_group(required=True)
     group.add_argument('-f', '--file', help='File containing one or several URLs (one per line)')
-    group.add_argument('-i', '--stdin', help='Get URL from stdin', action='store_true', default=False)
+    group.add_argument('-I', '--stdin', help='Get URL from stdin', action='store_true', default=False)
     group.add_argument('-u', '--url', nargs='*', help='URL to gather')
     parser_gather.add_argument('-d', '--depth', help='Depth of recursive gathering of sources', type=int, default=0)
     parser_gather.add_argument('-o', '--override', help='Override last version instead of creating a new one', action='store_true',
                                default=False)
+    parser_gather.add_argument('-i', '--crawl-internally', help='Only crawl domains for this media',
+                               action='store_true',
+                               default=False)
+    parser_gather.add_argument('-D', '--delay', help='Time between document gathering (in seconds)',
+                               action='store_true', default=False)
     parser_gather.add_argument('-t', '--test', help='Stop on optional parsing exception', action='store_true',
                                default=False)
     parser_gather.set_defaults(func=gather)
@@ -53,6 +58,11 @@ if __name__ == '__main__':
     parser_regather.add_argument('-o', '--override', help='Override last version instead of creating a new one',
                                  action='store_true', default=False)
     parser_regather.add_argument('-d', '--depth', help='Depth of recursive gathering of sources', type=int, default=0)
+    parser_regather.add_argument('-i', '--crawl-internally', help='Only crawl domains for this media',
+                                 action='store_true',
+                                 default=False)
+    parser_regather.add_argument('-D', '--delay', help='Time between document gathering (in seconds)',
+                                 action='store_true', default=False)
     parser_regather.add_argument('-t', '--test', help='Stop on optional parsing exception', action='store_true',
                                  default=False)
     parser_regather.set_defaults(func=regather)
