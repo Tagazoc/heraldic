@@ -12,7 +12,7 @@ from heraldic.misc.config import config
 
 
 es_host = {'host': config['DEFAULT'].get('elasticsearch_host'), 'port': config['DEFAULT'].getint('elasticsearch_port')}
-es = Elasticsearch([es_host])
+es = Elasticsearch([es_host], timeout=int(config['DEFAULT'].get('elasticsearch_timeout')))
 
 
 class ElasticIndex:
