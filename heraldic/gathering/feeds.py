@@ -96,29 +96,12 @@ class UrlList:
                 d.gather(update_time=update_time, update_inplace=self.update_inplace, raise_on_optional=self.raise_on_optional)
                 self.known_urls = self.known_urls.union(d.model.urls.value)
                 counts['gathered'] += 1
-            except ex.UrlNotSupportedException:
-                counts['url_not_supported'] += 1
-                continue
-            except ex.DomainNotSupportedException:
-                counts['domain_not_supported'] += 1
-                continue
-            except ex.DocumentNotArticleException:
-                counts['not_article'] += 1
-                continue
-            except ex.GatherError:
-                counts['errors'] += 1
-                if self.raise_on_optional:
-                    raise
-                continue
-            except ConnectionError:
-                counts['errors'] += 1
-                continue
-            except RequestException:
-                counts['errors'] += 1
-                continue
             # If document is already up-to-date, still gather inside links
             except ex.DocumentExistsException:
                 counts['exist'] += 1
+            except (ex.GatherException, ConnectionError, RequestException) as e:
+                self._handle_error_counts(counts, e)
+                continue
 
             if self.dump_result:
                 print(str(d))
@@ -130,6 +113,22 @@ class UrlList:
                 self._inside_counts['total'] += len(inside_links)
                 # Gather internal links, but without updating existing documents
                 self._gather_links(inside_links, depth=depth + 1)
+
+    def _handle_error_counts(self, counts: List, e: Exception):
+        if isinstance(e, ex.UrlNotSupportedException):
+            counts['url_not_supported'] += 1
+        elif isinstance(e, ex.DomainNotSupportedException):
+            counts['domain_not_supported'] += 1
+        elif isinstance(e, ex.DocumentNotArticleException):
+            counts['not_article'] += 1
+        elif isinstance(e, ex.GatherError):
+            counts['errors'] += 1
+            if self.raise_on_optional:
+                raise e
+        elif isinstance(e, ConnectionError):
+            counts['errors'] += 1
+        elif isinstance(e, RequestException):
+            counts['errors'] += 1
 
 
 class RssFeed(UrlList):
@@ -238,6 +237,7 @@ class SourceHarvester(UrlList):
         kwargs['crawl_domains'] = crawl_domains
         super(SourceHarvester, self).__init__(**kwargs)
         self.recursive_step = kwargs['recursive_step'] if 'recursive_step' in kwargs else 0
+        self.sources_only = kwargs['sources_only'] if 'sources_only' in kwargs else False
         self.source_gathered_urls = []
 
     def harvest(self):
@@ -248,58 +248,75 @@ class SourceHarvester(UrlList):
         source_harvest_count = 0
         for doc in docs:
             self.known_urls = self.known_urls.union(doc.urls.value)
-            sources = doc.href_sources.value
-            for url in sources:
+            urls = doc.href_sources.value if self.sources_only else [doc.urls.value[0]]
+            for url in urls:
+                to_gather = False  # Come togather
                 if url not in self.known_urls:
                     if self.crawl_domains is None or get_domain(url, do_not_log=True) in self.crawl_domains:
                         try:
                             model = index_searcher.search_model_by_url(url)
                             self.known_urls = self.known_urls.union(model.urls.value)
                         except ex.DocumentNotFoundException:
+                            to_gather = True  # Right now
+                        if to_gather or not self.sources_only:  # Over me.
                             d = Document(url)
                             try:
                                 d.gather()
                                 self._counts['gathered'] += 1
-                            except ex.UrlNotSupportedException:
-                                self._counts['url_not_supported'] += 1
-                                continue
-                            except ex.DomainNotSupportedException:
-                                self._counts['domain_not_supported'] += 1
-                                continue
-                            except ex.DocumentNotArticleException:
-                                self._counts['not_article'] += 1
-                                continue
-                            except ex.GatherError:
-                                self._counts['errors'] += 1
-                                if self.raise_on_optional:
-                                    raise
-                                continue
-                            except ConnectionError:
-                                self._counts['errors'] += 1
-                                continue
-                            except RequestException:
-                                self._counts['errors'] += 1
+                            except (ex.GatherException, ConnectionError, RequestException) as e:
+                                self._handle_error_counts(self._counts, e)
                                 continue
 
                             if self.dump_result:
                                 print(str(d))
 
-                            self.source_gathered_urls.extend(d.model.urls.value)
+                            self.source_gathered_urls.extend(d.model.href_sources.value)
+                            self.source_gathered_urls.extend(d.model.side_links.value)
                             self.known_urls = self.known_urls.union(d.model.urls.value)
                             source_harvest_count += 1
 
                             if self.crawl_delay:
                                 sleep(self.crawl_delay)
 
-                if self.recursive_step > 0 and self.max_depth > 0 and source_harvest_count % self.recursive_step == 0:
-                    self._gather_links(self.source_gathered_urls, depth=1)
-                    self.source_gathered_urls = []
+                            if self.recursive_step > 0 and self.max_depth > 0 and source_harvest_count % self.recursive_step == 0:
+                                self._gather_links(self.source_gathered_urls, depth=1)
+                                self.source_gathered_urls = []
+                else:
+                    self.known_urls = self.known_urls.union(url)
 
-        logger.log('INFO_SOURCE_HARVEST_END', known_media[self.media_id].display_name, self._counts['gathered'], self._counts['total'],
-                   self._counts['exist'],
-                   self._counts['domain_not_supported'], self._counts['url_not_supported'], self._counts['not_article'],
-                   self._counts['errors'], self._inside_counts['gathered'],
-                   self._inside_counts['total'], self._inside_counts['exist'],
-                   self._inside_counts['domain_not_supported'],
-                   self._inside_counts['domain_not_supported'], self._inside_counts['not_article'],
-                   self._inside_counts['errors'])
+
+class ErrorHarvester(SourceHarvester):
+    def __init__(self, media_id, **kwargs):
+        super(ErrorHarvester, self).__init__(media_id, **kwargs)
+
+        self.error_attribute = kwargs['error_attribute'] if 'error_attribute' in kwargs else None
+        self.error_body = kwargs['error_body'] if 'error_body' in kwargs else None
+
+    def harvest(self):
+        urls = index_searcher.get_similar_errors_urls(self.media_id, self.error_attribute, self.error_body)
+        source_harvest_count = 0
+        for url in urls:
+            if url not in self.known_urls:
+                if self.crawl_domains is None or get_domain(url, do_not_log=True) in self.crawl_domains:
+                    d = Document(url)
+                    try:
+                        d.gather()
+                        self._counts['gathered'] += 1
+                    except (ex.GatherException, ConnectionError, RequestException) as e:
+                        self._handle_error_counts(self._counts, e)
+                        continue
+
+                    if self.dump_result:
+                        print(str(d))
+
+                    self.source_gathered_urls.extend(d.model.href_sources.value)
+                    self.source_gathered_urls.extend(d.model.side_links.value)
+                    self.known_urls = self.known_urls.union(d.model.urls.value)
+                    source_harvest_count += 1
+
+                    if self.crawl_delay:
+                        sleep(self.crawl_delay)
+
+                    if self.recursive_step > 0 and self.max_depth > 0 and source_harvest_count % self.recursive_step == 0:
+                        self._gather_links(self.source_gathered_urls, depth=1)
+                        self.source_gathered_urls = []

@@ -13,17 +13,6 @@ from typing import List, Generator
 import elasticsearch.helpers
 
 
-def handle_connection_errors(decorated):
-    def wrapper(*args, **kwargs):
-        try:
-            result = decorated(*args, **kwargs)
-        except ConnectionError as err:
-            raise ex.IndexerConnectionError from err
-        return result
-
-    return wrapper
-
-
 def retrieve_model(doc_id: str) -> DocumentModel:
     """
     Retrieve document from store.
@@ -63,6 +52,7 @@ def retrieve_old_version_models(doc_id: str) -> Generator[OldDocumentModel, None
         yield dm
 
 
+@functions.handle_connection_errors
 def retrieve_all_urls() -> Generator[str, None, None]:
     results = elasticsearch.helpers.scan(es, index=DocumentIndex.INDEX_NAME, doc_type=DocumentIndex.TYPE_NAME,
                                          _source=['urls'])
@@ -99,6 +89,7 @@ def search_error_id_by_url(url: str) -> str:
         return None
 
 
+@functions.handle_connection_errors
 def retrieve_error_url(doc_id: str) -> str:
     try:
         res = es.get(ErrorIndex.INDEX_NAME, id=doc_id, doc_type=ErrorIndex.TYPE_NAME)
@@ -109,7 +100,7 @@ def retrieve_error_url(doc_id: str) -> str:
 
 
 def get_similar_errors_urls(media: str, attribute: str, error_body: str = '') -> Generator[str, None, None]:
-    if attribute and error_body:
+    if attribute and error_body is not None:
         query = {
             'bool': {
                 'must': [{
@@ -123,7 +114,6 @@ def get_similar_errors_urls(media: str, attribute: str, error_body: str = '') ->
                 }]
             }
         }
-        index_class = ErrorIndex
     elif attribute:
         query = {
             'bool': {
@@ -138,15 +128,13 @@ def get_similar_errors_urls(media: str, attribute: str, error_body: str = '') ->
                 }]
             }
         }
-        index_class = ErrorIndex
     else:
         query = {
             'term': {
                 'media': media
             }
         }
-        index_class = DocumentIndex
-    hits = _search_query(query, index_class=index_class, sort='gather_time:desc')
+    hits = _search_query(query, index_class=ErrorIndex, sort='gather_time:desc')
     for hit in hits:
         yield hit['_source']['urls'][0]
 
@@ -160,7 +148,7 @@ def _generate_doc_models(hits) -> Generator[DocumentModel, None, None]:
         yield dm
 
 
-@handle_connection_errors
+@functions.handle_connection_errors
 def _retrieve_doc(doc_id: str) -> dict:
     """
     Retrieve document from store.
@@ -209,7 +197,7 @@ def check_url_uptodate(url: str, update_time) -> bool:
         return False
 
 
-@handle_connection_errors
+@functions.handle_connection_errors
 def count(q=None, body_query=None, index_class=DocumentIndex) -> int:
     return es.count(index=index_class.INDEX_NAME, doc_type=index_class.TYPE_NAME, q=q, body=body_query)['count']
 
@@ -222,7 +210,7 @@ def retrieve_old_versions(doc_id) -> Generator[dict, None, None]:
         yield hit['_source']
 
 
-@handle_connection_errors
+@functions.handle_connection_errors
 def retrieve_errors(doc_id) -> dict:
     try:
         res = es.get(ErrorIndex.INDEX_NAME, id=doc_id, doc_type=ErrorIndex.TYPE_NAME)
@@ -231,7 +219,7 @@ def retrieve_errors(doc_id) -> dict:
         return {}
 
 
-@handle_connection_errors
+@functions.handle_connection_errors
 def retrieve_suggestions(doc_id) -> dict:
     try:
         res = es.get(SuggestionIndex.INDEX_NAME, id=doc_id, doc_type=SuggestionIndex.TYPE_NAME)
@@ -240,7 +228,6 @@ def retrieve_suggestions(doc_id) -> dict:
         return {}
 
 
-@handle_connection_errors
 def retrieve_feeds_dicts(media_id=None) -> List[dict]:
     query = {'match': {'media_id': media_id}} if media_id else None
     hits = _search_query(query=query, index_class=FeedsIndex)
@@ -248,8 +235,8 @@ def retrieve_feeds_dicts(media_id=None) -> List[dict]:
     return hits
 
 
-@handle_connection_errors
-def _search_query(query: dict=None, index_class=DocumentIndex, **kwargs) -> Generator[dict, None, None]:
+# This returns a generator, and rerunning it on exception would not be a good idea
+def _search_query(query: dict = None, index_class=DocumentIndex, **kwargs) -> Generator[dict, None, None]:
     body = {}
     if query is not None:
         body = {'query': query}

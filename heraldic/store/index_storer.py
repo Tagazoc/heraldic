@@ -7,10 +7,12 @@ Module implementing Store methods.
 from heraldic.models.document_model import DocumentModel, OldDocumentModel
 from heraldic.store.elastic import es, DocumentIndex, OldVersionIndex, ErrorIndex, SuggestionIndex, FeedsIndex
 from elasticsearch.exceptions import NotFoundError
+import heraldic.misc.functions as functions
 from heraldic.misc.exceptions import DocumentNotChangedException
 from typing import List
 
 
+@functions.handle_connection_errors
 def store(dm: DocumentModel, doc_id=None):
     """
     Store a document model.
@@ -42,12 +44,14 @@ def store(dm: DocumentModel, doc_id=None):
     return doc_id
 
 
+@functions.handle_connection_errors
 def store_failed_parsing_error(dm: DocumentModel, doc_id=None):
     errors_body = dm.render_errors_for_store()
     es.index(ErrorIndex.INDEX_NAME, doc_type=ErrorIndex.TYPE_NAME, body=errors_body, id=doc_id)
     es.indices.refresh(index=ErrorIndex.INDEX_NAME)
 
 
+@functions.handle_connection_errors
 def delete_error(doc_id):
     try:
         es.delete(ErrorIndex.INDEX_NAME, doc_type=ErrorIndex.TYPE_NAME, id=doc_id)
@@ -56,6 +60,7 @@ def delete_error(doc_id):
         pass
 
 
+@functions.handle_connection_errors
 def update(dm: DocumentModel, om: OldDocumentModel, update_inplace=False):
     """
     Update a document in the store, updating document within the "docs" index, and creating a document with old
@@ -105,6 +110,7 @@ def update(dm: DocumentModel, om: OldDocumentModel, update_inplace=False):
         raise DocumentNotChangedException(dm.id.value, dm.urls.value[0])
 
 
+@functions.handle_connection_errors
 def delete(dm: DocumentModel, old_models: List[DocumentModel]) -> None:
     es.delete(DocumentIndex.INDEX_NAME, id=dm.id.value, doc_type=DocumentIndex.TYPE_NAME)
     es.indices.refresh(index=DocumentIndex.INDEX_NAME)
@@ -123,9 +129,11 @@ def delete(dm: DocumentModel, old_models: List[DocumentModel]) -> None:
     es.indices.refresh(index=OldVersionIndex.INDEX_NAME)
 
 
+@functions.handle_connection_errors
 def store_feed(body: dict):
     es.index(FeedsIndex.INDEX_NAME, doc_type=FeedsIndex.TYPE_NAME, body=body)
 
 
+@functions.handle_connection_errors
 def update_feed(feed_id, body):
     es.update(FeedsIndex.INDEX_NAME, doc_type=FeedsIndex.TYPE_NAME, id=feed_id, body={'doc': body})

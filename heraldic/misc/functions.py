@@ -5,8 +5,11 @@
 
 import re
 from functools import lru_cache
-from heraldic.misc.exceptions import InvalidUrlException
+import heraldic.misc.exceptions as ex
 from typing import Tuple
+from time import sleep
+from heraldic.misc.config import config
+from elasticsearch.exceptions import ConnectionTimeout
 
 
 # Regex based on dperini's https://gist.github.com/dperini/729294
@@ -49,7 +52,7 @@ def get_domain(url, only_topmost=False, do_not_log=False):
             return topmost_regex.match(match.group(2)).group(1)
         return match.group(2)
     except AttributeError:
-        raise InvalidUrlException(url, do_not_log=do_not_log)
+        raise ex.InvalidUrlException(url, do_not_log=do_not_log)
 
 
 def get_resource(url, do_not_log_on_error=False):
@@ -57,7 +60,7 @@ def get_resource(url, do_not_log_on_error=False):
         match = _match_url(url)
         return match.group(3)
     except AttributeError:
-        raise InvalidUrlException(url, do_not_log=do_not_log_on_error)
+        raise ex.InvalidUrlException(url, do_not_log=do_not_log_on_error)
 
 
 def get_truncated_url(url, do_not_log_on_error=False) -> Tuple[str, str]:
@@ -68,4 +71,17 @@ def get_truncated_url(url, do_not_log_on_error=False) -> Tuple[str, str]:
         protocol_scheme = 'http://' if len(match.group(1)) < 6 else match.group(1)
         return protocol_scheme, match.group(2) + match.group(3)
     except AttributeError:
-        raise InvalidUrlException(url, do_not_log=do_not_log_on_error)
+        raise ex.InvalidUrlException(url, do_not_log=do_not_log_on_error)
+
+
+def handle_connection_errors(decorated):
+    def wrapper(*args, **kwargs):
+        for i in range(0, 1 + int(config['DEFAULT'].get('indexer_retry_count'))):
+            try:
+                result = decorated(*args, **kwargs)
+                return result
+            except ConnectionError as err:
+                sleep(float(config['DEFAULT'].get('indexer_retry_delay')))
+        raise ex.IndexerConnectionError from err
+    return wrapper
+

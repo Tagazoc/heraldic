@@ -8,7 +8,7 @@ def harvest(args):
     if args.sources:
         harvester = SourceHarvester(args.media, update_inplace=args.override, max_depth=args.depth,
                                     crawl_internally=args.crawl_internally, crawl_delay=args.delay,
-                                    recursive_step=args.recursive_step)
+                                    recursive_step=args.recursive_step, sources_only=True)
         harvester.harvest()
     else:
         harvester = FeedHarvester(update_inplace=args.override, max_depth=args.depth,
