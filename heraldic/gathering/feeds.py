@@ -247,7 +247,6 @@ class SourceHarvester(UrlList):
             docs = index_searcher.search_models()
         source_harvest_count = 0
         for doc in docs:
-            self.known_urls = self.known_urls.union(doc.urls.value)
             urls = doc.href_sources.value if self.sources_only else [doc.urls.value[0]]
             for url in urls:
                 to_gather = False  # Come togather
@@ -278,9 +277,10 @@ class SourceHarvester(UrlList):
                             if self.crawl_delay:
                                 sleep(self.crawl_delay)
 
-                            if self.recursive_step > 0 and self.max_depth > 0 and source_harvest_count % self.recursive_step == 0:
-                                self._gather_links(self.source_gathered_urls, depth=1)
-                                self.source_gathered_urls = []
+                            if self.max_depth > 0:
+                                if self.recursive_step == 0 or source_harvest_count % self.recursive_step == 0:
+                                    self._gather_links(self.source_gathered_urls, depth=1)
+                                    self.source_gathered_urls = []
                 else:
                     self.known_urls = self.known_urls.union(url)
 
@@ -317,6 +317,7 @@ class ErrorHarvester(SourceHarvester):
                     if self.crawl_delay:
                         sleep(self.crawl_delay)
 
-                    if self.recursive_step > 0 and self.max_depth > 0 and source_harvest_count % self.recursive_step == 0:
-                        self._gather_links(self.source_gathered_urls, depth=1)
-                        self.source_gathered_urls = []
+                    if self.max_depth > 0:
+                        if self.recursive_step == 0 or source_harvest_count % self.recursive_step == 0:
+                            self._gather_links(self.source_gathered_urls, depth=1)
+                            self.source_gathered_urls = []
