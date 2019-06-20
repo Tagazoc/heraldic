@@ -79,6 +79,7 @@ class Logger:
         # sur la console
         stream_handler = logging.StreamHandler()
         stream_handler.setLevel(logging.DEBUG)
+        stream_handler.setFormatter(formatter)
         self.logger.addHandler(stream_handler)
 
         self.token_regex = re.compile(r'%{\w+}')
